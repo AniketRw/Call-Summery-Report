@@ -17,4 +17,4 @@ COPY . .
 EXPOSE 8080
 
 # Start
-CMD ["python", "web_app.py"]
+CMD ["python", "-u", "web_app.py"]
