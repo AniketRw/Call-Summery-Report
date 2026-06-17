@@ -1,7 +1,10 @@
 from google import genai
 from google.genai import types
-import tkinter as tk
-from tkinter import filedialog, scrolledtext, messagebox
+try:
+    import tkinter as tk
+    from tkinter import filedialog, scrolledtext, messagebox
+except ImportError:
+    tk = None
 import threading
 import subprocess
 import os
@@ -863,131 +866,3 @@ def save_summary(summary, analysis, facts, keywords, audio_path):
     with open(os.path.splitext(audio_path)[0] + "_summary.txt", "w", encoding="utf-8") as f:
         f.write("="*50 + "\nANALYSIS\n" + "="*50 + f"\n\n{analysis}\n\n" + "="*50 + "\nKEYWORDS IDENTIFIED\n" + "="*50 + f"\n\n{keywords}\n\n" + "="*50 + "\nBUSINESS FACTS\n" + "="*50 + f"\n\n{facts}\n\n" + "="*50 + "\nSUMMARY\n" + "="*50 + f"\n\n{summary}")
 
-class CallSummaryApp:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Call Summary Tool")
-        self.root.geometry("720x950")
-        self.root.configure(bg="#0f1117")
-        self.selected_file = ""
-        self.build_ui()
-
-    def build_ui(self):
-        tk.Label(self.root, text="📞 Call Summary Tool", font=("Courier New", 20, "bold"), bg="#0f1117", fg="#00ff99").pack(pady=20)
-        file_frame = tk.Frame(self.root, bg="#1a1d27")
-        file_frame.pack(padx=30, fill="x")
-        self.file_label = tk.Label(file_frame, text="No file selected", font=("Courier New", 10), bg="#1a1d27", fg="#888888", anchor="w", padx=10, pady=10)
-        self.file_label.pack(side="left", fill="x", expand=True)
-        tk.Button(file_frame, text="Browse", bg="#00ff99", command=self.browse_file).pack(side="right", padx=5)
-        
-        # Keyword Management Button
-        tk.Button(file_frame, text="Keywords", bg="#ffcc00", command=self.manage_keywords).pack(side="right", padx=5)
-
-        self.gen_btn = tk.Button(self.root, text="Generate Summary", bg="#00ff99", font=("Courier New", 12, "bold"), command=self.start_processing)
-        self.gen_btn.pack(pady=20)
-        self.status = tk.Label(self.root, text="", bg="#0f1117", fg="#ffcc00")
-        self.status.pack()
-        
-        tk.Label(
-            self.root,
-            text="⚠ This summary is generated using AI and may not be 100% accurate. Please verify critical business information before use.",
-            font=("Courier New", 8),
-            bg="#0f1117",
-            fg="#777777",
-            wraplength=650,
-            justify="center"
-        ).pack(pady=(0, 8))
-        
-        tk.Label(self.root, text="ANALYSIS", bg="#0f1117", fg="#444444").pack(anchor="w", padx=30)
-        self.exec_box = scrolledtext.ScrolledText(self.root, height=5, bg="#1a1d27", fg="#e0e0e0")
-        self.exec_box.pack(padx=30, pady=5, fill="x")
-
-        tk.Label(self.root, text="KEYWORDS IDENTIFIED", bg="#0f1117", fg="#00ff99", font=("Courier New", 10, "bold")).pack(anchor="w", padx=30)
-        self.keywords_box = scrolledtext.ScrolledText(self.root, height=3, bg="#1a1d27", fg="#00ff99", font=("Courier New", 10, "bold"))
-        self.keywords_box.pack(padx=30, pady=5, fill="x")
-
-        tk.Label(self.root, text="BUSINESS FACTS", bg="#0f1117", fg="#444444").pack(anchor="w", padx=30)
-        self.facts_box = scrolledtext.ScrolledText(self.root, height=7, bg="#1a1d27", fg="#e0e0e0")
-        self.facts_box.pack(padx=30, pady=5, fill="x")
-
-        tk.Label(self.root, text="SUMMARY", bg="#0f1117", fg="#444444").pack(anchor="w", padx=30)
-        self.summary_box = scrolledtext.ScrolledText(self.root, height=6, bg="#1a1d27", fg="#e0e0e0")
-        self.summary_box.pack(padx=30, pady=5, fill="both", expand=True)
-
-        btn_frame = tk.Frame(self.root, bg="#0f1117")
-        btn_frame.pack(pady=10)
-        tk.Button(btn_frame, text="Save TXT", bg="#1a1d27", fg="#00ff99", command=self.save_txt).pack(side="left", padx=10)
-        tk.Button(btn_frame, text="Clear", bg="#1a1d27", fg="#ff5555", command=self.clear).pack(side="left")
-
-    def manage_keywords(self):
-        k_win = tk.Toplevel(self.root)
-        k_win.title("Manage Keywords")
-        k_win.geometry("400x500")
-        k_win.configure(bg="#0f1117")
-        
-        tk.Label(k_win, text="Edit Keywords (one per line)", bg="#0f1117", fg="#00ff99", font=("Courier New", 10, "bold")).pack(pady=10)
-        
-        txt_area = scrolledtext.ScrolledText(k_win, height=20, bg="#1a1d27", fg="#e0e0e0")
-        txt_area.pack(padx=20, pady=5, fill="both", expand=True)
-        
-        current_keywords = "\n".join(load_keywords())
-        txt_area.insert(tk.END, current_keywords)
-        
-        def save_k():
-            if messagebox.askyesno("Save Changes", "Do you want to save these changes?"):
-                new_k = txt_area.get("1.0", tk.END).strip()
-                with open("keywords.txt", "w", encoding="utf-8") as f:
-                    f.write(new_k)
-            k_win.destroy()
-
-        tk.Button(k_win, text="Save & Close", bg="#00ff99", command=save_k).pack(pady=10)
-
-    def browse_file(self):
-        p = filedialog.askopenfilename()
-        if p: self.selected_file = p; self.file_label.config(text=os.path.basename(p), fg="#00ff99")
-
-    def start_processing(self):
-        if not self.selected_file: return
-        self.gen_btn.config(state="disabled")
-        threading.Thread(target=self.process, daemon=True).start()
-
-    def process(self):
-        try:
-            self.status.config(text="Processing...")
-            conv = convert_audio(self.selected_file)
-            t, _, f, a, s, k = analyze_audio_with_gemini(conv)
-            save_transcript(t, self.selected_file)
-            save_summary(s, a, f, k, self.selected_file)
-            self.exec_box.delete("1.0", tk.END); self.exec_box.insert(tk.END, a)
-            self.keywords_box.delete("1.0", tk.END); self.keywords_box.insert(tk.END, k)
-            self.facts_box.delete("1.0", tk.END); self.facts_box.insert(tk.END, f)
-            self.summary_box.delete("1.0", tk.END); self.summary_box.insert(tk.END, s)
-            self.status.config(text="Done!", fg="#00ff99")
-            if conv != self.selected_file: os.remove(conv)
-        except Exception as e:
-            print("FULL ERROR:", e)
-            self.status.config(
-                text="Server issue. Please retry.",
-                fg="#ff5555"
-            )
-        finally: self.gen_btn.config(state="normal")
-
-    def save_txt(self):
-        p = filedialog.asksaveasfilename(defaultextension=".txt")
-        if p:
-            with open(p, "w", encoding="utf-8") as f: 
-                f.write("ANALYSIS:\n" + self.exec_box.get("1.0", tk.END) + "\n" + 
-                        "KEYWORDS:\n" + self.keywords_box.get("1.0", tk.END) + "\n" + 
-                        "BUSINESS FACTS:\n" + self.facts_box.get("1.0", tk.END) + "\n" + 
-                        "SUMMARY:\n" + self.summary_box.get("1.0", tk.END))
-
-    def clear(self):
-        self.exec_box.delete("1.0", tk.END); self.keywords_box.delete("1.0", tk.END)
-        self.facts_box.delete("1.0", tk.END); self.summary_box.delete("1.0", tk.END)
-        self.status.config(text=""); self.selected_file = ""; self.file_label.config(text="No file selected", fg="#888888")
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    CallSummaryApp(root)
-    root.mainloop()
