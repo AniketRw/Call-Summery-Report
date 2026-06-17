@@ -1,3 +1,4 @@
+print("=== APP STARTED ===")
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -20,6 +21,7 @@ import io
 # Import the backend logic from testnew
 import testnew
 
+print("=== TESTNEW IMPORTED ===")
 HOST = ""
 PORT = int(os.getenv("PORT", "8080"))
 BASE_DIR = Path(__file__).resolve().parent
