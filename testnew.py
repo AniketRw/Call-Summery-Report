@@ -1,10 +1,6 @@
 from google import genai
 from google.genai import types
-try:
-    import tkinter as tk
-    from tkinter import filedialog, scrolledtext, messagebox
-except ImportError:
-    tk = None
+tk = None
 import threading
 import subprocess
 import os
