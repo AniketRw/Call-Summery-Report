@@ -7,7 +7,7 @@ import os
 import time
 import json
 import sys
-
+import re
 
 def load_env_file(env_path=".env"):
     if not os.path.exists(env_path):
@@ -27,9 +27,57 @@ load_env_file()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 #GEMINI_MODEL = "models/gemini-2.5-flash"
 TRANSCRIPT_MODEL = "models/gemini-2.5-flash"
-ANALYSIS_MODEL = "models/gemini-2.5-flash-lite"
+ANALYSIS_MODEL = "models/gemini-2.5-flash" 
 SUMMARY_SEED = 12345
 
+SUMMARY_SEED = 12345
+
+TRANSCRIPT_CORRECTIONS = {
+    "loss sheet report": "loss sale report",
+    "loss seal report": "loss sale report",
+    "los sale report": "loss sale report",
+    "loss sell report": "loss sale report",
+    "lost sale report": "loss sale report",
+    "loss cell report": "loss sale report",
+}
+
+def apply_corrections(text):
+    for wrong, right in TRANSCRIPT_CORRECTIONS.items():
+        text = re.sub(re.escape(wrong), right, text, flags=re.IGNORECASE)
+    text = re.sub(
+        r"\bloss\s+(?!sale\b)\w+\s+report\b",
+        "loss sale report",
+        text,
+        flags=re.IGNORECASE
+    )
+    return text
+
+
+# Standard name -> all spelling/script variants that might appear in transcript
+KNOWN_EXECUTIVE_NAMES = {
+    "Ajit": ["ajit", "ajeet", "अजीत", "अजित"],
+    "Rahul": ["rahul", "राहुल"],
+    "Sandeep": ["sandeep", "sandip", "संदीप"],
+    "Vidya": ["vidya"],
+    "Akshay": ["akshay"],
+    "Suresh": ["suresh"],
+    "Avinash": ["avinash"],
+    "Amol": ["amol"],
+    "Mahendra": ["mahendra"],
+    "Dilip": ["dilip","Deelip"],
+    "Dipak":["dipak","deepak"],
+    "Gautam": ["gautam"]
+    
+    
+}
+
+def detect_known_executive(transcript):
+    transcript_lower = transcript.lower()
+    for standard_name, variants in KNOWN_EXECUTIVE_NAMES.items():
+        for variant in variants:
+            if variant.lower() in transcript_lower:
+                return standard_name
+    return None
 # -------- BACKEND FUNCTIONS --------
 
 def get_google_client():
@@ -37,50 +85,135 @@ def get_google_client():
         raise RuntimeError("Set GOOGLE_API_KEY in your .env file before running this app.")
     return genai.Client(api_key=GOOGLE_API_KEY)
 def safe_generate(client, **kwargs):
-    max_retries = 3
-
+    max_retries = 6
     for attempt in range(max_retries):
         try:
             return client.models.generate_content(**kwargs)
-
         except Exception as e:
             err = str(e).lower()
-
-            print(f"Retry {attempt+1}: {e}")
-
-            # retry only network/server issues
+            print(f"Retry {attempt+1}/{max_retries}: {e}")
             retryable = any(x in err for x in [
-                "server disconnected",
-                "timeout",
-                "503",
-                "connection",
-                "429",
-                "internal"
+                "server disconnected", "timeout", "503",
+                "connection", "429", "internal", "unavailable"
             ])
-
             if not retryable:
                 raise
-
             if attempt == max_retries - 1:
                 raise
+            wait = 3 * (attempt + 1)   # 5s, 10s, 15s, 20s, 25s
+            print(f"Waiting {wait}s before retry...")
+            time.sleep(wait)
 
-            time.sleep(2)
+
+
+# def convert_audio(input_path):
+#     output_path = os.path.splitext(input_path)[0] + "_16k.wav"
+#     result = subprocess.run([
+#         "ffmpeg", "-y",
+#         "-hide_banner",
+#         "-loglevel", "error",
+#         "-i", input_path,
+#         "-vn",
+#         "-ac", "1",
+#         "-ar", "16000",
+#         "-c:a", "pcm_s16le",
+#         output_path
+#     ], capture_output=True, text=True)
+#     if result.returncode != 0:
+#         raise RuntimeError(f"FFmpeg failed: {result.stderr.strip()[:300]}")
+#     return output_path
+
+def find_speech_start(wav_path):
+    """
+    Detect where ring-back tone ends and speech begins.
+    Indian telephone ring tone = ~400 Hz concentrated signal.
+    Returns start time in seconds (0 if no ring tone found).
+    """
+    import wave, struct
+    try:
+        import numpy as np
+    except ImportError:
+        return 0.0
+    try:
+        with wave.open(wav_path, 'rb') as w:
+           framerate = w.getframerate()
+           data = w.readframes(w.getnframes())
+        # with wave.open(wav_path, 'rb') as w:
+        #     framerate = w.getframerate()
+        #     max_frames = int(framerate * 20)   # only scan first 20 seconds
+        #     data = w.readframes(min(w.getnframes(), max_frames))
+        samples = np.array(struct.unpack('<' + 'h' * (len(data)//2), data), dtype=np.float32)
+        step = int(framerate * 0.5)          # 0.5-second windows
+        ring_pcts = []
+        for i in range(0, len(samples) - step, step):
+            seg = samples[i:i+step]
+            rms = float(np.sqrt(np.mean(seg**2)))
+            if rms < 200:
+                ring_pcts.append(None)       # silence
+                continue
+            fft   = np.abs(np.fft.rfft(seg))
+            freqs = np.fft.rfftfreq(step, 1.0/framerate)
+            ring_mask   = (freqs >= 300) & (freqs <= 500)
+            speech_mask = (freqs >= 100) & (freqs <= 3400) & ~ring_mask
+            ring_e   = float(np.sum(fft[ring_mask]))
+            speech_e = float(np.sum(fft[speech_mask]))
+            ring_pcts.append(ring_e / max(ring_e + speech_e, 1))
+        # Find first 3 consecutive 0.5s windows where ring energy < 40%
+        consecutive = 0
+        for idx, rp in enumerate(ring_pcts):
+            t = idx * 0.5
+            if rp is None:
+                if consecutive > 0:
+                    consecutive += 1
+                continue
+            if rp < 0.40:
+                consecutive += 1
+                if consecutive >= 3:
+                    speech_start = max(0.0, t - 1.0)   # 1s buffer
+                    print(f"[Ring trim] Speech at {t:.1f}s → trim from {speech_start:.1f}s")
+                    return speech_start
+            else:
+                consecutive = 0
+    except Exception as e:
+        print(f"[Ring trim] Detection failed: {e}, using full audio")
+    return 0.0
+
+
 def convert_audio(input_path):
+    """Convert audio to 16 kHz mono WAV, trimming ring-back tone if present."""
+    start_time = time.time()
     output_path = os.path.splitext(input_path)[0] + "_16k.wav"
+
+    # Step 1: standard conversion
     result = subprocess.run([
-        "ffmpeg", "-y",
-        "-hide_banner",
-        "-loglevel", "error",
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
         "-i", input_path,
-        "-vn",
-        "-ac", "1",
-        "-ar", "16000",
-        "-c:a", "pcm_s16le",
+        "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
         output_path
     ], capture_output=True, text=True)
     if result.returncode != 0:
         raise RuntimeError(f"FFmpeg failed: {result.stderr.strip()[:300]}")
+
+    # Step 2: trim ring-back tone
+    speech_start = find_speech_start(output_path)
+    if speech_start > 2.0:                   # only trim if >2s of ring detected
+        trimmed = os.path.splitext(input_path)[0] + "_trimmed.wav"
+        r2 = subprocess.run([
+            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+            "-i", output_path,
+            "-ss", str(speech_start),
+            "-c", "copy", trimmed
+        ], capture_output=True, text=True)
+        if r2.returncode == 0:
+            os.replace(trimmed, output_path)
+            print(f"[Ring trim] Removed {speech_start:.1f}s of ring tone")
+        else:
+            print(f"[Ring trim] Trim step failed, using full audio")
+
+    elapsed = time.time() - start_time
+    print(f"[TIMER] convert_audio took {elapsed:.2f} seconds")
     return output_path
+
 
 def parse_gemini_json(text):
     text = text.strip()
@@ -109,6 +242,7 @@ def format_facts(facts):
     return "\n".join(sections)
 
 def get_audio_transcripts_with_gemini(client, uploaded_file):
+    start_time = time.time()
     prompt = (
         "Transcribe this support call exactly. Add [MM:SS] timestamps. "
         "Identify speakers as 'Executive' and 'Customer'. "
@@ -124,10 +258,13 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
         contents=[uploaded_file, prompt],
         config=types.GenerateContentConfig(
             temperature=0,
-            max_output_tokens=8000
+            max_output_tokens=6000
         )
     )
-    return (response.text or "").strip()
+    raw_text = (response.text or "").strip()
+    elapsed = time.time() - start_time
+    print(f"[TIMER] Transcription (Gemini) took {elapsed:.2f} seconds")
+    return apply_corrections(raw_text)
 
 def load_keywords(file_path="keywords.txt"):
     if not os.path.exists(file_path):
@@ -146,6 +283,7 @@ def load_keywords(file_path="keywords.txt"):
         return [line.strip() for line in f if line.strip()]
 
 def analyze_audio_with_gemini(audio_path):
+    total_start = time.time()
     client = get_google_client()
     keywords_list = load_keywords()
     keywords_str = ", ".join(keywords_list)
@@ -182,7 +320,15 @@ def analyze_audio_with_gemini(audio_path):
                 "closings": {"type": "array", "items": {"type": "string"}},
                 "customer_mood": {"type": "string", "enum": ["Angry", "Frustrated", "Satisfied", "Neutral"]},
                 "mood_reason": {"type": "string"},
-                "executive_tone": {"type": "string"},
+                "executive_tone": {
+                    "type": "string",
+                    "enum": [
+                        "Helpful",
+                        "Helpful but Defensive",
+                        "Defensive",
+                        "Neutral"
+                    ]
+                },
                 "keywords": {"type": "array", "items": {"type": "string"}},
                 "business_facts": {
                     "type": "object",
@@ -261,20 +407,51 @@ Return valid JSON only.
 
 Required fields:
 
-1. executive_name
+1. executive_name:
+- Scan the ENTIRE conversation from start to end carefully — the name can appear anywhere: beginning, middle, or end of the call.
+- Case A: The customer (or anyone else) addresses the Executive by name at any point — in any language or script (Hindi/Marathi/English, Devanagari or Latin), with or without honorifics like "जी"/"सर"/"ji"/"sir".
+  Example: "Thank you Rahul", "Ravi, can you help?", "अजीत जी हेलो", "धन्यवाद अजीत सर", Sandeep 
+- Case B: The Executive states their own name at any point in the call (not just the beginning) — e.g. "मेरा नाम अजीत है", "This is Rahul speaking", "अजीत बोल रहा हूं".
+- Casual, broken, or informal sentence phrasing is fine in both cases — still extract the name as long as it is clearly being used as a name (by the customer addressing the executive, OR by the executive referring to themselves).
+- If a name is found under EITHER Case A or Case B anywhere in the transcript, use it as executive_name.
+- Only return "Not mentioned" if NO name is spoken anywhere in the entire conversation, by either party.
+- NEVER invent a name that is not explicitly present in the transcript.
 
-2. greetings
+2. greetings:
 - Detect ONLY from lines with timestamp [00:00] to [00:15].
 - Example: [00:02] Executive: "Hare Krishna" → capture "Hare Krishna"
 - Ignore greetings appearing after [00:15].
 
-3. closings
+3. closings:
 - Detect ONLY from the last 15 seconds of the call.
 - Ignore mid-call conversation.
 
-4. customer_mood
+4. customer_mood:
+- "Angry": shouting, explicit threats, abusive language, [Shouting] tags in transcript
+- "Frustrated": explicitly mentions dissatisfaction multiple times, raises voice [Loudly], uses strong complaint language
+- "Neutral": calm tone throughout, normal question-answer flow, no emotional escalation
+- "Satisfied": thanks executive, confirms issue resolved, positive closing
+- DEFAULT to "Neutral" if no clear emotional signal exists
+- NEVER choose Frustrated just because it is a support call
 5. mood_reason
 6. executive_tone
+
+    Return ONLY one of these values:
+
+    - Helpful
+    - Helpful but Defensive
+    - Defensive
+    - Neutral
+
+    Rules:
+    - Helpful = executive calmly assists and provides troubleshooting.
+    - Helpful but Defensive = executive tries to help but becomes defensive, argumentative, or repeatedly justifies actions.
+    - Defensive = executive is rude, impatient, dismissive, or refuses help.
+    - Neutral = no clear tone can be determined.
+
+    Return EXACTLY one of these four values only.
+    Never generate any other text.
+
 7. keywords
     - Detect closest matching keyword from transcript.
     - Example:
@@ -582,7 +759,7 @@ Output JSON only.
 # - Use \\n for line breaks
 # """
         
-        
+        analysis_start = time.time()
         response = safe_generate(
             client,
             model=ANALYSIS_MODEL,
@@ -591,7 +768,7 @@ Output JSON only.
                 temperature=0,
                 response_mime_type="application/json",
                 response_schema=response_schema,
-                max_output_tokens=2500
+                max_output_tokens=4000
             )
         )
         try:
@@ -614,6 +791,7 @@ Output JSON only.
 
         
         raw_output = (response.text or "").strip()
+        print(f"[TIMER] Analysis (Gemini) took {time.time() - analysis_start:.2f} seconds")
         save_text(raw_output, audio_path, "_gemini_raw_response.txt")
         try:
             print("\nRAW GEMINI OUTPUT:\n")
@@ -621,8 +799,109 @@ Output JSON only.
             print("\nEND OUTPUT\n")
         except UnicodeEncodeError:
             print("\nRAW GEMINI OUTPUT: (contains non-ASCII characters, skipped)\n")
-        
+
+        print("HAS SHORT SUMMARY:", '"short_summary"' in raw_output)
+        print("HAS LONG SUMMARY:", '"summary"' in raw_output)
         data = robust_parse(raw_output)
+        print("RAW EXECUTIVE TONE:", repr(data.get("executive_tone")))
+        tone = data.get("executive_tone", "").lower()
+
+        if "defensive" in tone:
+            data["executive_tone"] = "Helpful but Defensive"
+
+        elif tone:
+            data["executive_tone"] = "Helpful"
+
+        else:
+            data["executive_tone"] = "Neutral"
+        # Sanity: default to Neutral if no strong signals
+        # Sanity check: only override if mood contradicts transcript evidence
+        mood = data.get("customer_mood", "Neutral")
+        transcript_lower = transcript.lower()
+
+       
+        if any(x in transcript_lower for x in [
+            "2 months",
+            "3 months",
+            "still not",
+            "not working",
+            "complaint number",
+            "again and again",
+            "problem",
+            "issue"
+        ]):
+            if mood == "Neutral":
+                data["customer_mood"] = "Frustrated"
+                data["mood_reason"] = "Customer reported unresolved issues repeatedly."
+            if "[shouting]" in transcript_lower:
+                data["customer_mood"] = "Angry"
+                data["mood_reason"] = "Customer was shouting during the call."
+
+        # Angry = only when transcription model tags [Shouting]
+        angry_signals = ["[shouting]"]
+
+        # Frustrated = customer mentions problems, delays, errors
+        frustrated_signals = [
+            "not working", "again", "always", "every time", "still not",
+            "problem", "issue", "error", "slow", "pending",
+            "काम नाही", "परत", "नाही होत", "बंद आहे",
+            "नाही चालत", "होत नाही", "का नाही",
+            "क्यों नहीं", "नहीं हो रहा", "नहीं आ रहा",
+            "kab tak", "kitne din", "bahut time"
+        ]
+
+        has_angry = any(s in transcript_lower for s in angry_signals)
+        has_frustrated = any(s in transcript_lower for s in frustrated_signals)
+
+        if mood == "Angry" and not has_angry:
+            if has_frustrated:
+                data["customer_mood"] = "Frustrated"
+                data["mood_reason"] = "Customer showed frustration but no strong anger signals detected."
+            else:
+                data["customer_mood"] = "Neutral"
+                data["mood_reason"] = "No anger or frustration signals detected in transcript."
+
+        # elif mood == "Frustrated" and not has_frustrated and not has_angry:
+        #     data["customer_mood"] = "Neutral"
+        #     data["mood_reason"] = "Customer tone was calm throughout the call."
+        # elif mood == "Frustrated" and not has_frustrated and not has_angry:
+        #     mood_reason_lower = data.get("mood_reason", "").lower()
+        #     reason_has_frustration = any(x in mood_reason_lower for x in [
+        #         "frustrat", "repeat", "dissatisf", "multiple", "problem", "unresolved",
+        #         "again", "not working", "pending", "delay", "complain"
+        #     ])
+        #     if not reason_has_frustration:  # Only override if Gemini's own reason is weak
+        #         data["customer_mood"] = "Neutral"
+        #         data["mood_reason"] = "Customer tone was calm throughout the call."
+        
+        
+        elif mood == "Frustrated" and not has_frustrated and not has_angry:
+            mood_reason_lower = data.get("mood_reason", "").lower()
+            strong_frustration_phrases = [
+                "repeatedly",
+                "multiple times",
+                "dissatisf",
+                "not resolved",
+                "still not",
+                "keeps happening",
+                "raised voice",
+                "loudly",
+                "impatient",
+                "demanded",
+                "complained multiple",
+                "expressed frustration",
+                "upset"
+            ]
+            reason_has_strong_frustration = any(x in mood_reason_lower for x in strong_frustration_phrases)
+            if not reason_has_strong_frustration:
+                data["customer_mood"] = "Neutral"
+                data["mood_reason"] = "Customer tone was calm throughout the call."
+    # else: Gemini's reasoning is strong → keep Frustrated as-is
+
+        # Satisfied and Neutral are never overridden - trust Gemini on those
+        if mood == "Angry" and not has_angry:
+            data["customer_mood"] = "Neutral" if not has_frustrated else "Frustrated"
+            data["mood_reason"] = "No strong anger signals detected in transcript."
         # -------- GREETINGS / CLOSINGS SANITY FILTER --------
         VALID_GREETINGS = {
             "hello", "hi", "good morning",
@@ -772,21 +1051,41 @@ Output JSON only.
 
         data["business_facts"] = facts
         
-        # --- CRITICAL: ANTI-HALLUCINATION VERIFICATION ---
-        name = data.get("executive_name", "Not mentioned")
-        if name and name.lower() not in ["not mentioned", "not detected", "n/a"]:
-            # Check if the name exists in the transcript text
-            if name.lower() not in transcript.lower():
+       
+        # --- Prefer known-name matching (reliable, standardized spelling) ---
+        known_name = detect_known_executive(transcript)
+        if known_name:
+            data["executive_name"] = known_name
+        else:
+            # No known name matched — verify Gemini's own extraction actually
+            # appears in the transcript before trusting it (blocks hallucination)
+            name = data.get("executive_name", "Not mentioned")
+            if name and name.lower() not in ["not mentioned", "not detected", "n/a"]:
+                if name.lower() in transcript.lower():
+                    data["executive_name"] = name
+                else:
+                    data["executive_name"] = "Not mentioned"
+            else:
                 data["executive_name"] = "Not mentioned"
 
         def to_s(v): return ", ".join(v) if isinstance(v, list) and v else str(v or "None detected")
 
-        analysis_text = f"Customer Mood: {data.get('customer_mood', 'Neutral')} ({data.get('mood_reason', 'N/A')})\n"
+        customer_mood = data.get("customer_mood", "Neutral")
+        mood_reason = data.get("mood_reason", "N/A")
+        executive_tone = data.get("executive_tone", "Normal")
+
+        # analysis_text = f"Customer Mood: {data.get('customer_mood', 'Neutral')} ({data.get('mood_reason', 'N/A')})\n"
+        # analysis_text += f"Executive Name: {data.get('executive_name', 'Not mentioned')}\n"
+        # analysis_text += f"Greetings: {to_s(data.get('greetings'))}\n"
+        # analysis_text += f"Closings: {to_s(data.get('closings'))}\n"
+        # analysis_text += f"Executive Tone: {data.get('executive_tone', 'Normal')}"
+
+        analysis_text = f"Customer Mood: {customer_mood} ({mood_reason})\n"
         analysis_text += f"Executive Name: {data.get('executive_name', 'Not mentioned')}\n"
         analysis_text += f"Greetings: {to_s(data.get('greetings'))}\n"
         analysis_text += f"Closings: {to_s(data.get('closings'))}\n"
-        analysis_text += f"Executive Tone: {data.get('executive_tone', 'Normal')}"
-
+        analysis_text += f"Executive Tone: {executive_tone}"
+        
         short_summary = data.get("short_summary", "Short summary not generated.")
         long_summary = data.get("summary", "Summary not generated.")
 
@@ -800,7 +1099,7 @@ Output JSON only.
             + "\n"
             + long_summary
         )
-
+        print(f"[TIMER] TOTAL analyze_audio_with_gemini took {time.time() - total_start:.2f} seconds")
         return (
             transcript,
             raw_output,

@@ -33,7 +33,7 @@ def safe_filename(filename):
     filename = re.sub(r"[^A-Za-z0-9._ -]+", "_", filename).strip(" .")
     return filename or "audio"
 
-def generate_pdf(analysis, keywords, facts, summary, filename="call_summary"):
+def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_summary"):
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(
         buffer,
@@ -70,17 +70,18 @@ def generate_pdf(analysis, keywords, facts, summary, filename="call_summary"):
         story.append(Spacer(1, 8))
     add_section("ANALYSIS", analysis)
     add_section("KEYWORDS IDENTIFIED", keywords, style=keywords_style)
-    add_section("BUSINESS FACTS", facts)
+    add_section("CALL DETAILS", facts)
     add_section("SUMMARY", summary)
+    add_section("TRANSCRIPT", transcript)
     doc.build(story)
     buffer.seek(0)
     return buffer.read()
 
-def render_page(analysis="", keywords="", facts="", summary="", error="", filename=""):
+def render_page(analysis="", keywords="", facts="", summary="", transcript="", error="", filename=""):
     escaped_filename = html.escape(filename)
     
     results_html = ""
-    if any([analysis, keywords, facts, summary]):
+    if any([analysis, keywords, facts, summary, transcript]):
         results_html = f"""
         <section class="panel">
           <p class="meta">File: {escaped_filename}</p>
@@ -91,17 +92,21 @@ def render_page(analysis="", keywords="", facts="", summary="", error="", filena
           <h2 class="section-title keywords">KEYWORDS IDENTIFIED</h2>
           <pre class="highlight">{html.escape(keywords)}</pre>
           
-          <h2 class="section-title facts">BUSINESS FACTS</h2>
+          <h2 class="section-title facts">CALL DETAILS</h2>
           <pre>{html.escape(facts)}</pre>
           
           <h2 class="section-title summary">SUMMARY</h2>
           <pre>{html.escape(summary)}</pre>
+          
+          <h2 class="section-title transcript">TRANSCRIPT</h2>
+          <pre>{html.escape(transcript)}</pre>
           
           <form method="post" action="/export_pdf" style="margin-top:20px; text-align:center;">
             <input type="hidden" name="analysis" value="{html.escape(analysis)}">
             <input type="hidden" name="keywords" value="{html.escape(keywords)}">
             <input type="hidden" name="facts" value="{html.escape(facts)}">
             <input type="hidden" name="summary" value="{html.escape(summary)}">
+            <input type="hidden" name="transcript" value="{html.escape(transcript)}">
             <input type="hidden" name="filename" value="{html.escape(filename)}">
             <button type="submit" style="background:#ffcc00; color:#0f1117;">⬇ Export PDF</button>
           </form>
@@ -228,6 +233,7 @@ def render_page(analysis="", keywords="", facts="", summary="", error="", filena
     .keywords {{ color: var(--accent); }}
     .facts {{ color: var(--muted); }}
     .summary {{ color: var(--muted); }}
+    .transcript {{ color: var(--muted); }}
     
     pre {{
       margin: 0;
@@ -318,32 +324,72 @@ def render_page(analysis="", keywords="", facts="", summary="", error="", filena
     const text = document.getElementById("progressText");
     const bar = document.getElementById("progressBar");
     const button = document.getElementById("submitBtn");
-    
-    const steps = [
-      ["🎙 Converting audio...", 10],
-      ["📝 Transcribing with Gemini...", 30],
-      ["🔍 Analyzing transcript...", 60],
-      ["✨ Generating insights...", 85],
-      ["📄 Finalizing summary...", 95]
-    ];
-    
-    let timer = null;
 
-    form.addEventListener("submit", () => {{
+    const steps = [
+      "🎙 Uploading audio...",
+      "📝 Transcribing with Gemini...",
+      "🔍 Analyzing transcript...",
+      "✨ Generating insights...",
+      "📄 Finalizing summary..."
+    ];
+
+    form.addEventListener("submit", (e) => {{
+      e.preventDefault();
       document.body.classList.add("busy");
       panel.classList.add("active");
       button.disabled = true;
+
       let index = 0;
-      text.textContent = steps[index][0];
-      bar.style.width = steps[index][1] + "%";
-      
-      timer = setInterval(() => {{
-        if (index < steps.length - 1) {{
-            index++;
-            text.textContent = steps[index][0];
-            bar.style.width = steps[index][1] + "%";
+      let progress = 0;
+      text.textContent = steps[0];
+      bar.style.width = "5%";
+
+      // Smooth continuous fill up to 90%, cycling through step labels
+      const tick = setInterval(() => {{
+        if (progress < 90) {{
+          progress += 2;
+          bar.style.width = progress + "%";
         }}
-      }}, 5000);
+        const newIndex = Math.min(steps.length - 1, Math.floor(progress / (90 / steps.length)));
+        if (newIndex !== index) {{
+          index = newIndex;
+          text.textContent = steps[index];
+        }}
+      }}, 600);
+
+      const formData = new FormData(form);
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", form.action, true);
+
+      xhr.upload.onprogress = (evt) => {{
+        if (evt.lengthComputable) {{
+          const uploadPct = Math.round((evt.loaded / evt.total) * 100);
+          if (uploadPct < 30) {{
+            bar.style.width = uploadPct + "%";
+            text.textContent = "🎙 Uploading audio... " + uploadPct + "%";
+          }}
+        }}
+      }};
+
+      xhr.onload = () => {{
+        clearInterval(tick);
+        bar.style.width = "100%";
+        text.textContent = "✅ Done!";
+        setTimeout(() => {{
+          document.open();
+          document.write(xhr.responseText);
+          document.close();
+        }}, 300);
+      }};
+
+      xhr.onerror = () => {{
+        clearInterval(tick);
+        text.textContent = "❌ Something went wrong. Please try again.";
+        bar.style.width = "0%";
+        button.disabled = false;
+      }};
+
+      xhr.send(formData);
     }});
   </script>
 </body>
@@ -569,6 +615,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                     keywords=keywords,
                     facts=facts,
                     summary=summary,
+                    transcript=transcript,
                     filename=filename,
                 ))
             finally:
@@ -589,9 +636,10 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             keywords = params.get('keywords', [''])[0]
             facts = params.get('facts', [''])[0]
             summary = params.get('summary', [''])[0]
+            transcript = params.get('transcript', [''])[0]
             filename = params.get('filename', ['call_summary'])[0]
 
-            pdf_bytes = generate_pdf(analysis, keywords, facts, summary, filename)
+            pdf_bytes = generate_pdf(analysis, keywords, facts, summary, transcript, filename)
 
             pdf_filename = Path(filename).stem + "_summary.pdf"
             self.send_response(HTTPStatus.OK)
@@ -606,12 +654,17 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
 
 
     def respond_html(self, body, status=HTTPStatus.OK):
+      try:
         encoded = body.encode("utf-8")
         self.send_response(status)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(encoded)))
+        self.send_header("Connection", "close")   # ← key fix
         self.end_headers()
         self.wfile.write(encoded)
+        self.wfile.flush()
+      except (ConnectionAbortedError, BrokenPipeError, OSError):
+        pass   # Client disconnected — safe to ignore
 
 def main():
     server = ThreadingHTTPServer((HOST, PORT), CallSummaryHandler)
