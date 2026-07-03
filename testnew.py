@@ -258,7 +258,7 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
         contents=[uploaded_file, prompt],
         config=types.GenerateContentConfig(
             temperature=0,
-            max_outputs=6000
+            max_output_tokens=6000
         )
     )
     raw_text = (response.text or "").strip()
