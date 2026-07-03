@@ -258,7 +258,7 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
         contents=[uploaded_file, prompt],
         config=types.GenerateContentConfig(
             temperature=0,
-            max_output_tokens=6000
+            max_output_s=6000
         )
     )
     raw_text = (response.text or "").strip()
@@ -768,13 +768,16 @@ Output JSON only.
                 temperature=0,
                 response_mime_type="application/json",
                 response_schema=response_schema,
-                max_output_tokens=4000
+                max_output_tokens=8000,
+                hinking_config=types.ThinkingConfig(thinking_budget=0)
             )
         )
         try:
             usage = response.usage_metadata
             prompt_tokens = getattr(usage, "prompt_token_count", 0)
             response_tokens = getattr(usage, "candidates_token_count", 0)
+            thinking_tokens = getattr(usage, "thoughts_token_count", 0)
+            print("Thinking Tokens:", thinking_tokens) 
             total_tokens = prompt_tokens + response_tokens
 
             print("Prompt Tokens:", prompt_tokens)
@@ -783,7 +786,11 @@ Output JSON only.
 
             if hasattr(usage, "total_token_count"):
                 print("SDK Total Tokens:", usage.total_token_count)
-            
+            try:                                                             
+                finish_reason = response.candidates[0].finish_reason         
+                print("FINISH REASON:", finish_reason)                       
+            except Exception as fe:                                          
+                print("Could not get finish_reason:", fe)     
 
         except Exception as e:
             print("Token usage not available:", e)
