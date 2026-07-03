@@ -769,7 +769,7 @@ Output JSON only.
                 response_mime_type="application/json",
                 response_schema=response_schema,
                 max_output_tokens=8000,
-                hinking_config=types.ThinkingConfig(thinking_budget=0)
+                thinking_config=types.ThinkingConfig(thinking_budget=0)
             )
         )
         try:
