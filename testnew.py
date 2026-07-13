@@ -58,28 +58,42 @@ KNOWN_EXECUTIVE_NAMES = {
     "Ajit": ["ajit", "ajeet", "अजीत", "अजित"],
     "Rahul": ["rahul", "राहुल"],
     "Sandeep": ["sandeep", "sandip", "संदीप"],
-    "Vidya": ["vidya"],
-    "Akshay": ["akshay"],
-    "Suresh": ["suresh"],
-    "Avinash": ["avinash"],
-    "Amol": ["amol"],
-    "Mahendra": ["mahendra"],
-    "Dilip": ["dilip","Deelip"],
-    "Dipak":["dipak","deepak"],
-    "Gautam": ["gautam"]
-    
-    
+    "Vidya": ["vidya", "विद्या"],
+    "Akshay": ["akshay", "अक्षय"],          # ← Devanagari added
+    "Suresh": ["suresh", "सुरेश"],
+    "Avinash": ["avinash", "अविनाश"],
+    "Amol": ["amol", "अमोल"],
+    "Mahendra": ["mahendra", "महेंद्र"],
+    "Dilip": ["dilip", "deelip", "दिलीप"],
+    "Dipak": ["dipak", "deepak", "दीपक"],
+    "Gautam": ["gautam", "गौतम"]
 }
 
 def detect_known_executive(transcript):
     transcript_lower = transcript.lower()
+
+    # Priority 1: explicit self-introduction ("अक्षय बोलतोय", "This is Rahul speaking")
+    self_intro_patterns = [
+        r"([a-zA-Z\u0900-\u097F]+)\s*बोलतोय",
+        r"([a-zA-Z\u0900-\u097F]+)\s*बोल रहा",
+        r"this is\s+([a-zA-Z]+)\s+speaking",
+        r"मेरा नाम\s+([a-zA-Z\u0900-\u097F]+)",
+        r"माझं नाव\s+([a-zA-Z\u0900-\u097F]+)",
+    ]
+    for pat in self_intro_patterns:
+        m = re.search(pat, transcript, flags=re.IGNORECASE)
+        if m:
+            spoken = m.group(1).strip().lower()
+            for standard_name, variants in KNOWN_EXECUTIVE_NAMES.items():
+                if spoken in [v.lower() for v in variants]:
+                    return standard_name
+
+    # Priority 2: fallback — word-boundary substring match (avoids false positives)
     for standard_name, variants in KNOWN_EXECUTIVE_NAMES.items():
         for variant in variants:
-            if variant.lower() in transcript_lower:
+            if re.search(r'\b' + re.escape(variant.lower()) + r'\b', transcript_lower):
                 return standard_name
     return None
-# -------- BACKEND FUNCTIONS --------
-
 def get_google_client():
     if not GOOGLE_API_KEY:
         raise RuntimeError("Set GOOGLE_API_KEY in your .env file before running this app.")
@@ -241,16 +255,48 @@ def format_facts(facts):
         sections.append(f"{label}:\n" + "\n".join(f"- {v}" for v in (vals if isinstance(vals, list) else [vals])))
     return "\n".join(sections)
 
+def collapse_repeated_lines(transcript, max_repeats=3):
+    lines = transcript.split("\n")
+    result = []
+    last_content = None
+    repeat_count = 0
+
+    for line in lines:
+        m = re.match(r"(\[\s*\d{2}:\d{2}\s*\])\s*(.*)", line)
+        if not m:
+            result.append(line)
+            continue
+        timestamp, content = m.groups()
+        content_key = content.strip()
+
+        if content_key and content_key == last_content:
+            repeat_count += 1
+            if repeat_count < max_repeats:
+                result.append(line)
+            elif repeat_count == max_repeats:
+                result.append(f"{timestamp} [... repeated content omitted ...]")
+        else:
+            repeat_count = 0
+            last_content = content_key
+            result.append(line)
+
+    return "\n".join(result)
+
+
 def get_audio_transcripts_with_gemini(client, uploaded_file):
     start_time = time.time()
     prompt = (
-        "Transcribe this support call exactly. Add [MM:SS] timestamps. "
-        "Identify speakers as 'Executive' and 'Customer'. "
-        "IMPORTANT: In brackets, note the tone or volume if it changes significantly "
-        "(e.g., [Loudly], [Shouting], [Silently], [Calmly]). "
-        "Keep the original language (Hindi/Marathi/English) as spoken. "
-        "Use Devanagari script for Hindi/Marathi and Latin script for English."
-    )
+    "Transcribe this support call exactly. Add [MM:SS] timestamps. "
+    "Identify speakers as 'Executive' and 'Customer'. "
+    "IMPORTANT: In brackets, note the tone or volume if it changes significantly "
+    "(e.g., [Loudly], [Shouting], [Silently], [Calmly]). "
+    "Keep the original language (Hindi/Marathi/English) as spoken. "
+    "Use Devanagari script for Hindi/Marathi and Latin script for English. "
+    "If there is silence, hold music, or unclear/repetitive background audio for "
+    "an extended period, do NOT repeat the same word or number over and over. "
+    "Instead write a single line like [MM:SS] [Hold music / silence] and move to "
+    "the next distinct speech segment."
+)
     
     response = safe_generate(
         client,
@@ -264,7 +310,8 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     raw_text = (response.text or "").strip()
     elapsed = time.time() - start_time
     print(f"[TIMER] Transcription (Gemini) took {elapsed:.2f} seconds")
-    return apply_corrections(raw_text)
+    corrected = apply_corrections(raw_text)
+    return collapse_repeated_lines(corrected)
 
 def load_keywords(file_path="keywords.txt"):
     if not os.path.exists(file_path):
@@ -922,23 +969,71 @@ Output JSON only.
 
         }
 
+    #     VALID_CLOSINGS = {
+    #         "ok", "okay", "ठीक आहे",
+    #         "ओके", "thank you",
+    #         "thanks", "bye"
+    #     }
+
+    #     HONORIFICS = {"sir", "madam", "सर", "मॅडम"}
+
+    #     clean_greetings = []
+    #     for g in data.get("greetings", []):
+    #         g_lower = g.lower().strip()
+    #         words = g_lower.split()
+
+    #         if len(words) > 4:
+    #             continue
+
+    
+    #         core = " ".join(w for w in words if w not in HONORIFICS).strip()
+
+    #         if core in VALID_GREETINGS:
+    #             clean_greetings.append(core)        # "hare krishna" ✅
+    #         elif words[0] in VALID_GREETINGS:
+    #             clean_greetings.append(words[0])    # "hello sir" → "hello" ✅
+
+    #     data["greetings"] = list(dict.fromkeys(clean_greetings))[:3]
+
+    #     clean_closings = []
+
+    #     for c in data.get("closings", []):
+    #         c_lower = c.lower().strip()
+
+    #         words = c_lower.split()
+
+    # # ignore long sentences in closing
+    #         if len(words) > 5:
+    #             continue
+
+    #         if (
+    #             c_lower in VALID_CLOSINGS or
+    #             any(c_lower.startswith(x) for x in VALID_CLOSINGS)
+    #         ):
+    #             clean_closings.append(c.strip())
+
+        
+    #     data["closings"] = list(dict.fromkeys(clean_closings))[:3]
         VALID_CLOSINGS = {
             "ok", "okay", "ठीक आहे",
             "ओके", "thank you",
-            "thanks", "bye"
+            "thanks", "bye",
+            "धन्यवाद", "थँक यू", "थँक्यू", "थैंक यू", "थैंक्यू"
         }
 
         HONORIFICS = {"sir", "madam", "सर", "मॅडम"}
 
+        def _clean_word(w):
+            return w.strip(" ।.,!?\"'()")
+
         clean_greetings = []
         for g in data.get("greetings", []):
             g_lower = g.lower().strip()
-            words = g_lower.split()
+            words = [_clean_word(w) for w in g_lower.split() if _clean_word(w)]
 
-            if len(words) > 4:
+            if len(words) > 4 or not words:
                 continue
 
-    
             core = " ".join(w for w in words if w not in HONORIFICS).strip()
 
             if core in VALID_GREETINGS:
@@ -951,23 +1046,22 @@ Output JSON only.
         clean_closings = []
 
         for c in data.get("closings", []):
-            c_lower = c.lower().strip()
+            c_lower = _clean_word(c.lower().strip())
 
             words = c_lower.split()
 
     # ignore long sentences in closing
-            if len(words) > 5:
+            if len(words) > 5 or not words:
                 continue
 
             if (
                 c_lower in VALID_CLOSINGS or
                 any(c_lower.startswith(x) for x in VALID_CLOSINGS)
             ):
-                clean_closings.append(c.strip())
+                clean_closings.append(c_lower)
 
         
         data["closings"] = list(dict.fromkeys(clean_closings))[:3]
-
 
         transcript_lower = transcript.lower()
         detected_keywords = []

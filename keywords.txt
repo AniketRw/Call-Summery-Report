@@ -29,4 +29,5 @@ data loss
 scheme apply
 Ecommerce
 data remove
-report not match
+report not match
+loss sale report

@@ -316,9 +316,9 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
     {error_html}
 
     {results_html}
-
-  </main>
+</main>
   <script>
+  (function() {{
     const form = document.getElementById("summaryForm");
     const panel = document.getElementById("progressPanel");
     const text = document.getElementById("progressText");
@@ -391,6 +391,7 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
 
       xhr.send(formData);
     }});
+  }})();
   </script>
 </body>
 </html>"""
