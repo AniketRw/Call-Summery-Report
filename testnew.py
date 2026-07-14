@@ -255,6 +255,33 @@ def format_facts(facts):
         sections.append(f"{label}:\n" + "\n".join(f"- {v}" for v in (vals if isinstance(vals, list) else [vals])))
     return "\n".join(sections)
 
+def collapse_alternating_filler(transcript, filler_words=None, min_run=4):
+    if filler_words is None:
+        filler_words = {"हां", "हं", "हम्म", "ओके", "ok", "okay"}
+    lines = transcript.split("\n")
+    result, buffer = [], []
+
+    def flush():
+        if len(buffer) >= min_run:
+            ts = re.search(r"\[\s*\d{2}:\d{2}\s*\]", buffer[0])
+            result.append(f"{ts.group(0) if ts else ''} [... unclear/filler exchange omitted ...]")
+        else:
+            result.extend(buffer)
+        buffer.clear()
+
+    for line in lines:
+        m = re.match(r"(\[\s*\d{2}:\d{2}\s*\])\s*(?:Executive|Customer)\s*:\s*(.*)", line)
+        content = m.group(2).strip().rstrip("।.").strip() if m else None
+        if content and content in filler_words:
+            buffer.append(line)
+        else:
+            flush()
+            result.append(line)
+    flush()
+    return "\n".join(result)
+
+
+
 def collapse_repeated_lines(transcript, max_repeats=3):
     lines = transcript.split("\n")
     result = []
@@ -288,6 +315,14 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     prompt = (
     "Transcribe this support call exactly. Add [MM:SS] timestamps. "
     "Identify speakers as 'Executive' and 'Customer'. "
+    "SPEAKER IDENTITY RULES: "
+    "The Executive is the support/helpdesk agent. Establish who is who EARLY using clues like: "
+    "company/product name self-introduction (e.g. 'रिटेल वाला बोलतोय'), being addressed respectfully by name/title, "
+    "or asking troubleshooting questions. Once established, KEEP that speaker's label consistent by voice "
+    "for the entire call, even through noisy or unclear sections. "
+    "If audio is unclear, silent, noisy, or overlapping and you cannot confidently tell who is speaking, "
+    "do NOT guess or alternate the speaker label — instead repeat the LAST confidently-identified speaker, "
+    "or write [MM:SS] [Unclear speaker] and skip to the next distinct segment. "
     "IMPORTANT: In brackets, note the tone or volume if it changes significantly "
     "(e.g., [Loudly], [Shouting], [Silently], [Calmly]). "
     "Keep the original language (Hindi/Marathi/English) as spoken. "
@@ -311,6 +346,7 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     elapsed = time.time() - start_time
     print(f"[TIMER] Transcription (Gemini) took {elapsed:.2f} seconds")
     corrected = apply_corrections(raw_text)
+    corrected = collapse_alternating_filler(corrected)
     return collapse_repeated_lines(corrected)
 
 def load_keywords(file_path="keywords.txt"):
@@ -1122,17 +1158,6 @@ Output JSON only.
         for item in actions:
             text = item.lower()
 
-    # wrong: executive shared credentials
-            if any(x in text for x in [
-                "shared system id",
-                "shared password",
-                "shared the system id",
-                "system id and password"
-            ]):
-                fixed_requests.append(
-                    "Customer shared system ID and password for troubleshooting."
-                )
-                continue
 
     # correct: executive asked for credentials
             if any(x in text for x in [
