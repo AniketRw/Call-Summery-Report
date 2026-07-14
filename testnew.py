@@ -7,7 +7,7 @@ import os
 import time
 import json
 import sys
-import re
+from faster_whisper import WhisperModel
 
 def load_env_file(env_path=".env"):
     if not os.path.exists(env_path):
@@ -27,9 +27,14 @@ load_env_file()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 #GEMINI_MODEL = "models/gemini-2.5-flash"
 TRANSCRIPT_MODEL = "models/gemini-2.5-flash"
+print("Loading Whisper model...")
+# whisper_model = WhisperModel(
+#     "medium",
+#     device="cpu",
+#     compute_type="int8"
+# )
+print("Whisper model loaded.")
 ANALYSIS_MODEL = "models/gemini-2.5-flash" 
-SUMMARY_SEED = 12345
-
 SUMMARY_SEED = 12345
 
 TRANSCRIPT_CORRECTIONS = {
@@ -40,6 +45,27 @@ TRANSCRIPT_CORRECTIONS = {
     "lost sale report": "loss sale report",
     "loss cell report": "loss sale report",
 }
+# def whisper_transcribe(audio_path):
+
+#     segments, info = whisper_model.transcribe(
+#         audio_path,
+#         language="hi",
+#         beam_size=5,
+#         vad_filter=True
+#     )
+
+#     lines = []
+
+#     for segment in segments:
+
+#         m = int(segment.start // 60)
+#         s = int(segment.start % 60)
+
+#         lines.append(
+#             f"[{m:02d}:{s:02d}] {segment.text.strip()}"
+#         )
+
+#     return "\n".join(lines)
 
 def apply_corrections(text):
     for wrong, right in TRANSCRIPT_CORRECTIONS.items():
@@ -68,6 +94,108 @@ KNOWN_EXECUTIVE_NAMES = {
     "Dipak": ["dipak", "deepak", "दीपक"],
     "Gautam": ["gautam", "गौतम"]
 }
+
+
+import re
+def fix_speaker_consistency(transcript: str) -> str:
+    import re
+
+    lines = transcript.splitlines()
+    fixed = []
+
+    prev_speaker = None
+    prev_text = ""
+
+    for line in lines:
+
+        m = re.match(r"(\[\s*\d{2}:\d{2}\s*\])\s*(Executive|Customer)(\s*\[[^\]]+\])?\s*:\s*(.*)", line)
+
+        if not m:
+            fixed.append(line)
+            continue
+
+        ts = m.group(1)
+        speaker = m.group(2)
+        aside = m.group(3) or ""
+        text = m.group(4).strip()
+
+        lower = text.lower()
+
+        # -------------------------
+        # NAME QUESTION
+        # -------------------------
+
+        if "आपका नाम" in lower or "नाम?" in lower:
+            speaker = "Customer"
+
+        elif prev_text.startswith("आपका नाम"):
+
+            if (
+                len(text.split()) <= 3
+                and "लिखो" not in lower
+                and "लिखिए" not in lower
+                and "सामने" not in lower
+            ):
+                speaker = "Executive"
+
+            elif (
+                "लिखो" in lower
+                or "लिखिए" in lower
+                or "सामने" in lower
+            ):
+                speaker = "Customer"
+
+        # -------------------------
+        # PASSWORD
+        # -------------------------
+
+        elif "पासवर्ड" in lower:
+            speaker = "Executive"
+
+        elif (
+            "पासवर्ड" in prev_text
+            and len(text.split()) <= 5
+        ):
+            speaker = "Customer"
+
+        # -------------------------
+        # ID
+        # -------------------------
+
+        elif "आईडी" in lower or "id" in lower:
+            speaker = "Executive"
+
+        elif (
+            ("आईडी" in prev_text or "id" in prev_text)
+            and len(text.split()) <= 5
+        ):
+            speaker = "Customer"
+
+        # -------------------------
+        # COMPLAINT NUMBER
+        # -------------------------
+
+        elif (
+            "कंप्लेंट नंबर" in lower
+            or "complaint number" in lower
+        ):
+            speaker = "Executive"
+
+        elif (
+            "कंप्लेंट नंबर" in prev_text
+            and len(text.split()) <= 5
+        ):
+            speaker = "Customer"
+
+        fixed.append(
+            f"{ts} {speaker}{aside}: {text}"
+        )
+
+        prev_speaker = speaker
+        prev_text = text
+
+    return "\n".join(fixed)
+
 
 def detect_known_executive(transcript):
     transcript_lower = transcript.lower()
@@ -270,7 +398,7 @@ def collapse_alternating_filler(transcript, filler_words=None, min_run=4):
         buffer.clear()
 
     for line in lines:
-        m = re.match(r"(\[\s*\d{2}:\d{2}\s*\])\s*(?:Executive|Customer)\s*:\s*(.*)", line)
+        m = re.match(r"(\[\s*\d{2}:\d{2}\s*\])\s*(?:Executive|Customer)\s*(?:\[[^\]]*\]\s*)?:\s*(.*)", line)
         content = m.group(2).strip().rstrip("।.").strip() if m else None
         if content and content in filler_words:
             buffer.append(line)
@@ -279,7 +407,6 @@ def collapse_alternating_filler(transcript, filler_words=None, min_run=4):
             result.append(line)
     flush()
     return "\n".join(result)
-
 
 
 def collapse_repeated_lines(transcript, max_repeats=3):
@@ -321,8 +448,22 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     "or asking troubleshooting questions. Once established, KEEP that speaker's label consistent by voice "
     "for the entire call, even through noisy or unclear sections. "
     "If audio is unclear, silent, noisy, or overlapping and you cannot confidently tell who is speaking, "
-    "do NOT guess or alternate the speaker label — instead repeat the LAST confidently-identified speaker, "
+    "do NOT guess or alternate the speaker label —  "
+    "Never change a speaker unless there is clear conversational evidence."
+    "If one speaker asks a question and the next short reply logically answers it,keep that reply with the opposite speaker."
+    "Do not alternate speakers randomly."
+    "Keep conversation turns intact."
     "or write [MM:SS] [Unclear speaker] and skip to the next distinct segment. "
+    "ASIDE / BACKGROUND SPEECH RULE: "
+    "Sometimes a speaker (usually the Customer, who is often physically at a shop/counter) briefly talks to "
+    "someone else nearby instead of the other person on the call — e.g. asking a bystander for coins/change, "
+    "giving an unrelated instruction to staff, or a side remark unrelated to the support issue. "
+    "Signs this is happening: the sentence has no connection to the support topic (ID, password, scanning, "
+    "billing, troubleshooting), OR the audio sounds farther from the phone / muffled / echoey compared to their "
+    "normal speaking volume for this call. "
+    "If you detect this, label the line with the speaker's normal role but ADD the tag [Aside] right after the "
+    "role, like '[MM:SS] Customer [Aside]: ...'. Do NOT let an aside change who you think is the Executive or "
+    "Customer for the rest of the call — the role identity stays the same, only this one line is marked as an aside. "
     "IMPORTANT: In brackets, note the tone or volume if it changes significantly "
     "(e.g., [Loudly], [Shouting], [Silently], [Calmly]). "
     "Keep the original language (Hindi/Marathi/English) as spoken. "
@@ -346,7 +487,9 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     elapsed = time.time() - start_time
     print(f"[TIMER] Transcription (Gemini) took {elapsed:.2f} seconds")
     corrected = apply_corrections(raw_text)
+    corrected = fix_speaker_consistency(corrected)
     corrected = collapse_alternating_filler(corrected)
+    corrected = collapse_repeated_lines(corrected)
     return collapse_repeated_lines(corrected)
 
 def load_keywords(file_path="keywords.txt"):
@@ -391,6 +534,7 @@ def analyze_audio_with_gemini(audio_path):
 
                 time.sleep(2)
         transcript = get_audio_transcripts_with_gemini(client, uploaded_file)
+        #transcript = whisper_transcribe(audio_path)
         
         if not transcript:
             return "No transcript generated.", "", "No facts detected.", "No analysis available.", "Summary not generated."
@@ -485,6 +629,11 @@ Rules:
 - Customer usually reports issue and shares system ID/password.
 - Executive usually asks for system ID/password, gives troubleshooting, callback timing, and technical guidance.
 - Never reverse customer and executive actions.
+- IGNORE lines tagged [Aside] (e.g. "Customer [Aside]: ..."), and ignore any other lines that are clearly a
+  speaker talking to someone physically nearby rather than to the other person on the call (e.g. asking for
+  coins/change, giving an unrelated instruction to shop staff, side remarks unrelated to the support issue).
+  Do NOT use these lines for business_facts, greetings, closings, customer_mood, executive_tone, or keywords —
+  treat them as if they were not part of the support conversation at all.
 
 Return valid JSON only.
 
@@ -526,14 +675,6 @@ Required fields:
     - Defensive
     - Neutral
 
-    Rules:
-    - Helpful = executive calmly assists and provides troubleshooting.
-    - Helpful but Defensive = executive tries to help but becomes defensive, argumentative, or repeatedly justifies actions.
-    - Defensive = executive is rude, impatient, dismissive, or refuses help.
-    - Neutral = no clear tone can be determined.
-
-    Return EXACTLY one of these four values only.
-    Never generate any other text.
 
 7. keywords
     - Detect closest matching keyword from transcript.
@@ -1226,13 +1367,20 @@ Output JSON only.
             + long_summary
         )
         print(f"[TIMER] TOTAL analyze_audio_with_gemini took {time.time() - total_start:.2f} seconds")
+        token_info = {
+            "prompt": prompt_tokens,
+            "response": response_tokens,
+            "thinking": thinking_tokens,
+            "total": total_tokens
+        }
         return (
             transcript,
             raw_output,
             format_facts(data.get("business_facts")),
             analysis_text,
             combined_summary,
-            to_s(data.get("keywords"))
+            to_s(data.get("keywords")),
+            token_info
         )
     finally:
         if uploaded_file:
@@ -1286,4 +1434,3 @@ def save_text(text, audio_path, suffix):
 def save_summary(summary, analysis, facts, keywords, audio_path):
     with open(os.path.splitext(audio_path)[0] + "_summary.txt", "w", encoding="utf-8") as f:
         f.write("="*50 + "\nANALYSIS\n" + "="*50 + f"\n\n{analysis}\n\n" + "="*50 + "\nKEYWORDS IDENTIFIED\n" + "="*50 + f"\n\n{keywords}\n\n" + "="*50 + "\nBUSINESS FACTS\n" + "="*50 + f"\n\n{facts}\n\n" + "="*50 + "\nSUMMARY\n" + "="*50 + f"\n\n{summary}")
-

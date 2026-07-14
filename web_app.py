@@ -77,10 +77,19 @@ def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_
     buffer.seek(0)
     return buffer.read()
 
-def render_page(analysis="", keywords="", facts="", summary="", transcript="", error="", filename=""):
+def render_page(analysis="", keywords="", facts="", summary="", transcript="", error="", filename="" ,  token_info=None):
     escaped_filename = html.escape(filename)
     
     results_html = ""
+    token_html = ""
+
+    if token_info:
+      token_html = f"""
+      <div class="token-badge">
+        🪙 Gemini Tokens Used : <b>{token_info['total']}</b>
+      </div>
+      """
+      
     if any([analysis, keywords, facts, summary, transcript]):
         results_html = f"""
         <section class="panel">
@@ -124,9 +133,20 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Call Summary Tool</title>
   <style>
+    .token-badge{{
+      display:inline-block;
+      margin-bottom:18px;
+      padding:8px 14px;
+      border:1px solid #2d313d;
+      border-radius:6px;
+      background:#1a1d27;
+      color:#00ff99;
+      font-weight:bold;
+      font-size:15px;
+    }}
     :root {{
       color-scheme: dark;
-      --bg: #0f1117;
+      --bg: #0f1117;`
       --panel: #1a1d27;
       --text: #e0e0e0;
       --muted: #888888;
@@ -315,7 +335,9 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
 
     {error_html}
 
-    {results_html}
+    {token_html}
+
+    {results_html}  
 </main>
   <script>
   (function() {{
@@ -606,6 +628,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                 analysis = results[3]
                 summary = results[4]
                 keywords = results[5]
+                token_info = results[6]
 
                 # Save files as in the desktop app
                 testnew.save_transcript(transcript, str(input_path))
@@ -618,6 +641,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                     summary=summary,
                     transcript=transcript,
                     filename=filename,
+                    token_info=token_info
                 ))
             finally:
                 if converted_file and os.path.exists(converted_file) and converted_file != str(input_path):
