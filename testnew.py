@@ -7,6 +7,9 @@ import os
 import time
 import json
 import sys
+
+print("IMPORTING testnew.py")
+print("PID:", os.getpid())
 from faster_whisper import WhisperModel
 
 def load_env_file(env_path=".env"):
