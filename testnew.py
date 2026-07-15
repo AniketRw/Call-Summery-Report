@@ -282,7 +282,8 @@ def find_speech_start(wav_path):
     try:
         with wave.open(wav_path, 'rb') as w:
            framerate = w.getframerate()
-           data = w.readframes(w.getnframes())
+           max_frames = int(framerate * 15)   
+           data = w.readframes(min(w.getnframes(), max_frames))
         # with wave.open(wav_path, 'rb') as w:
         #     framerate = w.getframerate()
         #     max_frames = int(framerate * 20)   # only scan first 20 seconds
@@ -327,13 +328,20 @@ def find_speech_start(wav_path):
 def convert_audio(input_path):
     """Convert audio to 16 kHz mono WAV, trimming ring-back tone if present."""
     start_time = time.time()
-    output_path = os.path.splitext(input_path)[0] + "_16k.wav"
-
+    #output_path = os.path.splitext(input_path)[0] + "_16k.wav"
+    output_path = os.path.splitext(input_path)[0] + "_16k.ogg" 
     # Step 1: standard conversion
+    # result = subprocess.run([
+    #     "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+    #     "-i", input_path,
+    #     "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+    #     output_path
+    # ], capture_output=True, text=True)
     result = subprocess.run([
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
         "-i", input_path,
-        "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
+        "-vn", "-ac", "1", "-ar", "16000",
+        "-c:a", "libopus", "-b:a", "96k",
         output_path
     ], capture_output=True, text=True)
     if result.returncode != 0:
@@ -524,7 +532,7 @@ def analyze_audio_with_gemini(audio_path):
                 uploaded_file = client.files.upload(
                     file=audio_path,
                     config=types.UploadFileConfig(
-                        mime_type="audio/wav"
+                        mime_type="audio/ogg"
                     )
                 )
                 break
@@ -995,7 +1003,7 @@ Output JSON only.
                 temperature=0,
                 response_mime_type="application/json",
                 response_schema=response_schema,
-                max_output_tokens=8000,
+                max_output_tokens=3500,
                 thinking_config=types.ThinkingConfig(thinking_budget=0)
             )
         )
@@ -1387,9 +1395,12 @@ Output JSON only.
         )
     finally:
         if uploaded_file:
-            try: client.files.delete(name=uploaded_file.name)
-            except: pass
-
+            # try: client.files.delete(name=uploaded_file.name)
+            # except: pass
+            threading.Thread(
+                target=lambda: client.files.delete(name=uploaded_file.name),
+                daemon=True
+            ).start()
 def robust_parse(raw):
     try:
         return parse_gemini_json(raw)

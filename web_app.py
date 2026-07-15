@@ -5,6 +5,7 @@ from pathlib import Path
 import cgi
 import html
 import os
+import time 
 import re
 import traceback
 import threading
@@ -17,6 +18,14 @@ from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
 import io
+
+import subprocess
+import tempfile
+import shutil
+
+from reportlab.platypus import Table, TableStyle
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
 
 # Import the backend logic from testnew
 import testnew
@@ -33,62 +42,145 @@ def safe_filename(filename):
     filename = re.sub(r"[^A-Za-z0-9._ -]+", "_", filename).strip(" .")
     return filename or "audio"
 
-def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_summary"):
-    buffer = io.BytesIO()
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=20*mm,
-        leftMargin=20*mm,
-        topMargin=20*mm,
-        bottomMargin=20*mm,
-    )
-    PANEL = colors.HexColor("#1a1d27")
-    ACCENT = colors.HexColor("#00ff99")
-    TEXT = colors.HexColor("#1a1a1a")
-    MUTED = colors.HexColor("#444444")
-    title_style = ParagraphStyle("Title", fontName="Courier-Bold", fontSize=18, textColor=ACCENT, alignment=TA_CENTER, spaceAfter=4)
-    sub_style = ParagraphStyle("Sub", fontName="Courier", fontSize=9, textColor=MUTED, alignment=TA_CENTER, spaceAfter=12)
-    section_style = ParagraphStyle("Section", fontName="Courier-Bold", fontSize=11, textColor=ACCENT, spaceBefore=10, spaceAfter=4)
-    #body_style = ParagraphStyle("Body", fontName="Courier", fontSize=9, textColor=TEXT, spaceAfter=4, leading=14)
-    body_style = ParagraphStyle("Body", fontName="Courier-Bold", fontSize=9, textColor=TEXT, spaceAfter=4, leading=14)
-    keywords_style = ParagraphStyle("Keywords", fontName="Courier-Bold", fontSize=10, textColor=ACCENT, spaceAfter=4, leading=14)
-    disclaimer_style = ParagraphStyle("Disclaimer", fontName="Courier", fontSize=8, textColor=MUTED, alignment=TA_CENTER, spaceAfter=10)
-    story = []
-    story.append(Paragraph("Call Summary Report", title_style))
-    story.append(Paragraph(f"File: {html.escape(filename)}", sub_style))
-    story.append(Paragraph("AI-generated summary. Please verify before use.", disclaimer_style))
-    story.append(HRFlowable(width="100%", thickness=1, color=MUTED))
-    story.append(Spacer(1, 6))
-    def add_section(title, content, style=body_style):
-        story.append(Paragraph(title, section_style))
-        story.append(HRFlowable(width="100%", thickness=0.5, color=PANEL))
-        story.append(Spacer(1, 3))
-        for line in content.split("\n"):
-            if line.strip():
-                story.append(Paragraph(html.escape(line), style))
-        story.append(Spacer(1, 8))
-    add_section("ANALYSIS", analysis)
-    add_section("KEYWORDS IDENTIFIED", keywords, style=keywords_style)
-    add_section("CALL DETAILS", facts)
-    add_section("SUMMARY", summary)
-    add_section("TRANSCRIPT", transcript)
-    doc.build(story)
-    buffer.seek(0)
-    return buffer.read()
+def _find_browser():
+    candidates = [
+        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    found = shutil.which("msedge") or shutil.which("chrome")
+    return found
 
-def render_page(analysis="", keywords="", facts="", summary="", transcript="", error="", filename="" ,  token_info=None):
+def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_summary"):
+    browser_path = _find_browser()
+    if not browser_path:
+        raise RuntimeError(
+            "Microsoft Edge or Chrome not found on this system. "
+            "PDF export needs one of them installed."
+        )
+
+    def esc(t):
+        return html.escape(t or "").replace("\n", "<br>")
+
+    html_doc = f"""<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<style>
+  body {{ font-family: 'Nirmala UI', 'Noto Sans Devanagari', sans-serif; color:#1a1a1a; margin:0; }}
+  .header {{ background:#0f1117; color:#fff; padding:20px 24px; }}
+  .header h1 {{ margin:0; font-size:22px; }}
+  .header p {{ margin:4px 0 0; font-size:12px; color:#c7ffe8; }}
+  .disclaimer {{ text-align:center; font-size:11px; color:#666; padding:10px 24px; }}
+  .section-title {{ background:#0f9d68; color:#fff; padding:8px 14px; font-size:14px; font-weight:bold; margin-top:14px; }}
+  .section-body {{ border:1px solid #dcdcdc; padding:10px 14px; font-size:12px; line-height:1.7; white-space:pre-wrap; }}
+  .keywords {{ color:#0b7a4f; font-weight:bold; }}
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>📞 Call Summary Report</h1>
+    <p>File: {esc(filename)}</p>
+  </div>
+  <p class="disclaimer">⚠ This summary is AI-generated. Please verify critical business information before use.</p>
+
+  <div class="section-title">ANALYSIS</div>
+  <div class="section-body">{esc(analysis)}</div>
+
+  <div class="section-title">KEYWORDS IDENTIFIED</div>
+  <div class="section-body keywords">{esc(keywords)}</div>
+
+  <div class="section-title">CALL DETAILS</div>
+  <div class="section-body">{esc(facts)}</div>
+
+  <div class="section-title">SUMMARY</div>
+  <div class="section-body">{esc(summary)}</div>
+
+  <div class="section-title">TRANSCRIPT</div>
+  <div class="section-body">{esc(transcript)}</div>
+</body>
+</html>"""
+
+    tmp_dir = tempfile.mkdtemp(prefix="callsummary_pdf_")
+    html_path = os.path.join(tmp_dir, "report.html")
+    pdf_path = os.path.join(tmp_dir, "report.pdf")
+    with open(html_path, "w", encoding="utf-8") as f:
+        f.write(html_doc)
+
+    from urllib.parse import quote
+
+    file_url = "file:///" + quote(html_path.replace(os.sep, "/"), safe="/:")
+
+    try:
+        result = subprocess.run([
+            browser_path,
+            "--headless=new",
+            "--disable-gpu",
+            "--no-sandbox",
+            "--no-first-run",
+            "--disable-extensions",
+            "--disable-background-networking",
+            "--run-all-compositor-stages-before-draw",
+            "--virtual-time-budget=15000",
+            f"--user-data-dir={tmp_dir}",
+            f"--print-to-pdf={pdf_path}",
+            "--print-to-pdf-no-header",
+            "--no-margins",
+            file_url
+        ], capture_output=True, text=True, timeout=60)
+
+        # Give the filesystem a moment in case of AV-scan delay
+        for _ in range(10):
+            if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
+                break
+            time.sleep(0.3)
+
+        if not os.path.exists(pdf_path) or os.path.getsize(pdf_path) == 0:
+            raise RuntimeError(
+                f"PDF export failed (browser={browser_path}, exit_code={result.returncode}). "
+                f"stdout={result.stdout[:300]!r} stderr={result.stderr[:300]!r}"
+            )
+
+        with open(pdf_path, "rb") as f:
+            return f.read()
+    finally:
+        shutil.rmtree(tmp_dir, ignore_errors=True)
+def format_duration(seconds):
+    try:
+        seconds = float(seconds)
+    except (TypeError, ValueError):
+        return "N/A"
+    if seconds < 0:
+        return "N/A"
+    minutes = int(seconds // 60)
+    secs = seconds - minutes * 60
+    if minutes > 0:
+        return f"{minutes}m {secs:04.1f}s"
+    return f"{secs:.1f}s"
+
+def render_page(analysis="", keywords="", facts="", summary="", transcript="", error="", filename="" ,  token_info=None,elapsed_time=None):
     escaped_filename = html.escape(filename)
     
     results_html = ""
     token_html = ""
-
+    timing_html = ""
     if token_info:
       token_html = f"""
       <div class="token-badge">
         🪙 Gemini Tokens Used : <b>{token_info['total']}</b>
       </div>
       """
+      timing_html = ""
+      if elapsed_time is not None:
+        timing_html = f"""
+        <div class="token-badge timing-badge">
+          ⏱ Processing Time : <b>{html.escape(format_duration(elapsed_time))}</b>
+        </div>
+        """
       
     if any([analysis, keywords, facts, summary, transcript]):
         results_html = f"""
@@ -143,6 +235,7 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
       color:#00ff99;
       font-weight:bold;
       font-size:15px;
+      .timing-badge{{color:#ffcc00; }}
     }}
     :root {{
       color-scheme: dark;
@@ -336,6 +429,8 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
     {error_html}
 
     {token_html}
+
+    {timing_html}
 
     {results_html}  
 </main>
@@ -588,6 +683,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             self.respond_html(render_keywords_page(error=str(e)), status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     def handle_summarize(self):
+        request_start = time.time()
         try:
             content_type = self.headers.get("Content-Type", "")
             if "multipart/form-data" not in content_type:
@@ -633,6 +729,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                 # Save files as in the desktop app
                 testnew.save_transcript(transcript, str(input_path))
                 testnew.save_summary(summary, analysis, facts, keywords, str(input_path))
+                elapsed_time = time.time() - request_start
                 
                 self.respond_html(render_page(
                     analysis=analysis,
@@ -641,7 +738,8 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                     summary=summary,
                     transcript=transcript,
                     filename=filename,
-                    token_info=token_info
+                    token_info=token_info,
+                    elapsed_time=elapsed_time 
                 ))
             finally:
                 if converted_file and os.path.exists(converted_file) and converted_file != str(input_path):
@@ -650,8 +748,9 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
         except Exception as e:
             details = str(e)
             print(traceback.format_exc())
+            elapsed_time = time.time() - request_start
             self.respond_html(render_page(error=details), status=HTTPStatus.INTERNAL_SERVER_ERROR)
-    def handle_export_pdf(self):        # ← इथे add करा
+    def handle_export_pdf(self):       
         try:
             length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(length).decode('utf-8')
