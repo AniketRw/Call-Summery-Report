@@ -57,11 +57,10 @@ def _find_browser():
 
 def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_summary"):
     browser_path = _find_browser()
+
     if not browser_path:
-        raise RuntimeError(
-            "Microsoft Edge or Chrome not found on this system. "
-            "PDF export needs one of them installed."
-        )
+      print("⚠ Browser not found. PDF export disabled.")
+      return None
 
     def esc(t):
         return html.escape(t or "").replace("\n", "<br>")
@@ -765,6 +764,12 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
 
             pdf_bytes = generate_pdf(analysis, keywords, facts, summary, transcript, filename)
 
+            if pdf_bytes is None:
+              self.send_error(
+                HTTPStatus.INTERNAL_SERVER_ERROR,
+                "PDF export is unavailable because Chrome/Edge is not installed."
+              )
+              return
             pdf_filename = Path(filename).stem + "_summary.pdf"
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", "application/pdf")
