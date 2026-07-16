@@ -11,22 +11,13 @@ import traceback
 import threading
 import socket
 from urllib.parse import parse_qs
-from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.units import mm
-from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Preformatted
-from reportlab.lib.enums import TA_LEFT, TA_CENTER
-from reportlab.platypus import Preformatted
+from weasyprint import HTML
 import io
 
 import subprocess
 import tempfile
 import shutil
 
-from reportlab.platypus import Table, TableStyle
-from reportlab.pdfbase import pdfmetrics
-from reportlab.pdfbase.ttfonts import TTFont
 
 # Import the backend logic from testnew
 import testnew
@@ -43,106 +34,118 @@ def safe_filename(filename):
     filename = re.sub(r"[^A-Za-z0-9._ -]+", "_", filename).strip(" .")
     return filename or "audio"
 
-def register_fonts():
-    font_path = BASE_DIR / "fonts" / "NotoSansDevanagari.ttf"
+# Replace the reportlab imports at the top of web_app.py with:
+#
+# from weasyprint import HTML
+#
+# (Remove these old reportlab imports:)
+#   from reportlab.lib.pagesizes import A4
+#   from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+#   from reportlab.lib.units import mm
+#   from reportlab.lib import colors
+#   from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Preformatted
+#   from reportlab.lib.enums import TA_LEFT, TA_CENTER
+#   from reportlab.platypus import Table, TableStyle
+#   from reportlab.pdfbase import pdfmetrics
+#   from reportlab.pdfbase.ttfonts import TTFont
+#
+# Then replace register_fonts() and generate_pdf() with the code below.
 
-    if font_path.exists():
-        pdfmetrics.registerFont(
-            TTFont("Devanagari", str(font_path))
-        )
-        print("Loaded font:", font_path)
-        return "Devanagari"
+def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_summary"):
+    font_path = (BASE_DIR / "fonts" / "NotoSansDevanagari.ttf").as_uri()
 
-    print("Font not found:", font_path)
-    return "Helvetica"
+    def esc(t):
+        return html.escape(t or "").replace("\n", "<br>")
 
+    html_doc = f"""<!doctype html>
+<html lang="mr">
+<head>
+<meta charset="utf-8">
+<style>
+  @font-face {{
+    font-family: 'Devanagari';
+    src: url('{font_path}');
+  }}
+  body {{
+    font-family: 'Devanagari', 'Noto Sans Devanagari', sans-serif;
+    color: #1a1a1a;
+    margin: 0;
+    font-size: 12px;
+    line-height: 1.7;
+  }}
+  .header {{
+    background: #0f1117;
+    color: #fff;
+    padding: 20px 24px;
+  }}
+  .header h1 {{
+    margin: 0;
+    font-size: 22px;
+  }}
+  .header p {{
+    margin: 4px 0 0;
+    font-size: 12px;
+    color: #c7ffe8;
+  }}
+  .disclaimer {{
+    text-align: center;
+    font-size: 11px;
+    color: #666;
+    padding: 10px 24px;
+  }}
+  .section-title {{
+    background: #0f9d68;
+    color: #fff;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-top: 14px;
+  }}
+  .section-body {{
+    border: 1px solid #dcdcdc;
+    padding: 10px 14px;
+    font-size: 12px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }}
+  .keywords {{
+    color: #0b7a4f;
+    font-weight: bold;
+  }}
+  @page {{
+    size: A4;
+    margin: 15mm;
+  }}
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>Call Summary Report</h1>
+    <p>File: {esc(filename)}</p>
+  </div>
+  <p class="disclaimer">This summary is AI-generated. Please verify critical business information before use.</p>
 
-def generate_pdf(
-    analysis,
-    keywords,
-    facts,
-    summary,
-    transcript,
-    filename="call_summary"
-):
-    font_name = register_fonts()
-    buffer = io.BytesIO()
+  <div class="section-title">ANALYSIS</div>
+  <div class="section-body">{esc(analysis)}</div>
 
-    doc = SimpleDocTemplate(
-        buffer,
-        pagesize=A4,
-        rightMargin=20,
-        leftMargin=20,
-        topMargin=20,
-        bottomMargin=20,
-    )
+  <div class="section-title">KEYWORDS IDENTIFIED</div>
+  <div class="section-body keywords">{esc(keywords)}</div>
 
-    styles = getSampleStyleSheet()
+  <div class="section-title">CALL DETAILS</div>
+  <div class="section-body">{esc(facts)}</div>
 
-    title_style = ParagraphStyle(
-      "Title",
-      parent=styles["Heading1"],
-      fontName=font_name,
-      alignment=TA_CENTER,
-      textColor=colors.darkblue,
-      fontSize=20,
-      spaceAfter=15,
-    )
+  <div class="section-title">SUMMARY</div>
+  <div class="section-body">{esc(summary)}</div>
 
-    heading_style = ParagraphStyle(
-      "Heading",
-      parent=styles["Heading2"],
-      fontName=font_name,
-      textColor=colors.white,
-      backColor=colors.darkgreen,
-      spaceBefore=10,
-      spaceAfter=6,
-      leftIndent=5,
-    )
+  <div class="section-title">TRANSCRIPT</div>
+  <div class="section-body">{esc(transcript)}</div>
+</body>
+</html>"""
 
-    body_style = ParagraphStyle(
-      "Body",
-      parent=styles["BodyText"],
-      fontName=font_name,
-      fontSize=10,
-      leading=16,
-      spaceAfter=12,
-    )
+    pdf_bytes = HTML(string=html_doc, base_url=str(BASE_DIR)).write_pdf()
+    return pdf_bytes
 
-    story = []
-
-    story.append(Paragraph("📞 Call Summary Report", title_style))
-    story.append(
-        Paragraph(f"<b>File:</b> {html.escape(filename)}", body_style)
-    )
-    story.append(Spacer(1, 12))
-
-    sections = [
-        ("ANALYSIS", analysis),
-        ("KEYWORDS IDENTIFIED", keywords),
-        ("CALL DETAILS", facts),
-        ("SUMMARY", summary),
-        ("TRANSCRIPT", transcript),
-    ]
-
-    for heading, content in sections:
-      story.append(Paragraph(heading, heading_style))
-
-      if heading == "TRANSCRIPT":
-        story.append(Preformatted(content or "", body_style))
-      else:
-        text = html.escape(content or "")
-        text = text.replace("\n", "<br/>")
-        story.append(Paragraph(text, body_style))
-
-      story.append(Spacer(1, 10))
-
-    doc.build(story)
-
-    pdf = buffer.getvalue()
-    buffer.close()
-
-    return pdf
 def format_duration(seconds):
     try:
         seconds = float(seconds)
@@ -760,12 +763,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
 
             pdf_bytes = generate_pdf(analysis, keywords, facts, summary, transcript, filename)
 
-            if pdf_bytes is None:
-              self.send_error(
-                HTTPStatus.INTERNAL_SERVER_ERROR,
-                "PDF export is unavailable because Chrome/Edge is not installed."
-              )
-              return
+            
             pdf_filename = Path(filename).stem + "_summary.pdf"
             self.send_response(HTTPStatus.OK)
             self.send_header("Content-Type", "application/pdf")
