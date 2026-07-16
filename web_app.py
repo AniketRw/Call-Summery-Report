@@ -15,8 +15,9 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import mm
 from reportlab.lib import colors
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Preformatted
 from reportlab.lib.enums import TA_LEFT, TA_CENTER
+from reportlab.platypus import Preformatted
 import io
 
 import subprocess
@@ -42,112 +43,106 @@ def safe_filename(filename):
     filename = re.sub(r"[^A-Za-z0-9._ -]+", "_", filename).strip(" .")
     return filename or "audio"
 
-def _find_browser():
-    candidates = [
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+def register_fonts():
+    font_path = BASE_DIR / "fonts" / "NotoSansDevanagari.ttf"
+
+    if font_path.exists():
+        pdfmetrics.registerFont(
+            TTFont("Devanagari", str(font_path))
+        )
+        print("Loaded font:", font_path)
+        return "Devanagari"
+
+    print("Font not found:", font_path)
+    return "Helvetica"
+
+
+def generate_pdf(
+    analysis,
+    keywords,
+    facts,
+    summary,
+    transcript,
+    filename="call_summary"
+):
+    font_name = register_fonts()
+    buffer = io.BytesIO()
+
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20,
+        leftMargin=20,
+        topMargin=20,
+        bottomMargin=20,
+    )
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+      "Title",
+      parent=styles["Heading1"],
+      fontName=font_name,
+      alignment=TA_CENTER,
+      textColor=colors.darkblue,
+      fontSize=20,
+      spaceAfter=15,
+    )
+
+    heading_style = ParagraphStyle(
+      "Heading",
+      parent=styles["Heading2"],
+      fontName=font_name,
+      textColor=colors.white,
+      backColor=colors.darkgreen,
+      spaceBefore=10,
+      spaceAfter=6,
+      leftIndent=5,
+    )
+
+    body_style = ParagraphStyle(
+      "Body",
+      parent=styles["BodyText"],
+      fontName=font_name,
+      fontSize=10,
+      leading=16,
+      spaceAfter=12,
+    )
+
+    story = []
+
+    story.append(Paragraph("📞 Call Summary Report", title_style))
+    story.append(
+        Paragraph(f"<b>File:</b> {html.escape(filename)}", body_style)
+    )
+    story.append(Spacer(1, 12))
+
+    sections = [
+        ("ANALYSIS", analysis),
+        ("KEYWORDS IDENTIFIED", keywords),
+        ("CALL DETAILS", facts),
+        ("SUMMARY", summary),
+        ("TRANSCRIPT", transcript),
     ]
-    for c in candidates:
-        if os.path.exists(c):
-            return c
-    found = shutil.which("msedge") or shutil.which("chrome")
-    return found
 
-def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_summary"):
-    browser_path = _find_browser()
+    for heading, content in sections:
+      story.append(Paragraph(heading, heading_style))
 
-    if not browser_path:
-      print("⚠ Browser not found. PDF export disabled.")
-      return None
+      if heading == "TRANSCRIPT":
+        story.append(Preformatted(content or "", body_style))
+      else:
+        text = html.escape(content or "")
+        text = text.replace("\n", "<br/>")
+        story.append(Paragraph(text, body_style))
 
-    def esc(t):
-        return html.escape(t or "").replace("\n", "<br>")
+      story.append(Spacer(1, 10))
 
-    html_doc = f"""<!doctype html>
-<html lang="mr">
-<head>
-<meta charset="utf-8">
-<style>
-  body {{ font-family: 'Nirmala UI', 'Noto Sans Devanagari', sans-serif; color:#1a1a1a; margin:0; }}
-  .header {{ background:#0f1117; color:#fff; padding:20px 24px; }}
-  .header h1 {{ margin:0; font-size:22px; }}
-  .header p {{ margin:4px 0 0; font-size:12px; color:#c7ffe8; }}
-  .disclaimer {{ text-align:center; font-size:11px; color:#666; padding:10px 24px; }}
-  .section-title {{ background:#0f9d68; color:#fff; padding:8px 14px; font-size:14px; font-weight:bold; margin-top:14px; }}
-  .section-body {{ border:1px solid #dcdcdc; padding:10px 14px; font-size:12px; line-height:1.7; white-space:pre-wrap; }}
-  .keywords {{ color:#0b7a4f; font-weight:bold; }}
-</style>
-</head>
-<body>
-  <div class="header">
-    <h1>📞 Call Summary Report</h1>
-    <p>File: {esc(filename)}</p>
-  </div>
-  <p class="disclaimer">⚠ This summary is AI-generated. Please verify critical business information before use.</p>
+    doc.build(story)
 
-  <div class="section-title">ANALYSIS</div>
-  <div class="section-body">{esc(analysis)}</div>
+    pdf = buffer.getvalue()
+    buffer.close()
 
-  <div class="section-title">KEYWORDS IDENTIFIED</div>
-  <div class="section-body keywords">{esc(keywords)}</div>
-
-  <div class="section-title">CALL DETAILS</div>
-  <div class="section-body">{esc(facts)}</div>
-
-  <div class="section-title">SUMMARY</div>
-  <div class="section-body">{esc(summary)}</div>
-
-  <div class="section-title">TRANSCRIPT</div>
-  <div class="section-body">{esc(transcript)}</div>
-</body>
-</html>"""
-
-    tmp_dir = tempfile.mkdtemp(prefix="callsummary_pdf_")
-    html_path = os.path.join(tmp_dir, "report.html")
-    pdf_path = os.path.join(tmp_dir, "report.pdf")
-    with open(html_path, "w", encoding="utf-8") as f:
-        f.write(html_doc)
-
-    from urllib.parse import quote
-
-    file_url = "file:///" + quote(html_path.replace(os.sep, "/"), safe="/:")
-
-    try:
-        result = subprocess.run([
-            browser_path,
-            "--headless=new",
-            "--disable-gpu",
-            "--no-sandbox",
-            "--no-first-run",
-            "--disable-extensions",
-            "--disable-background-networking",
-            "--run-all-compositor-stages-before-draw",
-            "--virtual-time-budget=15000",
-            f"--user-data-dir={tmp_dir}",
-            f"--print-to-pdf={pdf_path}",
-            "--print-to-pdf-no-header",
-            "--no-margins",
-            file_url
-        ], capture_output=True, text=True, timeout=60)
-
-        # Give the filesystem a moment in case of AV-scan delay
-        for _ in range(10):
-            if os.path.exists(pdf_path) and os.path.getsize(pdf_path) > 0:
-                break
-            time.sleep(0.3)
-
-        if not os.path.exists(pdf_path) or os.path.getsize(pdf_path) == 0:
-            raise RuntimeError(
-                f"PDF export failed (browser={browser_path}, exit_code={result.returncode}). "
-                f"stdout={result.stdout[:300]!r} stderr={result.stderr[:300]!r}"
-            )
-
-        with open(pdf_path, "rb") as f:
-            return f.read()
-    finally:
-        shutil.rmtree(tmp_dir, ignore_errors=True)
+    return pdf
 def format_duration(seconds):
     try:
         seconds = float(seconds)
@@ -702,6 +697,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
 
             filename = safe_filename(upload.filename)
             input_path = UPLOAD_DIR / filename
+            os.makedirs(os.path.dirname(input_path), exist_ok=True)
             with open(input_path, "wb") as f:
                 while True:
                     chunk = upload.file.read(1024 * 1024)
