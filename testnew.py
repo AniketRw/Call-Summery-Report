@@ -70,6 +70,19 @@ TRANSCRIPT_CORRECTIONS = {
 
 #     return "\n".join(lines)
 
+def clean_degenerate_output(raw_text, min_run=25):
+    """
+    Detects when Gemini gets stuck in a repetition loop (long runs of the 
+    same character, e.g. '000000...') and truncates the transcript there,
+    since anything after a loop starts is garbage anyway.
+    """
+    match = re.search(r'(.)\1{' + str(min_run - 1) + r',}', raw_text, re.DOTALL)
+    if match:
+        raw_text = raw_text[:match.start()].rstrip()
+        raw_text += "\n[... transcription degraded due to unclear/noisy audio, remainder discarded ...]"
+    return raw_text
+
+
 def apply_corrections(text):
     for wrong, right in TRANSCRIPT_CORRECTIONS.items():
         text = re.sub(re.escape(wrong), right, text, flags=re.IGNORECASE)
@@ -447,7 +460,6 @@ def collapse_repeated_lines(transcript, max_repeats=3):
 
     return "\n".join(result)
 
-
 def get_audio_transcripts_with_gemini(client, uploaded_file):
     start_time = time.time()
     prompt = (
@@ -484,17 +496,32 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     "Instead write a single line like [MM:SS] [Hold music / silence] and move to "
     "the next distinct speech segment."
 )
-    
-    response = safe_generate(
-        client,
-        model=TRANSCRIPT_MODEL,
-        contents=[uploaded_file, prompt],
-        config=types.GenerateContentConfig(
-            temperature=0,
-            max_output_tokens=6000
+
+    max_attempts = 3
+    raw_text = ""
+    for attempt in range(max_attempts):
+        temp = 0 if attempt == 0 else 0.2 + (0.15 * (attempt - 1))  # 0 → 0.2 → 0.35
+        response = safe_generate(
+            client,
+            model=TRANSCRIPT_MODEL,
+            contents=[uploaded_file, prompt],
+            config=types.GenerateContentConfig(
+                temperature=temp,
+                max_output_tokens=6000
+            )
         )
-    )
-    raw_text = (response.text or "").strip()
+        candidate_text = (response.text or "").strip()
+        is_degenerate = bool(re.search(r'(.)\1{24,}', candidate_text, re.DOTALL))
+
+        if not is_degenerate:
+            raw_text = candidate_text
+            print(f"[Degeneration check] Clean output on attempt {attempt+1} (temp={temp})")
+            break
+        else:
+            print(f"[Degeneration check] Attempt {attempt+1} (temp={temp}) hit a repetition loop, retrying...")
+            raw_text = candidate_text  # keep last attempt in case all fail
+
+    raw_text = clean_degenerate_output(raw_text)  # safety net if all retries still degenerate
     elapsed = time.time() - start_time
     print(f"[TIMER] Transcription (Gemini) took {elapsed:.2f} seconds")
     corrected = apply_corrections(raw_text)
@@ -502,6 +529,7 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     corrected = collapse_alternating_filler(corrected)
     corrected = collapse_repeated_lines(corrected)
     return collapse_repeated_lines(corrected)
+
 
 def load_keywords(file_path="keywords.txt"):
     if not os.path.exists(file_path):
