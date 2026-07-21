@@ -1,6 +1,7 @@
 from google import genai
 from google.genai import types
 tk = None
+import re
 import threading
 import subprocess
 import os
@@ -70,18 +71,24 @@ TRANSCRIPT_CORRECTIONS = {
 
 #     return "\n".join(lines)
 
-def clean_degenerate_output(raw_text, min_run=25):
-    """
-    Detects when Gemini gets stuck in a repetition loop (long runs of the 
-    same character, e.g. '000000...') and truncates the transcript there,
-    since anything after a loop starts is garbage anyway.
-    """
-    match = re.search(r'(.)\1{' + str(min_run - 1) + r',}', raw_text, re.DOTALL)
+def is_degenerate_text(text, min_char_run=25, min_word_repeats=35):
+    if not text:
+        return False
+    if re.search(r'(.)\1{' + str(min_char_run - 1) + r',}', text, re.DOTALL):
+        return True
+    if re.search(r'(\S+)(?:\s+\1){' + str(min_word_repeats - 1) + r',}', text):
+        return True
+    return False
+
+
+def clean_degenerate_output(raw_text, min_char_run=25, min_word_repeats=35):
+    match = re.search(r'(.)\1{' + str(min_char_run - 1) + r',}', raw_text, re.DOTALL)
+    if not match:
+        match = re.search(r'(\S+)(?:\s+\1){' + str(min_word_repeats - 1) + r',}', raw_text)
     if match:
         raw_text = raw_text[:match.start()].rstrip()
         raw_text += "\n[... transcription degraded due to unclear/noisy audio, remainder discarded ...]"
     return raw_text
-
 
 def apply_corrections(text):
     for wrong, right in TRANSCRIPT_CORRECTIONS.items():
@@ -97,7 +104,7 @@ def apply_corrections(text):
 
 # Standard name -> all spelling/script variants that might appear in transcript
 KNOWN_EXECUTIVE_NAMES = {
-    "Ajit": ["ajit", "ajeet", "अजीत", "अजित"],
+    "Ajit Sir": ["ajit", "ajeet", "अजीत", "अजित"],
     "Rahul": ["rahul", "राहुल"],
     "Sandeep": ["sandeep", "sandip", "संदीप"],
     "Vidya": ["vidya", "विद्या"],
@@ -465,9 +472,14 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     prompt = (
     "Transcribe this support call exactly. Add [MM:SS] timestamps. "
     "Identify speakers as 'Executive' and 'Customer'. "
+    "The Executive usually opens the call with a self-introduction naming "
+    "the company 'Retailware' (may sound like 'रिटेलवेअर', 'रिटेल वेअर', 'रिटेल वाला', "
+    "or similar phonetic variants) — do NOT transcribe this as unrelated words like "
+    "'children' (चिल्ड्रन) or any other common word. If unclear, prefer 'Retailware'. "
+
     "SPEAKER IDENTITY RULES: "
     "The Executive is the support/helpdesk agent. Establish who is who EARLY using clues like: "
-    "company/product name self-introduction (e.g. 'रिटेल वाला बोलतोय'), being addressed respectfully by name/title, "
+    "company/product name self-introduction (e.g. 'रिटेलWARE  बोलतोय'), being addressed respectfully by name/title, "
     "or asking troubleshooting questions. Once established, KEEP that speaker's label consistent by voice "
     "for the entire call, even through noisy or unclear sections. "
     "If audio is unclear, silent, noisy, or overlapping and you cannot confidently tell who is speaking, "
@@ -510,12 +522,48 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
                 max_output_tokens=6000
             )
         )
+        # candidate_text = (response.text or "").strip()
+        # #is_degenerate = bool(re.search(r'(.)\1{24,}', candidate_text, re.DOTALL))
+        # is_degenerate = is_degenerate_text(candidate_text)
+        # if not is_degenerate:
+        #     raw_text = candidate_text
+        #     print(f"[Degeneration check] Clean output on attempt {attempt+1} (temp={temp})")
+        #     break
         candidate_text = (response.text or "").strip()
-        is_degenerate = bool(re.search(r'(.)\1{24,}', candidate_text, re.DOTALL))
+        try:
+            finish_reason = response.candidates[0].finish_reason
+        except Exception:
+            finish_reason = None
+        print(f"[Transcription] finish_reason={finish_reason}")
 
+        is_degenerate = is_degenerate_text(candidate_text)
         if not is_degenerate:
             raw_text = candidate_text
             print(f"[Degeneration check] Clean output on attempt {attempt+1} (temp={temp})")
+
+            # Agar output token-limit mule truncate zala, continuation mागव
+            if str(finish_reason) in ("MAX_TOKENS", "FinishReason.MAX_TOKENS"):
+                print("[Continuation] Truncated output detected, requesting continuation...")
+                cont_prompt = (
+                    "Continue the transcription EXACTLY from where it stopped. "
+                    "Do not repeat any earlier lines. Continue using the same "
+                    "[MM:SS] timestamp format and speaker/aside rules as before.\n\n"
+                    "Transcript so far (last part, for reference only, do not repeat):\n"
+                    + raw_text[-800:]
+                )
+                cont_response = safe_generate(
+                    client,
+                    model=TRANSCRIPT_MODEL,
+                    contents=[uploaded_file, prompt, cont_prompt],
+                    config=types.GenerateContentConfig(
+                        temperature=temp,
+                        max_output_tokens=10000
+                    )
+                )
+                cont_text = (cont_response.text or "").strip()
+                if cont_text and not is_degenerate_text(cont_text):
+                    raw_text = raw_text + "\n" + cont_text
+                    print("[Continuation] Appended continued transcript.")
             break
         else:
             print(f"[Degeneration check] Attempt {attempt+1} (temp={temp}) hit a repetition loop, retrying...")
@@ -1096,9 +1144,7 @@ Output JSON only.
             "still not",
             "not working",
             "complaint number",
-            "again and again",
-            "problem",
-            "issue"
+            "again and again"
         ]):
             if mood == "Neutral":
                 data["customer_mood"] = "Frustrated"
