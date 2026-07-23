@@ -288,18 +288,22 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
     }}
     header {{
       text-align: center;
-      margin-bottom: 30px;
-      padding: 40px 32px 32px;
+      margin-bottom: 16px;
+      padding: 16px 24px;
       background: var(--panel);
-      border-radius: 20px;
+      border-radius: 14px;
       box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 8px 24px rgba(15,23,42,0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
     }}
     .hero-badges {{
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin-top: 20px;
-      flex-wrap: wrap;
+      display: none;
+    }}
+    .sub {{
+      display: none;
     }}
     .badge {{
       background: #eef2fb;
@@ -373,6 +377,14 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
     .dropzone:hover, .dropzone.dragover {{
       border-color: var(--accent);
       background: #eef2fb;
+    }}
+    .dropzone.has-file {{
+      border-style: solid;
+      border-color: #16a34a;
+      background: #f0fdf4;
+    }}
+    .dropzone.has-file .dz-title {{
+      color: #15803d;
     }}
     .dropzone .dz-icon {{
       font-size: 22px;
@@ -612,15 +624,9 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
 <body>
   <main>
     <header>
-      <img src="/logo.png" alt="Retailware Softech" style="max-width:220px; height:auto; margin-bottom:16px;">
+      <img src="/logo.png" alt="Retailware Softech" style="max-width:120px; height:auto;">
       <h1><span class="phone-icon">📞</span> Call Summary Tool</h1>
-      <p class="sub">Analyze customer support calls in your browser.</p>
-      <div class="hero-badges">
-        <span class="badge">⚡ Instant Analysis</span>
-        <span class="badge">🌐 Multi-language</span>
-        <span class="badge">🤖 AI-Powered</span>
-      </div>
-      <a href="/keywords" class="btn btn-secondary">Manage Keywords</a>
+      <a href="/keywords" class="btn btn-secondary" style="margin-top:0; padding:0 16px; min-height:32px; font-size:13px;">Manage Keywords</a>
     </header>
 
     <section class="panel">
@@ -631,9 +637,18 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
             <span class="dz-title" id="dzTitle">Choose an audio file or drag it here</span>
             <span class="dz-sub">WAV, MP3, M4A, OGG, FLAC, MP4</span>
           </span>
-          <input type="file" name="audio" id="audioInput" accept=".wav,.mp3,.m4a,.ogg,.flac,.mp4" required>
+          <input type="file" name="audio" id="audioInput" accept=".wav,.mp3,.m4a,.ogg,.flac,.mp4">
         </label>
         <button id="submitBtn" type="submit">Generate Summary</button>
+      </form>
+
+      <div style="text-align:center; color:var(--muted); font-size:13px; margin:16px 0;">— OR —</div>
+
+      <form id="urlForm" method="post" action="/summarize" style="display:grid; grid-template-columns:1fr auto; gap:12px;">
+        <input type="text" name="audio_url" id="audioUrlInput"
+               placeholder="Paste audio file URL / path (e.g. http://192.168.x.x:6751/callrecord/...wav)"
+               style="padding:0 16px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; min-height:45px;">
+        <button id="urlSubmitBtn" type="submit">Generate Summary</button>
       </form>
     </section>
 
@@ -669,9 +684,15 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
     const audioInput = document.getElementById("audioInput");
     const dzTitle = document.getElementById("dzTitle");
 
+    const dzIcon = dropzone.querySelector(".dz-icon");
+    const dzSub = dropzone.querySelector(".dz-sub");
+
     audioInput.addEventListener("change", () => {{
       if (audioInput.files.length > 0) {{
-        dzTitle.textContent = audioInput.files[0].name;
+        dzTitle.textContent = "✅ " + audioInput.files[0].name;
+        dzSub.textContent = "File selected — click Generate Summary";
+        dzIcon.textContent = "🎵";
+        dropzone.classList.add("has-file");
       }}
     }});
 
@@ -689,17 +710,18 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
       const file = e.dataTransfer.files[0];
       if (file) {{
         audioInput.files = e.dataTransfer.files;
-        dzTitle.textContent = file.name;
+        dzTitle.textContent = "✅ " + file.name;
+        dzSub.textContent = "File selected — click Generate Summary";
+        dzIcon.textContent = "🎵";
+        dropzone.classList.add("has-file");
       }}
     }});
   }})();
 
-  (function() {{
-    const form = document.getElementById("summaryForm");
+  function wireForm(form, button) {{
     const panel = document.getElementById("progressPanel");
     const text = document.getElementById("progressText");
     const bar = document.getElementById("progressBar");
-    const button = document.getElementById("submitBtn");
 
     const steps = [
       "🎙 Uploading audio...",
@@ -717,7 +739,6 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
       dropzone.style.pointerEvents = "none";
       dropzone.style.opacity = "0.6";
 
-      // Hide stale results from the previous file while new one processes
       const oldResults = document.getElementById("resultsPanel");
       const oldTokenBadge = document.getElementById("tokenBadge");
       const oldTimingBadge = document.getElementById("timingBadge");
@@ -732,7 +753,6 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
       bar.style.width = "5%";
       percentEl.textContent = "5%";
 
-      // Smooth continuous fill up to 90%, cycling through step labels
       const tick = setInterval(() => {{
         if (progress < 90) {{
           progress += 2;
@@ -785,7 +805,10 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
 
       xhr.send(formData);
     }});
-  }})();
+  }}
+
+  wireForm(document.getElementById("summaryForm"), document.getElementById("submitBtn"));
+  wireForm(document.getElementById("urlForm"), document.getElementById("urlSubmitBtn"));
   </script>
 </body>
 </html>"""
@@ -834,7 +857,7 @@ def render_keywords_page(error=""):
     }}
     h1 {{
       margin: 0;
-      font-size: 26px;
+      font-size: 20px;
       font-weight: 800;
       color: var(--accent);
       letter-spacing: -0.5px;
@@ -1066,34 +1089,69 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             print(f"DEBUG: Error in handle_save_keywords: {e}")
             self.respond_html(render_keywords_page(error=str(e)), status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
+    def download_audio_from_url(self, audio_url):
+        parsed = urlparse(audio_url)
+        if parsed.scheme not in ("http", "https"):
+            raise RuntimeError("Only http/https URLs are supported.")
+
+        raw_name = unquote(Path(parsed.path).name) or "audio"
+        filename = safe_filename(raw_name)
+        input_path = UPLOAD_DIR / filename
+        os.makedirs(os.path.dirname(input_path), exist_ok=True)
+
+        req = urllib.request.Request(audio_url, headers={"User-Agent": "CallSummaryTool/1.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=120) as resp, open(input_path, "wb") as f:
+                shutil.copyfileobj(resp, f)
+        except Exception as e:
+            raise RuntimeError(f"Could not fetch audio from URL: {e}")
+
+        return filename, input_path
+
     def handle_summarize(self):
         request_start = time.time()
         try:
             content_type = self.headers.get("Content-Type", "")
-            if "multipart/form-data" not in content_type:
-                raise RuntimeError("Upload must use multipart/form-data.")
+            filename = None
+            input_path = None
 
-            form = cgi.FieldStorage(
-                fp=self.rfile,
-                headers=self.headers,
-                environ={
-                    "REQUEST_METHOD": "POST",
-                    "CONTENT_TYPE": content_type,
-                },
-            )
-            upload = form["audio"] if "audio" in form else None
-            if upload is None or not getattr(upload, "filename", ""):
-                raise RuntimeError("Please choose an audio file.")
+            if "multipart/form-data" in content_type:
+                form = cgi.FieldStorage(
+                    fp=self.rfile,
+                    headers=self.headers,
+                    environ={
+                        "REQUEST_METHOD": "POST",
+                        "CONTENT_TYPE": content_type,
+                    },
+                )
+                upload = form["audio"] if "audio" in form else None
+                has_file = upload is not None and getattr(upload, "filename", "")
 
-            filename = safe_filename(upload.filename)
-            input_path = UPLOAD_DIR / filename
-            os.makedirs(os.path.dirname(input_path), exist_ok=True)
-            with open(input_path, "wb") as f:
-                while True:
-                    chunk = upload.file.read(1024 * 1024)
-                    if not chunk:
-                        break
-                    f.write(chunk)
+                if has_file:
+                    filename = safe_filename(upload.filename)
+                    input_path = UPLOAD_DIR / filename
+                    os.makedirs(os.path.dirname(input_path), exist_ok=True)
+                    with open(input_path, "wb") as f:
+                        while True:
+                            chunk = upload.file.read(1024 * 1024)
+                            if not chunk:
+                                break
+                            f.write(chunk)
+                else:
+                    audio_url = ""
+                    if "audio_url" in form:
+                        audio_url = (form.getvalue("audio_url") or "").strip()
+                    if not audio_url:
+                        raise RuntimeError("Please choose an audio file or paste an audio URL.")
+                    filename, input_path = self.download_audio_from_url(audio_url)
+            else:
+                length = int(self.headers.get('Content-Length', 0))
+                body = self.rfile.read(length).decode('utf-8')
+                params = parse_qs(body)
+                audio_url = params.get('audio_url', [''])[0].strip()
+                if not audio_url:
+                    raise RuntimeError("Please paste an audio URL.")
+                filename, input_path = self.download_audio_from_url(audio_url)
 
             converted_file = None
             try:

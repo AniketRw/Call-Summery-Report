@@ -86,8 +86,13 @@ def clean_degenerate_output(raw_text, min_char_run=25, min_word_repeats=35):
     if not match:
         match = re.search(r'(\S+)(?:\s+\1){' + str(min_word_repeats - 1) + r',}', raw_text)
     if match:
-        raw_text = raw_text[:match.start()].rstrip()
-        raw_text += "\n[... transcription degraded due to unclear/noisy audio, remainder discarded ...]"
+        before = raw_text[:match.start()].rstrip()
+        after = raw_text[match.end():].lstrip()
+        raw_text = (
+            before
+            + "\n[... repeated/unclear audio segment omitted ...]\n"
+            + after
+        )
     return raw_text
 
 def apply_corrections(text):
@@ -115,7 +120,9 @@ KNOWN_EXECUTIVE_NAMES = {
     "Mahendra": ["mahendra", "महेंद्र"],
     "Dilip": ["dilip", "deelip", "दिलीप"],
     "Dipak": ["dipak", "deepak", "दीपक"],
-    "Gautam": ["gautam", "गौतम"]
+    "Gautam": ["gautam", "गौतम"],
+    "Sagar" : ["sagar", "सागर"],
+    "Sandeep Gosavi" : ["sandeep gosavi" , "गोसावी संदीप"]
 }
 
 
@@ -439,6 +446,18 @@ def collapse_alternating_filler(transcript, filler_words=None, min_run=4):
     flush()
     return "\n".join(result)
 
+def merge_orphan_lines(transcript):
+    """Any line that doesn't start with [MM:SS] gets merged into the
+    previous line — fixes cases where Gemini inserts a stray newline
+    in the middle of a single logical line."""
+    lines = transcript.split("\n")
+    merged = []
+    for line in lines:
+        if re.match(r"^\[\s*\d{2}:\d{2}\s*\]", line) or not merged:
+            merged.append(line)
+        else:
+            merged[-1] = merged[-1].rstrip() + " " + line.strip()
+    return "\n".join(merged)
 
 def collapse_repeated_lines(transcript, max_repeats=3):
     lines = transcript.split("\n")
@@ -467,7 +486,48 @@ def collapse_repeated_lines(transcript, max_repeats=3):
 
     return "\n".join(result)
 
+def collapse_alternating_pairs(transcript, min_cycles=6, max_period=4):
+    """Detects short repeating cycles (e.g. A,B,A,B,A,B...) of length 1-4 lines
+    that repeat many times in a row, and collapses them."""
+    lines = transcript.split("\n")
+
+    def get_content(line):
+        m = re.match(r"\[\s*\d{2}:\d{2}\s*\]\s*(.*)", line)
+        return m.group(1).strip() if m else None
+
+    contents = [get_content(l) for l in lines]
+    result = []
+    i = 0
+    n = len(lines)
+
+    while i < n:
+        collapsed = False
+        for period in range(1, max_period + 1):
+            if contents[i] is None:
+                continue
+            cycle = contents[i:i+period]
+            if any(c is None for c in cycle):
+                continue
+            repeats = 1
+            j = i + period
+            while j + period <= n and contents[j:j+period] == cycle:
+                repeats += 1
+                j += period
+            if repeats >= min_cycles:
+                ts_match = re.search(r"\[\s*\d{2}:\d{2}\s*\]", lines[i])
+                ts = ts_match.group(0) if ts_match else ""
+                result.append(f"{ts} [... repeated/unclear audio segment omitted ...]")
+                i = j
+                collapsed = True
+                break
+        if not collapsed:
+            result.append(lines[i])
+            i += 1
+
+    return "\n".join(result)
+
 def get_audio_transcripts_with_gemini(client, uploaded_file):
+    print(">>> ENTERED get_audio_transcripts_with_gemini", flush=True)
     start_time = time.time()
     prompt = (
     "Transcribe this support call exactly. Add [MM:SS] timestamps. "
@@ -519,7 +579,7 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
             contents=[uploaded_file, prompt],
             config=types.GenerateContentConfig(
                 temperature=temp,
-                max_output_tokens=6000
+                max_output_tokens=12000
             )
         )
         # candidate_text = (response.text or "").strip()
@@ -554,7 +614,7 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
                 cont_response = safe_generate(
                     client,
                     model=TRANSCRIPT_MODEL,
-                    contents=[uploaded_file, prompt, cont_prompt],
+                    contents=[uploaded_file, cont_prompt],
                     config=types.GenerateContentConfig(
                         temperature=temp,
                         max_output_tokens=10000
@@ -569,7 +629,10 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
             print(f"[Degeneration check] Attempt {attempt+1} (temp={temp}) hit a repetition loop, retrying...")
             raw_text = candidate_text  # keep last attempt in case all fail
 
-    raw_text = clean_degenerate_output(raw_text)  # safety net if all retries still degenerate
+    raw_text = clean_degenerate_output(raw_text)
+    with open("debug_raw_transcript.txt", "w", encoding="utf-8") as f:
+        f.write(raw_text)  
+    raw_text = merge_orphan_lines(raw_text)
     elapsed = time.time() - start_time
     print(f"[TIMER] Transcription (Gemini) took {elapsed:.2f} seconds")
     corrected = apply_corrections(raw_text)
@@ -596,6 +659,11 @@ def load_keywords(file_path="keywords.txt"):
         return [line.strip() for line in f if line.strip()]
 
 def analyze_audio_with_gemini(audio_path):
+    print(">>> ENTERED analyze_audio_with_gemini", flush=True)
+    print("====================================")
+    print("START analyze_audio_with_gemini")
+    print("Audio Path :", audio_path)
+    print("====================================")
     total_start = time.time()
     client = get_google_client()
     keywords_list = load_keywords()
@@ -620,11 +688,21 @@ def analyze_audio_with_gemini(audio_path):
                     raise
 
                 time.sleep(2)
+        print(">>> FILE UPLOADED, calling transcript function now", flush=True)
         transcript = get_audio_transcripts_with_gemini(client, uploaded_file)
         #transcript = whisper_transcribe(audio_path)
         
         if not transcript:
-            return "No transcript generated.", "", "No facts detected.", "No analysis available.", "Summary not generated."
+            empty_token_info = {"prompt": 0, "response": 0, "thinking": 0, "total": 0}
+            return (
+                "No transcript generated.",
+                "",
+                "No facts detected.",
+                "No analysis available.",
+                "Summary not generated.",
+                "None detected",
+                empty_token_info
+            )
 
         response_schema = {
             "type": "object",
@@ -764,12 +842,8 @@ Required fields:
 
 
 7. keywords
-    - Detect closest matching keyword from transcript.
-    - Example:
-        print, printing, bill printing, print slow → Bill Print
-        purchase data, purchase return, purchase cancellation → Purchase
-        rights issue, access issue → User rights
-    - Return ONLY keywords from allowed keyword list.
+    "Return keyword ONLY if exact phrase is actually spoken. 
+      Do NOT infer, guess, or use related/similar meaning."
     - If no keyword found return [].   
 8. business_facts:
    - issues
@@ -1326,17 +1400,18 @@ Output JSON only.
         data["closings"] = list(dict.fromkeys(clean_closings))[:3]
 
         transcript_lower = transcript.lower()
-        detected_keywords = []
+        
 
+        detected_keywords = []
         for kw in keywords_list:
             if kw.lower() in transcript_lower:
                 detected_keywords.append(kw)
 
-        # Add aliases for robustness
         if "print" in transcript_lower and "Bill Print" in keywords_list:
             detected_keywords.append("Bill Print")
         if "bill modify" in transcript_lower and "Bill Modification or edit" in keywords_list:
             detected_keywords.append("Bill Modification or edit")
+
 
         #data["keywords"] = list(dict.fromkeys(detected_keywords))
         model_keywords = data.get("keywords", [])
@@ -1349,7 +1424,7 @@ Output JSON only.
         data["keywords"] = list(
             dict.fromkeys(final_keywords)
         )
-            # -------- ROLE SANITY FIX --------
+        #     # -------- ROLE SANITY FIX --------
 
         facts = data.get("business_facts", {})
 

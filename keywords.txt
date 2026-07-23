@@ -30,4 +30,7 @@ scheme apply
 Ecommerce
 data remove
 report not match
-loss sale report
+loss sale report
+slowness
+software demo
+New License
