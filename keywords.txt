@@ -1,4 +1,4 @@
-Whatsapp
+Whatsapp Issue
 PhonePe
 UPI
 Mobile Reports
@@ -33,4 +33,6 @@ report not match
 loss sale report
 slowness
 software demo
-New License
+New License
+Supplier Purchase
+DayClose

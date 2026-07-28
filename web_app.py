@@ -1,12 +1,46 @@
+import os
+import logging
+from logging.handlers import TimedRotatingFileHandler
+
+LOG_DIR = os.path.join(os.getcwd(), "logs")
+os.makedirs(LOG_DIR, exist_ok=True)
+
+log_file = os.path.join(LOG_DIR, "call_summary.log")
+
+logger = logging.getLogger("CallSummaryService")
+logger.setLevel(logging.INFO)
+
+handler = TimedRotatingFileHandler(
+    filename=log_file,
+    when="midnight",
+    interval=1,
+    backupCount=30,
+    encoding="utf-8"
+)
+
+handler.suffix = "%Y-%m-%d"
+
+formatter = logging.Formatter(
+    "%(asctime)s | %(levelname)s | %(message)s",
+    "%Y-%m-%d %H:%M:%S"
+)
+
+handler.setFormatter(formatter)
+
+console = logging.StreamHandler()
+console.setFormatter(formatter)
+
+logger.addHandler(handler)
+logger.addHandler(console)
+
 import db 
-print("=== APP STARTED ===")
+logger.info("=== APP STARTED ===")
 
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 import cgi
 import html
-import os
 import time 
 import re
 import traceback
@@ -24,8 +58,8 @@ import shutil
 
 # Import the backend logic from testnew
 import testnew
-
-print("=== TESTNEW IMPORTED ===")
+import autoprocesscall
+logger.info("=== TESTNEW IMPORTED ===")
 HOST = ""
 PORT = int(os.getenv("PORT", "8080"))
 BASE_DIR = Path(__file__).resolve().parent
@@ -40,22 +74,29 @@ def safe_filename(filename):
     filename = re.sub(r"[^A-Za-z0-9._ -]+", "_", filename).strip(" .")
     return filename or "audio"
 
-# Replace the reportlab imports at the top of web_app.py with:
-#
-# from weasyprint import HTML
-#
-# (Remove these old reportlab imports:)
-#   from reportlab.lib.pagesizes import A4
-#   from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-#   from reportlab.lib.units import mm
-#   from reportlab.lib import colors
-#   from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, HRFlowable, Preformatted
-#   from reportlab.lib.enums import TA_LEFT, TA_CENTER
-#   from reportlab.platypus import Table, TableStyle
-#   from reportlab.pdfbase import pdfmetrics
-#   from reportlab.pdfbase.ttfonts import TTFont
-#
-# Then replace register_fonts() and generate_pdf() with the code below.
+def start_auto_poller_thread():
+    """Runs auto_process_calls.run_forever() in a background daemon
+    thread inside this same process. This means the CTI call poller
+    starts automatically the moment the "Call Summery Tool" Windows
+    service starts - no second service/process needs to be installed
+    or kept running separately.
+
+    Any unexpected exception inside the poller is caught and logged
+    here so it can never crash or stop the web app / Windows service
+    itself; auto_process_calls.run_forever() already retries internally
+    on most errors, this is just an extra safety net.
+    """
+    def _runner():
+        try:
+            autoprocesscall.run_forever()
+        except Exception as e:
+            logger.exception(f"[AUTO_POLLER] Fatal error: {e}")
+           
+
+    t = threading.Thread(target=_runner, name="AutoCallPoller", daemon=True)
+    t.start()
+    logger.info("[AUTO_POLLER] Background auto-call-poller thread started.")
+
 
 def strip_speaker_labels(transcript):
     """Remove 'Executive:'/'Customer:' labels (with optional [Aside] tag) for display only."""
@@ -72,6 +113,72 @@ def strip_speaker_labels(transcript):
             out.append(line)
     return "\n".join(out)
 
+
+def override_executive_name_in_analysis(analysis_text, filename):
+    """Resolve the executive's real name from the reference number embedded
+    in the recording filename (via db.resolve_executive_name -> UserMaster),
+    and replace the 'Executive Name: ...' line inside the analysis text with
+    it. This runs BEFORE saving/rendering, so the page, the PDF export, the
+    saved _summary.txt file, and the DB row all end up with the same,
+    correct executive name — instead of whatever testnew's transcript-based
+    guess produced (e.g. 'कॉल'). If no reference is found in the filename,
+    or it doesn't match any UserMaster row, falls back to 'Not mentioned'."""
+    try:
+        resolved_name = db.resolve_executive_name(filename)
+        logger.info(f"[DB] resolve_executive_name(filename={filename!r}) -> {resolved_name!r}")
+    except Exception as e:
+        logger.info(f"[DB] Executive name lookup failed for {filename}: {e}")
+        resolved_name = None
+
+    final_name = resolved_name if resolved_name else "Not mentioned"
+    logger.info(f"[DB] Overriding Executive Name in analysis text -> {final_name!r}")
+
+    matched = re.search(r"(?im)^Executive Name:.*$", analysis_text or "")
+    logger.info(f"[DB] Existing 'Executive Name:' line found in analysis? {bool(matched)}")
+
+    if matched:
+        analysis_text = re.sub(
+            r"(?im)^Executive Name:.*$",
+            f"Executive Name: {final_name}",
+            analysis_text
+        )
+    else:
+        # Safety net: if the line wasn't present at all, append it.
+        analysis_text = (analysis_text or "").rstrip("\n") + f"\nExecutive Name: {final_name}"
+
+    return analysis_text
+
+def add_customer_name_to_analysis(analysis_text, filename):
+    """Resolve the customer's name (via their mobile number, either embedded
+    in the filename or resolved through the CDR uniqueid) and insert a
+    'Customer Name: ...' line into the analysis text so it's visible in the
+    UI, PDF export, and saved _summary.txt file — not just the DB row."""
+    try:
+        resolved_name = db.resolve_customer_name(filename)
+        logger.info(f"[DB] resolve_customer_name(filename={filename!r}) -> {resolved_name!r}")
+    except Exception as e:
+        logger.info(f"[DB] Customer name lookup failed for {filename}: {e}")
+        resolved_name = None
+
+    final_name = resolved_name if resolved_name else "Not mentioned"
+
+    if re.search(r"(?im)^Customer Name:.*$", analysis_text or ""):
+        analysis_text = re.sub(
+            r"(?im)^Customer Name:.*$",
+            f"Customer Name: {final_name}",
+            analysis_text
+        )
+    elif re.search(r"(?im)^Executive Name:.*$", analysis_text or ""):
+        # Insert right after the 'Executive Name:' line for a clean order.
+        analysis_text = re.sub(
+            r"(?im)^(Executive Name:.*)$",
+            r"\1" + f"\nCustomer Name: {final_name}",
+            analysis_text
+        )
+    else:
+        analysis_text = (analysis_text or "").rstrip("\n") + f"\nCustomer Name: {final_name}"
+
+    return analysis_text
 
 def generate_pdf(analysis, keywords, facts, summary, transcript, filename="call_summary"):
     font_path = (BASE_DIR / "fonts" / "NotoSansDevanagari.ttf").as_uri()
@@ -181,7 +288,7 @@ def format_duration(seconds):
         return f"{minutes}m {secs:04.1f}s"
     return f"{secs:.1f}s"
 
-def render_page(analysis="", keywords="", facts="", summary="", transcript="", error="", filename="" ,  token_info=None,elapsed_time=None):
+def render_page(analysis="", keywords="", facts="", summary="", transcript="", error="", filename="" ,  token_info=None,elapsed_time=None, show_transcript=True):
     escaped_filename = html.escape(filename)
     
     results_html = ""
@@ -202,6 +309,12 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
         """
       
     if any([analysis, keywords, facts, summary, transcript]):
+        transcript_block = ""
+        if show_transcript:
+            transcript_block = f"""
+          <h2 class="section-title transcript">TRANSCRIPT</h2>
+          <pre>{html.escape(transcript)}</pre>
+            """
         results_html = f"""
         <section class="panel" id="resultsPanel">
           <p class="meta">File: {escaped_filename}</p>
@@ -218,8 +331,7 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
           <h2 class="section-title summary">SUMMARY</h2>
           <pre>{html.escape(summary)}</pre>
           
-          <h2 class="section-title transcript">TRANSCRIPT</h2>
-          <pre>{html.escape(transcript)}</pre>
+          {transcript_block}
           
           <form method="post" action="/export_pdf" style="margin-top:20px; text-align:center;">
             <input type="hidden" name="analysis" value="{html.escape(analysis)}">
@@ -639,15 +751,20 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
           </span>
           <input type="file" name="audio" id="audioInput" accept=".wav,.mp3,.m4a,.ogg,.flac,.mp4">
         </label>
-        <button id="submitBtn" type="submit">Generate Summary</button>
+        
+          <button id="submitBtn" type="submit">Generate Summary</button>
       </form>
-
+      <label style="display:flex;align-items:center;gap:8px;margin:16px 0 0;font-size:13px;color:var(--muted);">
+        <input type="checkbox" id="showTranscriptCheckbox">
+        Show transcript in result
+      </label>
       <div style="text-align:center; color:var(--muted); font-size:13px; margin:16px 0;">— OR —</div>
 
       <form id="urlForm" method="post" action="/summarize" style="display:grid; grid-template-columns:1fr auto; gap:12px;">
         <input type="text" name="audio_url" id="audioUrlInput"
                placeholder="Paste audio file URL / path (e.g. http://192.168.x.x:6751/callrecord/...wav)"
                style="padding:0 16px; border:1px solid var(--border); border-radius:8px; font-family:inherit; font-size:14px; min-height:45px;">
+        
         <button id="urlSubmitBtn" type="submit">Generate Summary</button>
       </form>
     </section>
@@ -718,6 +835,25 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
     }});
   }})();
 
+  function setAllInteractionsDisabled(disabled) {{
+    const audioInput = document.getElementById("audioInput");
+    const audioUrlInput = document.getElementById("audioUrlInput");
+    const submitBtn = document.getElementById("submitBtn");
+    const urlSubmitBtn = document.getElementById("urlSubmitBtn");
+    const showTranscriptCheckbox = document.getElementById("showTranscriptCheckbox");
+    const dropzone = document.getElementById("dropzone");
+
+    if (audioInput) audioInput.disabled = disabled;
+    if (audioUrlInput) audioUrlInput.disabled = disabled;
+    if (submitBtn) submitBtn.disabled = disabled;
+    if (urlSubmitBtn) urlSubmitBtn.disabled = disabled;
+    if (showTranscriptCheckbox) showTranscriptCheckbox.disabled = disabled;
+    if (dropzone) {{
+      dropzone.style.pointerEvents = disabled ? "none" : "auto";
+      dropzone.style.opacity = disabled ? "0.6" : "1";
+    }}
+  }}
+
   function wireForm(form, button) {{
     const panel = document.getElementById("progressPanel");
     const text = document.getElementById("progressText");
@@ -733,11 +869,16 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
 
     form.addEventListener("submit", (e) => {{
       e.preventDefault();
+
+      // Build FormData BEFORE disabling any fields — disabled inputs are
+      // excluded from FormData, so we must capture the file/values first.
+      const formData = new FormData(form);
+      const showTranscriptChecked = document.getElementById("showTranscriptCheckbox").checked;
+      formData.set("show_transcript", showTranscriptChecked ? "1" : "");
+
       document.body.classList.add("busy");
       panel.classList.add("active");
-      button.disabled = true;
-      dropzone.style.pointerEvents = "none";
-      dropzone.style.opacity = "0.6";
+      setAllInteractionsDisabled(true);
 
       const oldResults = document.getElementById("resultsPanel");
       const oldTokenBadge = document.getElementById("tokenBadge");
@@ -766,7 +907,6 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
         }}
       }}, 600);
 
-      const formData = new FormData(form);
       const xhr = new XMLHttpRequest();
       xhr.open("POST", form.action, true);
 
@@ -798,10 +938,9 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
         clearInterval(tick);
         text.textContent = "❌ Something went wrong. Please try again.";
         bar.style.width = "0%";
-        button.disabled = false;
-        dropzone.style.pointerEvents = "auto";
-        dropzone.style.opacity = "1";
+        setAllInteractionsDisabled(false);
       }};
+
 
       xhr.send(formData);
     }});
@@ -1044,7 +1183,7 @@ def render_keywords_page(error=""):
 
 class CallSummaryHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        print(f"DEBUG: Received GET request for {self.path}")
+        logger.info(f"DEBUG: Received GET request for {self.path}")
         try:
             if self.path in ("/", "/index.html"):
                 self.respond_html(render_page())
@@ -1057,8 +1196,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             else:
                 self.send_error(HTTPStatus.NOT_FOUND)
         except Exception as e:
-            print(f"DEBUG: Error in do_GET: {e}")
-            traceback.print_exc()
+            logger.exception(f"Error while handling GET request '{self.path}': {e}")
             self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
 
     def do_POST(self):
@@ -1086,7 +1224,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             self.send_header('Location', '/')
             self.end_headers()
         except Exception as e:
-            print(f"DEBUG: Error in handle_save_keywords: {e}")
+            logger.exception(f"Error in handle_save_keywords: {e}")
             self.respond_html(render_keywords_page(error=str(e)), status=HTTPStatus.INTERNAL_SERVER_ERROR)
 
     def download_audio_from_url(self, audio_url):
@@ -1124,6 +1262,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                         "CONTENT_TYPE": content_type,
                     },
                 )
+                show_transcript = "show_transcript" in form and (form.getvalue("show_transcript") == "1")
                 upload = form["audio"] if "audio" in form else None
                 has_file = upload is not None and getattr(upload, "filename", "")
 
@@ -1148,6 +1287,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                 length = int(self.headers.get('Content-Length', 0))
                 body = self.rfile.read(length).decode('utf-8')
                 params = parse_qs(body)
+                show_transcript = params.get('show_transcript', [''])[0] == '1'
                 audio_url = params.get('audio_url', [''])[0].strip()
                 if not audio_url:
                     raise RuntimeError("Please paste an audio URL.")
@@ -1169,6 +1309,20 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                 keywords = results[5]
                 token_info = results[6]
 
+                logger.info("=" * 40)
+                logger.info(f"Input Tokens : {token_info['prompt']}")
+                logger.info(f"Output Tokens: {token_info['response']}")
+                logger.info(f"Total Tokens : {token_info['total']}")
+                logger.info("=" * 40)
+
+                # Resolve the executive's real name from the reference number
+                # embedded in the filename (via UserMaster) and override the
+                # 'Executive Name:' line in the analysis text BEFORE saving/
+                # rendering, so the page, PDF, saved txt file, and DB row all
+                # show the same correct name.
+                analysis = override_executive_name_in_analysis(analysis, filename)
+                analysis = add_customer_name_to_analysis(analysis, filename)
+
                 # Save files as in the desktop app
                 testnew.save_transcript(transcript, str(input_path))
                 testnew.save_summary(summary, analysis, facts, keywords, str(input_path))
@@ -1185,7 +1339,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                         elapsed_time=time.time() - request_start
                     )
                 except Exception as db_err:
-                    print(f"[DB] Failed to save call summary: {db_err}")
+                    logger.exception(f"[DB] Failed to save call summary: {db_err}")
 
 
                 elapsed_time = time.time() - request_start
@@ -1198,7 +1352,8 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                     transcript=display_transcript, 
                     filename=filename,
                     token_info=token_info,
-                    elapsed_time=elapsed_time 
+                    elapsed_time=elapsed_time,
+                    show_transcript=show_transcript 
                 ))
             finally:
                 if converted_file and os.path.exists(converted_file) and converted_file != str(input_path):
@@ -1206,7 +1361,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                     except: pass
         except Exception as e:
             details = str(e)
-            print(traceback.format_exc())
+            logger.exception(f"Summary generation failed: {e}")
             elapsed_time = time.time() - request_start
             self.respond_html(render_page(error=details), status=HTTPStatus.INTERNAL_SERVER_ERROR)
     def handle_export_pdf(self):       
@@ -1233,7 +1388,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(pdf_bytes)
         except Exception as e:
-            print(traceback.format_exc())
+            logger.exception(f"PDF export failed: {e}")
             self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR, str(e))
 
 
@@ -1278,11 +1433,18 @@ def main():
     except:
         pass
 
-    print(f"\n{'='*50}")
-    print(f"Call Summary Web App is ACTIVE")
-    print(f"Local access: http://127.0.0.1:{PORT}")
-    print(f"LAN access:   http://{local_ip}:{PORT}")
-    print(f"{'='*50}\n")
+    logger.info("=" * 50)
+    logger.info("Call Summary Web App is ACTIVE")
+    logger.info(f"Local access: http://127.0.0.1:{PORT}")
+    logger.info(f"LAN access: http://{local_ip}:{PORT}")
+    logger.info("=" * 50)
+
+    # Start the CTI auto-poller (auto_process_calls.py logic) as a
+    # background daemon thread inside THIS process, so it comes up
+    # automatically whenever the "Call Summery Tool" Windows service
+    # starts - no separate service/process needed.
+    start_auto_poller_thread()
+
     server.serve_forever()
 
 if __name__ == "__main__":

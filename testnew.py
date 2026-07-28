@@ -122,9 +122,49 @@ KNOWN_EXECUTIVE_NAMES = {
     "Dipak": ["dipak", "deepak", "दीपक"],
     "Gautam": ["gautam", "गौतम"],
     "Sagar" : ["sagar", "सागर"],
-    "Sandeep Gosavi" : ["sandeep gosavi" , "गोसावी संदीप"]
+    "Sandeep Gosavi" : ["sandeep gosavi" , "गोसावी संदीप"],
+    "Rajesh" :["rajesh", "राजेश "],
+    "Akash" : ["akash", "आकाश "],
+    "Kishor" : ["kishor" , "किशोर"],
+    "Sandeep" : ["sandeep" , "संदीप"],
+    "Prathmesh" : ["prathmesh" , "प्रथमेश"],
+    "Pratik" : ["pratik" , "प्रतीक"],
+    "Abhijit" : ["abhijit" , "अभिजीत"],
+    "Aniket" : ["aniket", "अनिकेत"],
+
+
 }
 
+def _build_alias_lookup(name_dict):
+    lookup = {}
+    for standard, variants in name_dict.items():
+        for v in variants:
+            lookup[v.strip().lower()] = standard
+    return lookup
+
+KNOWN_EXECUTIVE_ALIAS_LOOKUP = _build_alias_lookup(KNOWN_EXECUTIVE_NAMES)
+
+STOPWORDS_NOT_NAMES = {
+    "मी", "आम्ही", "हा", "ही", "ते", "सर", "मॅडम",
+    "sir", "madam", "i", "we", "you", "he", "she",
+    # company/connector words — हे कधीच नाव नसतात
+    "कडनं", "कडून", "कडुन", "वेअर", "रिटेलवेअर", "रिटेल",
+    "retailware", "कंपनी", "team", "टीम", "support",
+    "सपोर्ट", "हेल्पडेस्क", "helpdesk"
+}
+
+def normalize_executive_name(raw_name):
+    """Dictionary मध्ये match झालं तर standard spelling वापर,
+    नाहीतर raw name ला title-case करून तसंच वापर (gate नाही)."""
+    key = (raw_name or "").strip().lower()
+    if not key or key in STOPWORDS_NOT_NAMES:
+        return None
+    if key in KNOWN_EXECUTIVE_ALIAS_LOOKUP:
+        return KNOWN_EXECUTIVE_ALIAS_LOOKUP[key]
+    # Devanagari किंवा Latin दोन्हीत योग्य capitalize कर
+    if re.match(r'^[a-zA-Z]+$', raw_name.strip()):
+        return raw_name.strip().title()
+    return raw_name.strip()
 
 import re
 def fix_speaker_consistency(transcript: str) -> str:
@@ -225,33 +265,36 @@ def fix_speaker_consistency(transcript: str) -> str:
         prev_text = text
 
     return "\n".join(fixed)
-
-
 def detect_known_executive(transcript):
     transcript_lower = transcript.lower()
 
-    # Priority 1: explicit self-introduction ("अक्षय बोलतोय", "This is Rahul speaking")
+    # Priority 1: explicit self-introduction — "X बोलतोय", "This is X speaking" इ.
+    # dictionary मध्ये नाव नसलं तरी directly तेच नाव वापरायचं (normalize फक्त spelling साठी)
     self_intro_patterns = [
         r"([a-zA-Z\u0900-\u097F]+)\s*बोलतोय",
         r"([a-zA-Z\u0900-\u097F]+)\s*बोल रहा",
         r"this is\s+([a-zA-Z]+)\s+speaking",
         r"मेरा नाम\s+([a-zA-Z\u0900-\u097F]+)",
         r"माझं नाव\s+([a-zA-Z\u0900-\u097F]+)",
+        # "रिटेलवेअर कडून/कडनं ... बोलतोय ... सर, <Name>" पॅटर्न
+        r"(?:रिटेलवेअर|retailware)[^,।\n]{0,25}?(?:कडून|कडनं)[^,।\n]{0,25}?"
+        r"बोलतोय[^,।\n]{0,10}?(?:सर|मॅडम)?\s*,?\s*([a-zA-Z\u0900-\u097F]+)",
     ]
     for pat in self_intro_patterns:
         m = re.search(pat, transcript, flags=re.IGNORECASE)
         if m:
-            spoken = m.group(1).strip().lower()
-            for standard_name, variants in KNOWN_EXECUTIVE_NAMES.items():
-                if spoken in [v.lower() for v in variants]:
-                    return standard_name
+            normalized = normalize_executive_name(m.group(1))
+            if normalized:
+                return normalized
 
-    # Priority 2: fallback — word-boundary substring match (avoids false positives)
+    # Priority 2: fallback — known dictionary substring match
+    # (loose/generic match इथे नाही कारण customer चं नावही चुकून पकडलं जाऊ शकतं)
     for standard_name, variants in KNOWN_EXECUTIVE_NAMES.items():
         for variant in variants:
             if re.search(r'\b' + re.escape(variant.lower()) + r'\b', transcript_lower):
                 return standard_name
     return None
+
 def get_google_client():
     if not GOOGLE_API_KEY:
         raise RuntimeError("Set GOOGLE_API_KEY in your .env file before running this app.")
@@ -710,7 +753,7 @@ def analyze_audio_with_gemini(audio_path):
                 "executive_name": {"type": "string"},
                 "greetings": {"type": "array", "items": {"type": "string"}},
                 "closings": {"type": "array", "items": {"type": "string"}},
-                "customer_mood": {"type": "string", "enum": ["Angry", "Frustrated", "Satisfied", "Neutral"]},
+                "customer_mood": {"type": "string", "enum": ["Frustrated", "Concerned", "Satisfied", "Neutral"]},
                 "mood_reason": {"type": "string"},
                 "executive_tone": {
                     "type": "string",
@@ -824,12 +867,18 @@ Required fields:
 - Ignore mid-call conversation.
 
 4. customer_mood:
-- "Angry": shouting, explicit threats, abusive language, [Shouting] tags in transcript
-- "Frustrated": explicitly mentions dissatisfaction multiple times, raises voice [Loudly], uses strong complaint language
-- "Neutral": calm tone throughout, normal question-answer flow, no emotional escalation
-- "Satisfied": thanks executive, confirms issue resolved, positive closing
-- DEFAULT to "Neutral" if no clear emotional signal exists
-- NEVER choose Frustrated just because it is a support call
+- "Frustrated": customer is SHOUTING, raising voice [Loudly]/[Shouting], sounds visibly annoyed/irritated,
+  or uses abusive/swear words. This is ONLY about TONE, not topic — a customer calmly reporting a problem
+  is NOT Frustrated.
+- "Concerned": customer calmly/normally mentions that an issue is repeating, has happened before,
+  or that a feature/option is missing — but WITHOUT raising voice, anger, or abusive language.
+  Normal conversational tone while describing a real, recurring problem = Concerned, not Frustrated.
+- "Neutral": calm tone throughout, normal question-answer flow, no repeated/recurring issue mentioned.
+- "Satisfied": thanks executive, confirms issue resolved, positive closing.
+- DEFAULT to "Neutral" if no clear signal exists.
+- CRITICAL: Do NOT choose Frustrated just because the customer mentions a problem/issue/complaint —
+  only choose Frustrated if the TONE itself (shouting, loud, angry, abusive) shows it.
+
 5. mood_reason
 6. executive_tone
 
@@ -1211,87 +1260,48 @@ Output JSON only.
         mood = data.get("customer_mood", "Neutral")
         transcript_lower = transcript.lower()
 
-       
-        if any(x in transcript_lower for x in [
-            "2 months",
-            "3 months",
-            "still not",
-            "not working",
-            "complaint number",
-            "again and again"
-        ]):
-            if mood == "Neutral":
-                data["customer_mood"] = "Frustrated"
-                data["mood_reason"] = "Customer reported unresolved issues repeatedly."
-            if "[shouting]" in transcript_lower:
-                data["customer_mood"] = "Angry"
-                data["mood_reason"] = "Customer was shouting during the call."
+        # TONE-based anger signals ONLY (shouting/loud/abusive) — these are
+        # the ONLY things that should ever produce "Frustrated".
+        anger_tone_signals = [
+            "[shouting]", "[loudly]",
+            "चिडलो", "चिडले", "गुस्सा", "गुस्से में",
+            "irritated", "angry", "annoyed", "fed up",
+            # Add specific abusive/swear words used in your calls here:
+            "bakwas", "बकवास", "नालायक", "नालायक आहेस",
+        ]
 
-        # Angry = only when transcription model tags [Shouting]
-        angry_signals = ["[shouting]"]
-
-        # Frustrated = customer mentions problems, delays, errors
-        frustrated_signals = [
-            "not working", "again", "always", "every time", "still not",
-            "problem", "issue", "error", "slow", "pending",
+        # TOPIC signals — customer describing a recurring problem, but in a
+        # normal tone. These should map to "Concerned", never "Frustrated".
+        recurring_issue_signals = [
+            "again", "every time", "always", "still not", "not working",
+            "2 months", "3 months", "again and again", "complaint number",
             "काम नाही", "परत", "नाही होत", "बंद आहे",
             "नाही चालत", "होत नाही", "का नाही",
             "क्यों नहीं", "नहीं हो रहा", "नहीं आ रहा",
-            "kab tak", "kitne din", "bahut time"
+            "kab tak", "kitne din", "bahut time",
+            "feature नाहीये", "option नाहीये", "missing",
         ]
 
-        has_angry = any(s in transcript_lower for s in angry_signals)
-        has_frustrated = any(s in transcript_lower for s in frustrated_signals)
+        has_anger_tone = any(s in transcript_lower for s in anger_tone_signals)
+        has_recurring_issue = any(s in transcript_lower for s in recurring_issue_signals)
 
-        if mood == "Angry" and not has_angry:
-            if has_frustrated:
-                data["customer_mood"] = "Frustrated"
-                data["mood_reason"] = "Customer showed frustration but no strong anger signals detected."
+        if has_anger_tone:
+            # Tone evidence present -> Frustrated, no matter what the topic is.
+            data["customer_mood"] = "Frustrated"
+            data["mood_reason"] = "Customer's tone showed shouting/anger/abusive language during the call."
+        elif mood == "Frustrated" and not has_anger_tone:
+            # Model said Frustrated but no real tone evidence -> downgrade.
+            if has_recurring_issue:
+                data["customer_mood"] = "Concerned"
+                data["mood_reason"] = "Customer calmly reported a recurring issue or missing feature, without anger."
             else:
                 data["customer_mood"] = "Neutral"
-                data["mood_reason"] = "No anger or frustration signals detected in transcript."
-
-        # elif mood == "Frustrated" and not has_frustrated and not has_angry:
-        #     data["customer_mood"] = "Neutral"
-        #     data["mood_reason"] = "Customer tone was calm throughout the call."
-        # elif mood == "Frustrated" and not has_frustrated and not has_angry:
-        #     mood_reason_lower = data.get("mood_reason", "").lower()
-        #     reason_has_frustration = any(x in mood_reason_lower for x in [
-        #         "frustrat", "repeat", "dissatisf", "multiple", "problem", "unresolved",
-        #         "again", "not working", "pending", "delay", "complain"
-        #     ])
-        #     if not reason_has_frustration:  # Only override if Gemini's own reason is weak
-        #         data["customer_mood"] = "Neutral"
-        #         data["mood_reason"] = "Customer tone was calm throughout the call."
-        
-        
-        elif mood == "Frustrated" and not has_frustrated and not has_angry:
-            mood_reason_lower = data.get("mood_reason", "").lower()
-            strong_frustration_phrases = [
-                "repeatedly",
-                "multiple times",
-                "dissatisf",
-                "not resolved",
-                "still not",
-                "keeps happening",
-                "raised voice",
-                "loudly",
-                "impatient",
-                "demanded",
-                "complained multiple",
-                "expressed frustration",
-                "upset"
-            ]
-            reason_has_strong_frustration = any(x in mood_reason_lower for x in strong_frustration_phrases)
-            if not reason_has_strong_frustration:
-                data["customer_mood"] = "Neutral"
                 data["mood_reason"] = "Customer tone was calm throughout the call."
-    # else: Gemini's reasoning is strong → keep Frustrated as-is
-
-        # Satisfied and Neutral are never overridden - trust Gemini on those
-        if mood == "Angry" and not has_angry:
-            data["customer_mood"] = "Neutral" if not has_frustrated else "Frustrated"
-            data["mood_reason"] = "No strong anger signals detected in transcript."
+        elif mood == "Concerned" and not has_recurring_issue:
+            # Model said Concerned but transcript doesn't support a recurring issue -> Neutral.
+            data["customer_mood"] = "Neutral"
+            data["mood_reason"] = "No recurring issue or complaint detected in transcript."
+       
         # -------- GREETINGS / CLOSINGS SANITY FILTER --------
         VALID_GREETINGS = {
             "hello", "hi", "good morning",
@@ -1301,8 +1311,11 @@ Output JSON only.
             "hare krishna", "हरे कृष्ण", "हरे कृष्णा",
             "jai shree krishna", "जय श्री कृष्ण",
             "jai hind",
-            "radhe radhe"
-
+            "radhe radhe",
+            
+            "गुड मॉर्निंग", "गूड मॉर्निंग", "गुड मार्निंग",
+            "गुड आफ्टरनून", "गूड आफ्टरनून",
+            "गुड इव्हिनिंग", "गूड इव्हिनिंग", "गुड इवनिंग"
         }
 
     #     VALID_CLOSINGS = {
@@ -1359,6 +1372,33 @@ Output JSON only.
 
         HONORIFICS = {"sir", "madam", "सर", "मॅडम"}
 
+        GREETING_PHRASE_TUPLES = sorted(
+            (tuple(g.split()) for g in VALID_GREETINGS),
+            key=len, reverse=True
+        )
+
+        def match_greeting_phrases(words):
+            """Scan the word list and PICK OUT any known greeting phrases
+            wherever they appear (e.g. ['hello','good','morning','mam',
+            'retailware','se','ginna','bolte'] -> ['hello', 'good morning']).
+            Unrecognized words (names, honorifics, sentence continuation)
+            are simply skipped instead of discarding the whole line."""
+            matched = []
+            i, n = 0, len(words)
+            while i < n:
+                matched_here = False
+                for phrase in GREETING_PHRASE_TUPLES:
+                    plen = len(phrase)
+                    if plen and tuple(words[i:i+plen]) == phrase:
+                        matched.append(" ".join(phrase))
+                        i += plen
+                        matched_here = True
+                        break
+                if not matched_here:
+                    i += 1  # skip this unrecognized word, keep scanning
+            return matched if matched else None
+        
+
         def _clean_word(w):
             return w.strip(" ।.,!?\"'()")
 
@@ -1367,17 +1407,20 @@ Output JSON only.
             g_lower = g.lower().strip()
             words = [_clean_word(w) for w in g_lower.split() if _clean_word(w)]
 
-            if len(words) > 4 or not words:
+            if len(words) > 25 or not words:
                 continue
 
-            core = " ".join(w for w in words if w not in HONORIFICS).strip()
+            core_words = [w for w in words if w not in HONORIFICS]
+            if not core_words:
+                continue
 
-            if core in VALID_GREETINGS:
-                clean_greetings.append(core)        # "hare krishna" ✅
-            elif words[0] in VALID_GREETINGS:
-                clean_greetings.append(words[0])    # "hello sir" → "hello" ✅
+            matched = match_greeting_phrases(core_words)
+            if matched:
+                clean_greetings.extend(matched)            
+            elif core_words[0] in VALID_GREETINGS:
+                clean_greetings.append(core_words[0])        
 
-        data["greetings"] = list(dict.fromkeys(clean_greetings))[:3]
+        data["greetings"] = list(dict.fromkeys(clean_greetings))[:5]
 
         clean_closings = []
 

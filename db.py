@@ -2,6 +2,8 @@ import pyodbc
 import time
 import os
 import re
+import requests
+from datetime import date
 
 from testnew import load_env_file
 load_env_file()
@@ -31,12 +33,45 @@ else:
 def get_conn():
     return pyodbc.connect(CONN_STR)
 
+_last_rate_date = None
+_usd_to_inr = None
 
+def get_usd_to_inr():
+    global _last_rate_date, _usd_to_inr
+
+   
+    if _last_rate_date == date.today() and _usd_to_inr:
+        return _usd_to_inr
+
+    try:
+        response = requests.get(
+            "https://open.er-api.com/v6/latest/USD",
+            timeout=5
+        )
+
+        data = response.json()
+
+        _usd_to_inr = float(data["rates"]["INR"])
+        _last_rate_date = date.today()
+
+        print(f"Today's USD Rate : {_usd_to_inr}")
+
+        return _usd_to_inr
+
+    except Exception as e:
+
+        print("Exchange Rate API Error:", e)
+
+        if _usd_to_inr:
+            return _usd_to_inr
+
+        return 87.0
+    
 def init_db():
     conn = get_conn()
     cur = conn.cursor()
 
-    # "Main" table — short, structured fields. Easy to browse in SSMS.
+
     cur.execute("""
         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='call_summaries' AND xtype='U')
         CREATE TABLE call_summaries (
@@ -52,6 +87,8 @@ def init_db():
             mobile_no NVARCHAR(20),
             customer_name NVARCHAR(300),
             token_total INT,
+            token_cost DECIMAL(10,4),
+            usd_to_inr DECIMAL(10,4),
             elapsed_seconds FLOAT,
             created_at DATETIME2 DEFAULT SYSDATETIME()
         )
@@ -87,7 +124,24 @@ def init_db():
             WHERE object_id = OBJECT_ID('call_summaries') AND name = 'customer_name'
         )
         ALTER TABLE call_summaries ADD customer_name NVARCHAR(300);
+        
     """)
+    cur.execute("""
+            IF NOT EXISTS (
+                SELECT * FROM sys.columns
+                WHERE object_id = OBJECT_ID('call_summaries') AND name = 'token_cost'
+            )
+           ALTER TABLE call_summaries ADD token_cost DECIMAL(10,4);
+            
+        """)
+    cur.execute("""
+            IF NOT EXISTS (
+                SELECT * FROM sys.columns
+                WHERE object_id = OBJECT_ID('call_summaries')
+                AND name = 'usd_to_inr'
+            )
+            ALTER TABLE call_summaries ADD usd_to_inr DECIMAL(10,4);
+""")
 
     conn.commit()
     cur.close()
@@ -126,6 +180,18 @@ def extract_uniqueid_from_filename(filename):
     return match.group(1) if match else None
 
 
+def extract_reference_from_filename(filename):
+    """Pull the trailing reference number out of filenames like
+    '25-07-2026-1784972435.37525-12.wav' -> '12'.
+    This number sits right after the CDR uniqueid (<10 digits>.<4-6 digits>)
+    and right before the file extension."""
+    if not filename:
+        return None
+    stem = os.path.splitext(filename)[0]
+    match = re.search(r'\d{10}\.\d{4,6}-(\d+)$', stem)
+    return match.group(1) if match else None
+
+
 def lookup_mobile_from_cdr(cur, uniqueid):
     """For extension-only recordings (no mobile number in filename), look up
     src/dst from SynapseCDR..RecordsFrom_SIP_MySQL by uniqueid, and return
@@ -149,6 +215,34 @@ def lookup_mobile_from_cdr(cur, uniqueid):
                 return str(val).strip()
     except Exception as e:
         print(f"[DB] CDR lookup failed for uniqueid={uniqueid}: {e}")
+    return None
+
+
+def lookup_extension_from_cdr(cur, uniqueid):
+    """For recordings where the filename only has the customer's mobile
+    number embedded (no reference number), look up the 'dst' column from
+    SynapseCDR..RecordsFrom_SIP_MySQL by uniqueid — that's the internal
+    extension/reference code the call landed on (e.g. src='+919019697777',
+    dst='55' -> returns '55'). This extension is then matched against
+    UserMaster.Reference to resolve the executive's name.
+
+    (Deliberately just takes 'dst' directly, rather than guessing which of
+    src/dst "looks like" a mobile number — src can be a '+91...' mobile,
+    which doesn't match a plain \\d{10} check either and was wrongly picked
+    over dst before.)"""
+    if not uniqueid:
+        return None
+    try:
+        cur.execute("""
+            SELECT TOP 1 dst
+            FROM SynapseCDR.dbo.RecordsFrom_SIP_MySQL
+            WHERE uniqueid = ?
+        """, (uniqueid,))
+        row = cur.fetchone()
+        if row and row[0] and str(row[0]).strip():
+            return str(row[0]).strip()
+    except Exception as e:
+        print(f"[DB] CDR extension lookup failed for uniqueid={uniqueid}: {e}")
     return None
 
 
@@ -217,6 +311,68 @@ def lookup_customer_name(cur, mobile_no):
     return None
 
 
+def lookup_executive_name_by_reference(cur, reference):
+    """Look up the executive's Name in UserMaster using the reference number
+    embedded in the recording filename (the trailing number before the
+    extension, e.g. '...-1784972435.37525-12.wav' -> reference '12')."""
+    if not reference:
+        return None
+    try:
+        cur.execute("""
+            SELECT TOP 1 Name
+            FROM UserMaster
+            WHERE Reference = ?
+        """, (reference,))
+        row = cur.fetchone()
+        if row and row[0] and str(row[0]).strip():
+            return str(row[0]).strip()
+    except Exception as e:
+        print(f"[DB] Executive lookup failed for reference={reference}: {e}")
+    return None
+
+
+def resolve_executive_name(filename):
+    """Standalone helper (opens its own connection) so callers like
+    web_app.py can resolve the executive's name from the reference number
+    embedded in the recording filename (the trailing number before the
+    extension, e.g. '...-1784972435.37525-12.wav' -> reference '12').
+
+    Fallback: if the filename has no reference number embedded directly
+    (e.g. it only has the customer's mobile number, like
+    '...-1784980794.38134-+919019697777.wav'), resolve the internal
+    extension/reference code via the CDR uniqueid -> src/dst lookup
+    instead, and use THAT to match against UserMaster.Reference."""
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        reference = extract_reference_from_filename(filename)
+        if reference:
+            return lookup_executive_name_by_reference(cur, reference)
+
+        uniqueid = extract_uniqueid_from_filename(filename)
+        extension = lookup_extension_from_cdr(cur, uniqueid)
+        return lookup_executive_name_by_reference(cur, extension)
+    finally:
+        cur.close()
+        conn.close()
+
+
+def resolve_customer_name(filename):
+    """Standalone helper (opens its own connection) so callers like
+    web_app.py can resolve the customer's name from the mobile number tied
+    to the filename (either embedded directly, or resolved via the CDR
+    uniqueid -> src/dst lookup) BEFORE displaying the analysis text.
+    Returns the resolved name, or None if no mobile/customer match found."""
+    conn = get_conn()
+    cur = conn.cursor()
+    try:
+        mobile_no = resolve_mobile_no(cur, filename)
+        return lookup_customer_name(cur, mobile_no)
+    finally:
+        cur.close()
+        conn.close()
+
+
 def split_summary(combined_summary):
     """Split the combined 'SHORT SUMMARY\\n====\\n...\\n\\nLONG SUMMARY\\n====\\n...'
     text (from testnew.analyze_audio_with_gemini) into clean short/long parts."""
@@ -250,6 +406,24 @@ def split_summary(combined_summary):
 
 def save_call_summary(filename, analysis_text, keywords, facts, summary,
                        transcript, token_info=None, elapsed_time=None):
+    
+    total_tokens = (token_info or {}).get("total", 0)
+
+
+    INPUT_PRICE_PER_MILLION = 0.30
+    OUTPUT_PRICE_PER_MILLION = 2.50
+
+    input_tokens = (token_info or {}).get("prompt", 0)
+    output_tokens = (token_info or {}).get("response", 0)
+
+    usd_cost = (
+        (input_tokens / 1_000_000) * INPUT_PRICE_PER_MILLION +
+        (output_tokens / 1_000_000) * OUTPUT_PRICE_PER_MILLION
+    )
+
+    USD_TO_INR = get_usd_to_inr()
+
+    token_cost = round(usd_cost * USD_TO_INR, 4)
     # analysis_text is the multi-line "Customer Mood: ... \nExecutive Name: ..." block
     fields = {"customer_mood": "", "mood_reason": "", "executive_name": "",
               "greetings": "", "closings": "", "executive_tone": ""}
@@ -286,6 +460,21 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
     mobile_no = resolve_mobile_no(cur, filename)
     customer_name = lookup_customer_name(cur, mobile_no)
 
+    # Resolve executive name from the reference number embedded in the
+    # filename (via UserMaster), overriding whatever the transcript-based
+    # analysis produced. If no reference is embedded directly in the
+    # filename (e.g. mobile-number-only filenames), fall back to resolving
+    # the internal extension via the CDR uniqueid -> src/dst lookup instead.
+    # If neither resolves to a UserMaster match, fall back to "Not mentioned".
+    reference = extract_reference_from_filename(filename)
+    if reference:
+        db_executive_name = lookup_executive_name_by_reference(cur, reference)
+    else:
+        uniqueid = extract_uniqueid_from_filename(filename)
+        extension = lookup_extension_from_cdr(cur, uniqueid)
+        db_executive_name = lookup_executive_name_by_reference(cur, extension)
+    fields["executive_name"] = db_executive_name if db_executive_name else "Not mentioned"
+
     # 1) Upsert the "main" row and get its id back
     cur.execute("""
         MERGE call_summaries AS target
@@ -303,6 +492,8 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
                 mobile_no = ?,
                 customer_name = ?,
                 token_total = ?,
+                token_cost = ?,
+                usd_to_inr = ?,
                 elapsed_seconds = ?,
                 created_at = SYSDATETIME()
         WHEN NOT MATCHED THEN
@@ -310,21 +501,21 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
                 filename, customer_mood, mood_reason, executive_name,
                 greetings, closings, executive_tone, keywords,
                 mobile_no, customer_name,
-                token_total, elapsed_seconds
+                token_total, token_cost, usd_to_inr, elapsed_seconds
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        OUTPUT inserted.id;
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            OUTPUT inserted.id;
     """, (
         filename,
         fields["customer_mood"], fields["mood_reason"], fields["executive_name"],
         fields["greetings"], fields["closings"], fields["executive_tone"],
         keywords, mobile_no, customer_name,
-        (token_info or {}).get("total"), elapsed_time,
+        total_tokens, token_cost,USD_TO_INR, elapsed_time,
         filename,
         fields["customer_mood"], fields["mood_reason"], fields["executive_name"],
         fields["greetings"], fields["closings"], fields["executive_tone"],
         keywords, mobile_no, customer_name,
-        (token_info or {}).get("total"), elapsed_time
+        total_tokens, token_cost, USD_TO_INR,elapsed_time
     ))
     row = cur.fetchone()
     conn.commit()
@@ -399,32 +590,50 @@ def backfill_customer_names():
     conn.close()
     print(f"Updated {updated} row(s)")
 
-
 def delete_call_summary(call_id):
-    """Delete a call_summaries row (and its matching call_summary_details row),
-    then renumber all remaining ids back to a clean 1,2,3... sequence.
+    """Delete a call summary and keep IDs sequential.
+       If all records are deleted, restart IDENTITY from 1.
+    """
 
-    Example: rows 1,2,3,4,5 exist -> delete id=2 -> remaining rows are
-    renumbered so they become 1,2,3,4 again (no gaps)."""
     conn = get_conn()
     cur = conn.cursor()
 
     try:
-        # 1) Remove the details row first (it has the FK), then the main row
-        cur.execute("DELETE FROM call_summary_details WHERE call_id = ?", (call_id,))
-        cur.execute("DELETE FROM call_summaries WHERE id = ?", (call_id,))
+        # Delete child row first (FK)
+        cur.execute(
+            "DELETE FROM call_summary_details WHERE call_id = ?",
+            (call_id,)
+        )
 
-        # 2) Close the gap left behind by renumbering everything sequentially
-        _renumber_ids(cur)
+        # Delete parent row
+        cur.execute(
+            "DELETE FROM call_summaries WHERE id = ?",
+            (call_id,)
+        )
+
+        # Check whether any records remain
+        cur.execute("SELECT COUNT(*) FROM call_summaries")
+        row_count = cur.fetchone()[0]
+
+        if row_count > 0:
+           
+            _renumber_ids(cur)
+        else:
+            # Table is empty
+            # Reset IDENTITY so next insert starts from 1
+            cur.execute("""
+                DBCC CHECKIDENT ('call_summaries', RESEED, 0)
+            """)
 
         conn.commit()
+
     except Exception as e:
         conn.rollback()
-        raise e
+        raise
+
     finally:
         cur.close()
         conn.close()
-
 
 def _renumber_ids(cur):
     """Renumber call_summaries.id (and the matching call_summary_details.call_id)
@@ -432,13 +641,13 @@ def _renumber_ids(cur):
     Internal helper — always call this from inside a function that already
     has an open cursor/transaction (e.g. delete_call_summary)."""
 
-    # FK has to go temporarily, otherwise the id UPDATE below will be blocked
+    
     cur.execute("""
         IF EXISTS (SELECT * FROM sys.foreign_keys WHERE name = 'FK_details_call')
             ALTER TABLE call_summary_details DROP CONSTRAINT FK_details_call
     """)
 
-    # Update child table first (old id -> new sequential id)
+    
     cur.execute("""
         ;WITH ordered AS (
             SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS new_id
@@ -450,7 +659,7 @@ def _renumber_ids(cur):
         JOIN ordered o ON d.call_id = o.id
     """)
 
-    # Then update the parent table the same way
+   
     cur.execute("""
         ;WITH ordered AS (
             SELECT id, ROW_NUMBER() OVER (ORDER BY id) AS new_id
@@ -462,14 +671,13 @@ def _renumber_ids(cur):
         JOIN ordered o ON c.id = o.id
     """)
 
-    # Reset the IDENTITY seed so the next insert continues right after the
-    # current max id (e.g. if 4 rows remain, next insert becomes id 5)
+
     cur.execute("""
         DECLARE @max INT = (SELECT ISNULL(MAX(id), 0) FROM call_summaries);
         DBCC CHECKIDENT ('call_summaries', RESEED, @max)
     """)
 
-    # Put the FK back
+  
     cur.execute("""
         ALTER TABLE call_summary_details
         ADD CONSTRAINT FK_details_call FOREIGN KEY (call_id)
