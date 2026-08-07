@@ -67,30 +67,124 @@ def get_usd_to_inr():
 
         return 87.0
     
+# def init_db():
+#     conn = get_conn()
+#     cur = conn.cursor()
+
+
+#     cur.execute("""
+#         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='call_summaries' AND xtype='U')
+#         CREATE TABLE call_summaries (
+#             id INT IDENTITY(1,1) PRIMARY KEY,
+#             filename NVARCHAR(500) NOT NULL UNIQUE,
+#             customer_mood NVARCHAR(100),
+#             mood_reason NVARCHAR(MAX),
+#             executive_name NVARCHAR(200),
+#             greetings NVARCHAR(MAX),
+#             closings NVARCHAR(MAX),
+#             executive_tone NVARCHAR(100),
+#             keywords NVARCHAR(MAX),
+#             mobile_no NVARCHAR(20),
+#             customer_name NVARCHAR(300),
+#             token_total INT,
+#             token_cost DECIMAL(10,4),
+#             usd_to_inr DECIMAL(10,4),
+#             elapsed_seconds FLOAT,
+#             created_at DATETIME2 DEFAULT SYSDATETIME()
+#         )
+#     """)
+
+#     # "Details" table — the long text blocks, kept out of the main table.
+#     cur.execute("""
+#         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='call_summary_details' AND xtype='U')
+#         CREATE TABLE call_summary_details (
+#             call_id INT PRIMARY KEY,
+#             facts NVARCHAR(MAX),
+#             short_summary NVARCHAR(MAX),
+#             long_summary NVARCHAR(MAX),
+#             transcript NVARCHAR(MAX),
+#             analysis_raw NVARCHAR(MAX),
+#             CONSTRAINT FK_details_call FOREIGN KEY (call_id)
+#                 REFERENCES call_summaries(id)
+#         )
+#     """)
+
+#     # Safety net: if call_summaries already existed from before (without the
+#     # new columns), add them now so old installs pick up the new feature too.
+#     cur.execute("""
+#         IF NOT EXISTS (
+#             SELECT * FROM sys.columns
+#             WHERE object_id = OBJECT_ID('call_summaries') AND name = 'mobile_no'
+#         )
+#         ALTER TABLE call_summaries ADD mobile_no NVARCHAR(20);
+#     """)
+#     cur.execute("""
+#         IF NOT EXISTS (
+#             SELECT * FROM sys.columns
+#             WHERE object_id = OBJECT_ID('call_summaries') AND name = 'customer_name'
+#         )
+#         ALTER TABLE call_summaries ADD customer_name NVARCHAR(300);
+        
+#     """)
+#     cur.execute("""
+#             IF NOT EXISTS (
+#                 SELECT * FROM sys.columns
+#                 WHERE object_id = OBJECT_ID('call_summaries') AND name = 'token_cost'
+#             )
+#            ALTER TABLE call_summaries ADD token_cost DECIMAL(10,4);
+            
+#         """)
+#     cur.execute("""
+#             IF NOT EXISTS (
+#                 SELECT * FROM sys.columns
+#                 WHERE object_id = OBJECT_ID('call_summaries')
+#                 AND name = 'usd_to_inr'
+#             )
+#             ALTER TABLE call_summaries ADD usd_to_inr DECIMAL(10,4);
+#     """)
+#     cur.execute("""
+#             IF NOT EXISTS (
+#                 SELECT * FROM sys.columns
+#                 WHERE object_id = OBJECT_ID('call_summaries')
+#                 AND name = 'call_date'
+#             )
+#             ALTER TABLE call_summaries ADD call_date DATETIME2;
+#     """)
+
+
+#     conn.commit()
+#     cur.close()
+#     conn.close()
+
 def init_db():
     conn = get_conn()
     cur = conn.cursor()
 
-
     cur.execute("""
         IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='call_summaries' AND xtype='U')
         CREATE TABLE call_summaries (
-            id INT IDENTITY(1,1) PRIMARY KEY,
-            filename NVARCHAR(500) NOT NULL UNIQUE,
-            customer_mood NVARCHAR(100),
-            mood_reason NVARCHAR(MAX),
-            executive_name NVARCHAR(200),
-            greetings NVARCHAR(MAX),
-            closings NVARCHAR(MAX),
-            executive_tone NVARCHAR(100),
-            keywords NVARCHAR(MAX),
-            mobile_no NVARCHAR(20),
-            customer_name NVARCHAR(300),
-            token_total INT,
-            token_cost DECIMAL(10,4),
-            usd_to_inr DECIMAL(10,4),
-            elapsed_seconds FLOAT,
-            created_at DATETIME2 DEFAULT SYSDATETIME()
+            id                INT IDENTITY(1,1) PRIMARY KEY,
+            filename          NVARCHAR(500) NOT NULL UNIQUE,
+            call_date         DATETIME2,
+
+            executive_name    NVARCHAR(200),
+            customer_name     NVARCHAR(300),
+            mobile_no         NVARCHAR(20),
+            software_name     NVARCHAR(200),
+            call_duration     INT,
+
+            customer_mood     NVARCHAR(100),
+            mood_reason       NVARCHAR(MAX),
+            executive_tone    NVARCHAR(100),
+            greetings         NVARCHAR(MAX),
+            closings          NVARCHAR(MAX),
+            keywords          NVARCHAR(MAX),
+
+            token_total       INT,
+            token_cost        DECIMAL(10,4),
+            usd_to_inr        DECIMAL(10,4),
+            elapsed_seconds   FLOAT,
+            created_at        DATETIME2 DEFAULT SYSDATETIME()
         )
     """)
 
@@ -109,44 +203,32 @@ def init_db():
         )
     """)
 
-    # Safety net: if call_summaries already existed from before (without the
-    # new columns), add them now so old installs pick up the new feature too.
-    cur.execute("""
-        IF NOT EXISTS (
-            SELECT * FROM sys.columns
-            WHERE object_id = OBJECT_ID('call_summaries') AND name = 'mobile_no'
-        )
-        ALTER TABLE call_summaries ADD mobile_no NVARCHAR(20);
-    """)
-    cur.execute("""
-        IF NOT EXISTS (
-            SELECT * FROM sys.columns
-            WHERE object_id = OBJECT_ID('call_summaries') AND name = 'customer_name'
-        )
-        ALTER TABLE call_summaries ADD customer_name NVARCHAR(300);
-        
-    """)
-    cur.execute("""
+    # Safety net: if call_summaries already existed from an older install
+    # (without the newer columns), add them now — this keeps old installs
+    # working even though the CREATE TABLE above only runs once, on a
+    # brand-new database. Column order for a table that already exists
+    # can't be changed by ALTER, so if you need the exact new sequence on
+    # an EXISTING database, run recreate_call_summaries.sql once instead.
+    for col_name, col_def in [
+        ("mobile_no",      "NVARCHAR(20)"),
+        ("customer_name",  "NVARCHAR(300)"),
+        ("token_cost",     "DECIMAL(10,4)"),
+        ("usd_to_inr",     "DECIMAL(10,4)"),
+        ("call_date",      "DATETIME2"),
+        ("software_name",  "NVARCHAR(200)"),
+        ("call_duration",  "INT"),
+    ]:
+        cur.execute(f"""
             IF NOT EXISTS (
                 SELECT * FROM sys.columns
-                WHERE object_id = OBJECT_ID('call_summaries') AND name = 'token_cost'
+                WHERE object_id = OBJECT_ID('call_summaries') AND name = '{col_name}'
             )
-           ALTER TABLE call_summaries ADD token_cost DECIMAL(10,4);
-            
+            ALTER TABLE call_summaries ADD {col_name} {col_def};
         """)
-    cur.execute("""
-            IF NOT EXISTS (
-                SELECT * FROM sys.columns
-                WHERE object_id = OBJECT_ID('call_summaries')
-                AND name = 'usd_to_inr'
-            )
-            ALTER TABLE call_summaries ADD usd_to_inr DECIMAL(10,4);
-""")
 
     conn.commit()
     cur.close()
     conn.close()
-
 
 def extract_mobile_from_filename(filename):
     """Pull a 10-digit mobile number out of filenames like
@@ -244,6 +326,34 @@ def lookup_extension_from_cdr(cur, uniqueid):
     except Exception as e:
         print(f"[DB] CDR extension lookup failed for uniqueid={uniqueid}: {e}")
     return None
+def lookup_calldate_from_cdr(cur, uniqueid):
+    """Look up the actual call date/time from SynapseCDR..RecordsFrom_SIP_MySQL
+    by uniqueid (the same uniqueid segment embedded in every recording
+    filename, e.g. '29-07-2026-1785317604.49296-95.wav' -> '1785317604.49296').
+    Returns a datetime, or None if not found."""
+    if not uniqueid:
+        return None
+    try:
+        cur.execute("""
+            SELECT TOP 1 calldate
+            FROM SynapseCDR.dbo.RecordsFrom_SIP_MySQL
+            WHERE uniqueid = ?
+        """, (uniqueid,))
+        row = cur.fetchone()
+        if row and row[0]:
+            return row[0]
+    except Exception as e:
+        print(f"[DB] CDR call_date lookup failed for uniqueid={uniqueid}: {e}")
+    return None
+
+
+def resolve_call_date(cur, filename):
+    """Resolve the actual call date/time for a recording filename, via the
+    uniqueid segment that's always embedded in the filename (regardless of
+    whether it's a mobile-number or extension-only recording)."""
+    uniqueid = extract_uniqueid_from_filename(filename)
+    return lookup_calldate_from_cdr(cur, uniqueid)
+
 
 
 def resolve_mobile_no(cur, filename):
@@ -257,6 +367,75 @@ def resolve_mobile_no(cur, filename):
 
     uniqueid = extract_uniqueid_from_filename(filename)
     return lookup_mobile_from_cdr(cur, uniqueid)
+
+def resolve_cust_id(cur, mobile_no):
+    """Find the CustId for a given mobile number — checks CustomerMaster
+    directly first (mobile belongs to the customer), then via
+    CustDependents (mobile belongs to a dependent, whose CustId points
+    back to the actual customer). Needed to look up software_name from
+    CustomerAttributes."""
+    if not mobile_no:
+        return None
+    try:
+        cur.execute("SELECT TOP 1 CustId FROM CustomerMaster WHERE MobileNo = ?", (mobile_no,))
+        row = cur.fetchone()
+        if row and row[0]:
+            return row[0]
+
+        cur.execute("SELECT TOP 1 CustId FROM CustDependents WHERE DepMobileNo = ?", (mobile_no,))
+        row = cur.fetchone()
+        if row and row[0]:
+            return row[0]
+    except Exception as e:
+        print(f"[DB] CustId lookup failed for mobile_no={mobile_no}: {e}")
+    return None
+
+
+def lookup_software_name(cur, cust_id):
+    """Look up the software name from CustomerAttributes for this customer.
+    (DepID=1, AttributeID=1 is fixed, per business rule.)"""
+    if not cust_id:
+        return None
+    try:
+        cur.execute("""
+            SELECT TOP 1 AttrValue
+            FROM CustomerAttributes
+            WHERE CustId = ? AND DepID = 1 AND AttributeID = 1
+        """, (cust_id,))
+        row = cur.fetchone()
+        if row and row[0] and str(row[0]).strip():
+            return str(row[0]).strip()
+    except Exception as e:
+        print(f"[DB] Software name lookup failed for CustId={cust_id}: {e}")
+    return None
+
+
+def lookup_call_duration_from_cdr(cur, uniqueid):
+    """Look up the call duration (in seconds) from
+    SynapseCDR..RecordsFrom_SIP_MySQL by uniqueid, using the 'duration'
+    column."""
+    if not uniqueid:
+        return None
+    try:
+        cur.execute("""
+            SELECT TOP 1 duration
+            FROM SynapseCDR.dbo.RecordsFrom_SIP_MySQL
+            WHERE uniqueid = ?
+        """, (uniqueid,))
+        row = cur.fetchone()
+        if row and row[0] is not None:
+            return int(row[0])
+    except Exception as e:
+        print(f"[DB] Call duration lookup failed for uniqueid={uniqueid}: {e}")
+    return None
+
+
+def resolve_call_duration(cur, filename):
+    """Entry point: resolve call duration (seconds) for a recording
+    filename via the uniqueid embedded in the filename (same pattern as
+    resolve_call_date)."""
+    uniqueid = extract_uniqueid_from_filename(filename)
+    return lookup_call_duration_from_cdr(cur, uniqueid)
 
 
 def lookup_customer_name(cur, mobile_no):
@@ -404,11 +583,161 @@ def split_summary(combined_summary):
     return short_part, long_part
 
 
+# def save_call_summary(filename, analysis_text, keywords, facts, summary,
+#                        transcript, token_info=None, elapsed_time=None):
+    
+#     total_tokens = (token_info or {}).get("total", 0)
+
+
+#     INPUT_PRICE_PER_MILLION = 0.30
+#     OUTPUT_PRICE_PER_MILLION = 2.50
+
+#     input_tokens = (token_info or {}).get("prompt", 0)
+#     output_tokens = (token_info or {}).get("response", 0)
+
+#     usd_cost = (
+#         (input_tokens / 1_000_000) * INPUT_PRICE_PER_MILLION +
+#         (output_tokens / 1_000_000) * OUTPUT_PRICE_PER_MILLION
+#     )
+
+#     USD_TO_INR = get_usd_to_inr()
+
+#     token_cost = round(usd_cost * USD_TO_INR, 4)
+#     # analysis_text is the multi-line "Customer Mood: ... \nExecutive Name: ..." block
+#     fields = {"customer_mood": "", "mood_reason": "", "executive_name": "",
+#               "greetings": "", "closings": "", "executive_tone": ""}
+#     for line in (analysis_text or "").splitlines():
+#         if ":" not in line:
+#             continue
+#         key, val = line.split(":", 1)
+#         key = key.strip().lower()
+#         val = val.strip()
+#         if key.startswith("customer mood"):
+#             if "(" in val and val.endswith(")"):
+#                 mood, reason = val.split("(", 1)
+#                 fields["customer_mood"] = mood.strip()
+#                 fields["mood_reason"] = reason.rstrip(")").strip()
+#             else:
+#                 fields["customer_mood"] = val
+#         elif key.startswith("executive name"):
+#             fields["executive_name"] = val
+#         elif key.startswith("greetings"):
+#             fields["greetings"] = val
+#         elif key.startswith("closings"):
+#             fields["closings"] = val
+#         elif key.startswith("executive tone"):
+#             fields["executive_tone"] = val
+
+#     short_summary, long_summary = split_summary(summary)
+
+#     conn = get_conn()
+#     cur = conn.cursor()
+
+#     call_date = resolve_call_date(cur, filename)
+#     mobile_no = resolve_mobile_no(cur, filename)
+#     customer_name = lookup_customer_name(cur, mobile_no)
+
+#     # Resolve executive name from the reference number embedded in the
+#     # filename (via UserMaster), overriding whatever the transcript-based
+#     # analysis produced. If no reference is embedded directly in the
+#     # filename (e.g. mobile-number-only filenames), fall back to resolving
+#     # the internal extension via the CDR uniqueid -> src/dst lookup instead.
+#     # If neither resolves to a UserMaster match, fall back to "Not mentioned".
+#     reference = extract_reference_from_filename(filename)
+#     if reference:
+#         db_executive_name = lookup_executive_name_by_reference(cur, reference)
+#     else:
+#         uniqueid = extract_uniqueid_from_filename(filename)
+#         extension = lookup_extension_from_cdr(cur, uniqueid)
+#         db_executive_name = lookup_executive_name_by_reference(cur, extension)
+#     fields["executive_name"] = db_executive_name if db_executive_name else "Not mentioned"
+
+#     # 1) Upsert the "main" row and get its id back
+#     cur.execute("""
+#         MERGE call_summaries AS target
+#         USING (SELECT ? AS filename) AS src
+#         ON target.filename = src.filename
+#         WHEN MATCHED THEN
+#             UPDATE SET
+#                 customer_mood = ?,
+#                 mood_reason = ?,
+#                 executive_name = ?,
+#                 greetings = ?,
+#                 closings = ?,
+#                 executive_tone = ?,
+#                 keywords = ?,
+#                 mobile_no = ?,
+#                 customer_name = ?,
+#                 token_total = ?,
+#                 token_cost = ?,
+#                 usd_to_inr = ?,
+#                 elapsed_seconds = ?,
+#                 call_date = ?,
+#                 created_at = SYSDATETIME()
+#         WHEN NOT MATCHED THEN
+#             INSERT (
+#                 filename, customer_mood, mood_reason, executive_name,
+#                 greetings, closings, executive_tone, keywords,
+#                 mobile_no, customer_name,
+#                 token_total, token_cost, usd_to_inr, elapsed_seconds, call_date
+#             )
+#             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+#             OUTPUT inserted.id;
+#     """, (
+#         filename,
+#         fields["customer_mood"], fields["mood_reason"], fields["executive_name"],
+#         fields["greetings"], fields["closings"], fields["executive_tone"],
+#         keywords, mobile_no, customer_name,
+#         total_tokens, token_cost, USD_TO_INR, elapsed_time, call_date,
+#         filename,
+#         fields["customer_mood"], fields["mood_reason"], fields["executive_name"],
+#         fields["greetings"], fields["closings"], fields["executive_tone"],
+#         keywords, mobile_no, customer_name,
+#         total_tokens, token_cost, USD_TO_INR, elapsed_time, call_date
+#     ))
+#     row = cur.fetchone()
+#     conn.commit()
+
+#     if row:
+#         call_id = row[0]
+#     else:
+#         # Some ODBC drivers don't return OUTPUT rows through MERGE reliably —
+#         # fall back to a plain lookup.
+#         cur.execute("SELECT id FROM call_summaries WHERE filename = ?", (filename,))
+#         call_id = cur.fetchone()[0]
+
+#     # 2) Upsert the matching "details" row (the long text blocks)
+#     cur.execute("""
+#         MERGE call_summary_details AS target
+#         USING (SELECT ? AS call_id) AS src
+#         ON target.call_id = src.call_id
+#         WHEN MATCHED THEN
+#             UPDATE SET
+#                 facts = ?,
+#                 short_summary = ?,
+#                 long_summary = ?,
+#                 transcript = ?,
+#                 analysis_raw = ?
+#         WHEN NOT MATCHED THEN
+#             INSERT (call_id, facts, short_summary, long_summary, transcript, analysis_raw)
+#             VALUES (?, ?, ?, ?, ?, ?);
+#     """, (
+#         call_id,
+#         facts, short_summary, long_summary, transcript, analysis_text,
+#         call_id,
+#         facts, short_summary, long_summary, transcript, analysis_text
+#     ))
+#     conn.commit()
+
+#     cur.close()
+#     conn.close()
+#     return call_id
+
+
 def save_call_summary(filename, analysis_text, keywords, facts, summary,
                        transcript, token_info=None, elapsed_time=None):
-    
-    total_tokens = (token_info or {}).get("total", 0)
 
+    total_tokens = (token_info or {}).get("total", 0)
 
     INPUT_PRICE_PER_MILLION = 0.30
     OUTPUT_PRICE_PER_MILLION = 2.50
@@ -454,11 +783,14 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
     conn = get_conn()
     cur = conn.cursor()
 
-    # Resolve mobile number: either embedded in the filename, or (for
-    # extension-only filenames) via the CDR table's uniqueid -> src/dst,
-    # then look up the customer's name from that mobile number.
+    call_date = resolve_call_date(cur, filename)
     mobile_no = resolve_mobile_no(cur, filename)
     customer_name = lookup_customer_name(cur, mobile_no)
+
+    # NEW: software name (via CustId) + call duration (via CDR uniqueid)
+    cust_id = resolve_cust_id(cur, mobile_no)
+    software_name = lookup_software_name(cur, cust_id)
+    call_duration = resolve_call_duration(cur, filename)
 
     # Resolve executive name from the reference number embedded in the
     # filename (via UserMaster), overriding whatever the transcript-based
@@ -482,15 +814,18 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
         ON target.filename = src.filename
         WHEN MATCHED THEN
             UPDATE SET
+                call_date = ?,
+                executive_name = ?,
+                customer_name = ?,
+                mobile_no = ?,
+                software_name = ?,
+                call_duration = ?,
                 customer_mood = ?,
                 mood_reason = ?,
-                executive_name = ?,
+                executive_tone = ?,
                 greetings = ?,
                 closings = ?,
-                executive_tone = ?,
                 keywords = ?,
-                mobile_no = ?,
-                customer_name = ?,
                 token_total = ?,
                 token_cost = ?,
                 usd_to_inr = ?,
@@ -498,24 +833,27 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
                 created_at = SYSDATETIME()
         WHEN NOT MATCHED THEN
             INSERT (
-                filename, customer_mood, mood_reason, executive_name,
-                greetings, closings, executive_tone, keywords,
-                mobile_no, customer_name,
+                filename, call_date,
+                executive_name, customer_name, mobile_no, software_name, call_duration,
+                customer_mood, mood_reason, executive_tone, greetings, closings, keywords,
                 token_total, token_cost, usd_to_inr, elapsed_seconds
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             OUTPUT inserted.id;
     """, (
         filename,
-        fields["customer_mood"], fields["mood_reason"], fields["executive_name"],
-        fields["greetings"], fields["closings"], fields["executive_tone"],
-        keywords, mobile_no, customer_name,
-        total_tokens, token_cost,USD_TO_INR, elapsed_time,
-        filename,
-        fields["customer_mood"], fields["mood_reason"], fields["executive_name"],
-        fields["greetings"], fields["closings"], fields["executive_tone"],
-        keywords, mobile_no, customer_name,
-        total_tokens, token_cost, USD_TO_INR,elapsed_time
+        # UPDATE values
+        call_date,
+        fields["executive_name"], customer_name, mobile_no, software_name, call_duration,
+        fields["customer_mood"], fields["mood_reason"], fields["executive_tone"],
+        fields["greetings"], fields["closings"], keywords,
+        total_tokens, token_cost, USD_TO_INR, elapsed_time,
+        # INSERT values
+        filename, call_date,
+        fields["executive_name"], customer_name, mobile_no, software_name, call_duration,
+        fields["customer_mood"], fields["mood_reason"], fields["executive_tone"],
+        fields["greetings"], fields["closings"], keywords,
+        total_tokens, token_cost, USD_TO_INR, elapsed_time
     ))
     row = cur.fetchone()
     conn.commit()

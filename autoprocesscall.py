@@ -117,19 +117,36 @@ def get_extension(text):
 
 
 def load_processed():
+    """Returns (processed_set, last_processed_time or None)."""
     if STATE_FILE.exists():
         try:
-            return set(json.loads(STATE_FILE.read_text(encoding="utf-8")))
+            data = json.loads(STATE_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                processed = set(data.get("processed_urls", []))
+                last_time_str = data.get("last_processed_time")
+                last_time = parse_call_datetime(last_time_str) if last_time_str else None
+                return processed, last_time
+            else:
+                # old format (plain list) - backward compatible
+                return set(data), None
         except Exception:
-            return set()
-    return set()
+            return set(), None
+    return set(), None
 
 
-def save_processed(processed):
+def save_processed(processed, last_processed_time=None):
+    data = {
+        "processed_urls": sorted(processed),
+        "last_processed_time": (
+            last_processed_time.strftime("%Y-%m-%d %H:%M:%S")
+            if last_processed_time else None
+        ),
+    }
     STATE_FILE.write_text(
-        json.dumps(sorted(processed), ensure_ascii=False, indent=2),
+        json.dumps(data, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
+
 
 def login(session):
     print(f"[AUTO_POLLER][DEBUG] Sending username={CTI_USERNAME!r} (len={len(CTI_USERNAME)}), "
@@ -208,7 +225,7 @@ def fetch_call_rows(session):
         "tosec": "59",
     }
     url = CTI_BASE_URL + "?" + urlencode(params)
-    resp = session.get(url, headers=BROWSER_HEADERS, timeout=30)
+    resp = session.get(url, headers=BROWSER_HEADERS, timeout=90)
     resp.raise_for_status()
     html = resp.text
 
@@ -302,12 +319,20 @@ def submit_to_web_app(call):
 
 
 def run_forever():
-   
-    cutoff_time = datetime.now() - timedelta(minutes=LOOKBACK_MINUTES)
-    print(f"[CONFIG] Only processing calls from {cutoff_time.strftime('%Y-%m-%d %H:%M:%S')} onwards "
-          f"(last {LOOKBACK_MINUTES} minutes).")
 
-    processed = load_processed()
+    processed, last_processed_time = load_processed()
+
+    if last_processed_time:
+        cutoff_time = last_processed_time
+        print(f"[CONFIG] Resuming from last processed call time: "
+              f"{cutoff_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    else:
+        # first-ever run / no history -> fallback to old lookback safety
+        cutoff_time = datetime.now() - timedelta(minutes=LOOKBACK_MINUTES)
+        print(f"[CONFIG] No previous history found. Only processing calls from "
+              f"{cutoff_time.strftime('%Y-%m-%d %H:%M:%S')} onwards "
+              f"(last {LOOKBACK_MINUTES} minutes).")
+
     print(f"=== auto_process_calls started. "
           f"{len(processed)} calls already processed previously. ===")
     session = requests.Session()
@@ -317,13 +342,14 @@ def run_forever():
             if login(session):
                 print("[AUTO_POLLER][AUTH] Login successful.")
                 break
-            print("[AUTO_POLLER][AUTH] Login failed... Retrying in {POLL_INTERVAL_SECONDS}s...")
+            print(f"[AUTO_POLLER][AUTH] Login failed... Retrying in {POLL_INTERVAL_SECONDS}s...")
         except Exception:
             print("[AUTO_POLLER][ERROR] Exception during initial login:")
             traceback.print_exc()
         time.sleep(POLL_INTERVAL_SECONDS)
 
     while True:
+        poll_wait = POLL_INTERVAL_SECONDS
         try:
             calls = fetch_call_rows(session)
             print(f"[POLL] Total answered+recorded calls fetched from page: {len(calls)}")
@@ -343,17 +369,20 @@ def run_forever():
                 print("[POLL] No new calls (all already processed or none found).")
 
             for call in new_calls:
-                # Process strictly one at a time, in order (oldest first).
                 ok = submit_to_web_app(call)
                 if ok:
                     processed.add(call["recording_url"])
-                    save_processed(processed)
+                    call_dt = parse_call_datetime(call["call_date"])
+                    if call_dt and (cutoff_time is None or call_dt > cutoff_time):
+                        cutoff_time = call_dt
+                    save_processed(processed, cutoff_time)
 
         except Exception:
             print("[AUTO_POLLER][ERROR] Unexpected error during poll:")
             traceback.print_exc()
+            poll_wait = 60   
 
-        time.sleep(POLL_INTERVAL_SECONDS)
+        time.sleep(poll_wait)
 
 
 if __name__ == "__main__":

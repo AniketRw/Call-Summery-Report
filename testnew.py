@@ -30,7 +30,7 @@ def load_env_file(env_path=".env"):
 load_env_file()
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 #GEMINI_MODEL = "models/gemini-2.5-flash"
-TRANSCRIPT_MODEL = "models/gemini-2.5-flash"
+TRANSCRIPT_MODEL = "models/gemini-3.5-flash"
 print("Loading Whisper model...")
 # whisper_model = WhisperModel(
 #     "medium",
@@ -38,7 +38,7 @@ print("Loading Whisper model...")
 #     compute_type="int8"
 # )
 print("Whisper model loaded.")
-ANALYSIS_MODEL = "models/gemini-2.5-flash" 
+ANALYSIS_MODEL = "models/gemini-3.5-flash"
 SUMMARY_SEED = 12345
 
 TRANSCRIPT_CORRECTIONS = {
@@ -265,6 +265,26 @@ def fix_speaker_consistency(transcript: str) -> str:
         prev_text = text
 
     return "\n".join(fixed)
+
+def extract_speaker_text(transcript, speaker="Customer"):
+    """Extract ONLY the given speaker's actual dialogue (skipping [Aside]
+    lines), so mood/tone keyword checks don't get polluted by the other
+    speaker's words or by background chatter."""
+    lines = transcript.splitlines()
+    out = []
+    pattern = re.compile(
+        rf"\[\s*\d{{2}}:\d{{2}}\s*\]\s*{speaker}\s*(\[[^\]]*\])?\s*:\s*(.*)"
+    )
+    for line in lines:
+        m = pattern.match(line.strip())
+        if m:
+            aside = (m.group(1) or "").lower()
+            if "aside" in aside:
+                continue
+            out.append(m.group(2))
+    return " ".join(out).lower()
+
+
 def detect_known_executive(transcript):
     transcript_lower = transcript.lower()
 
@@ -294,6 +314,8 @@ def detect_known_executive(transcript):
             if re.search(r'\b' + re.escape(variant.lower()) + r'\b', transcript_lower):
                 return standard_name
     return None
+
+
 
 def get_google_client():
     if not GOOGLE_API_KEY:
@@ -595,10 +617,18 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
     "ASIDE / BACKGROUND SPEECH RULE: "
     "Sometimes a speaker (usually the Customer, who is often physically at a shop/counter) briefly talks to "
     "someone else nearby instead of the other person on the call — e.g. asking a bystander for coins/change, "
-    "giving an unrelated instruction to staff, or a side remark unrelated to the support issue. "
-    "Signs this is happening: the sentence has no connection to the support topic (ID, password, scanning, "
-    "billing, troubleshooting), OR the audio sounds farther from the phone / muffled / echoey compared to their "
-    "normal speaking volume for this call. "
+    "giving an unrelated instruction to staff, calling out a name, or a side remark unrelated to the support issue. "
+    "Watch carefully for ANY of these signs (even just ONE is enough to mark it as an aside): "
+    "1) The sentence has NO connection to the support topic (ID, password, scanning, billing, label, rate, "
+    "troubleshooting, login) — e.g. random names being called out, instructions to staff/family, casual chit-chat. "
+    "2) The audio sounds farther from the phone / muffled / echoey / lower volume compared to the speaker's "
+    "normal speaking level for this call. "
+    "3) The sentence is a short one-word or few-word utterance directed at someone else, not phrased as if "
+    "talking to the person on the call (e.g. missing the polite tone or 'sir/ji' typically used with the caller). "
+    "4) There is a brief overlapping voice, background chatter, or a second person's voice audible along with "
+    "the main speaker. "
+    "Err on the side of marking something as [Aside] if you are even moderately confident it fits — it is better "
+    "to over-mark an aside than to silently merge unrelated background speech into the main conversation. "
     "If you detect this, label the line with the speaker's normal role but ADD the tag [Aside] right after the "
     "role, like '[MM:SS] Customer [Aside]: ...'. Do NOT let an aside change who you think is the Executive or "
     "Customer for the rest of the call — the role identity stays the same, only this one line is marked as an aside. "
@@ -690,16 +720,72 @@ def load_keywords(file_path="keywords.txt"):
         return [
             "Whatsapp", "PhonePe", "UPI", "Mobile Reports", "GSTR2A",
             "Multibranch", "Dashboard", "Analytics", "Purchase Order",
-            "Purchase", "Barcode printing", "Label designer",
+            "Purchase", "Label designer",
             "Bill designer", "User rights", "Counterwise report",
             "Release notes", "Price Protection", "IMEI tracking",
             "Bill Print", "Expiry tracking", "Interbranch IBT",
-            "Sync Issue", "Reports issue", "Printing issue",
+            "Sync Issue", "Reports issue", 
             "Product Scan Issue", "Bill Modification or edit", "Incentive", "loss",
             "scheme"
         ]
     with open(file_path, "r", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip()]
+
+
+def generate_detailed_summary(client, clean_transcript, business_facts, executive_name, customer_mood, mood_reason):
+    """Second, focused pass: generate ONLY the short + long summary,
+    using the already-extracted facts as grounding context. Keeping this
+    separate from the big extraction call means the model isn't juggling
+    9 different fields at once — it can focus purely on writing a coherent,
+    well-structured summary."""
+
+    facts_str = format_facts(business_facts)
+
+    prompt = f"""
+Using the transcript and the already-extracted facts below, write a clear summary of this support call.
+
+Transcript:
+{clean_transcript}
+
+Known facts (already verified — use these, don't re-derive):
+- Executive: {executive_name}
+- Customer mood: {customer_mood} ({mood_reason})
+{facts_str}
+
+Write:
+1. short_summary: 2-3 sentences covering why the customer called, the main issue, and current status/outcome.
+2. summary: A detailed 4-6 sentence summary covering the issue, what the executive did, troubleshooting/guidance given, resolution status, and any pending follow-up.
+
+Rules:
+- Do NOT reverse who did what — Executive helps/troubleshoots, Customer reports/requests.
+- Be specific and factual, grounded only in the transcript and facts given above.
+- No generic filler sentences.
+
+Return valid JSON only, in this exact format:
+{{"short_summary": "...", "summary": "..."}}
+"""
+
+    response = safe_generate(
+        client,
+        model=ANALYSIS_MODEL,
+        contents=[prompt],
+        config=types.GenerateContentConfig(
+            temperature=0.2,
+            response_mime_type="application/json",
+            max_output_tokens=2000,
+        )
+    )
+
+    raw = (response.text or "").strip()
+    try:
+        data = parse_gemini_json(raw)
+    except Exception:
+        data = {}
+
+    short_summary = data.get("short_summary", "Short summary not generated.")
+    long_summary = data.get("summary", "Summary not generated.")
+    return short_summary, long_summary
+
 
 def analyze_audio_with_gemini(audio_path):
     print(">>> ENTERED analyze_audio_with_gemini", flush=True)
@@ -774,10 +860,15 @@ def analyze_audio_with_gemini(audio_path):
                     },
                     "required": ["issues", "requests", "actions"]
                 },
-                "short_summary": {"type": "string"},
-                "summary": {"type": "string"}
+                "other_topics": {
+                    "type": "array",
+                    "items": {"type": "string"}
+                }
+                
+
             },
-            "required": ["executive_name", "greetings", "closings", "customer_mood", "mood_reason", "executive_tone", "keywords", "business_facts","short_summary", "summary"]
+            "required": ["executive_name", "greetings", "closings", "customer_mood", "mood_reason", "executive_tone", "keywords", "business_facts","other_topics"]
+            
         }
         import re
 
@@ -828,7 +919,7 @@ def analyze_audio_with_gemini(audio_path):
 Analyze this customer support transcript.
 
 Transcript:
-{transcript}
+{clean_transcript}
 
 
 Rules:
@@ -861,10 +952,12 @@ Required fields:
 - Detect ONLY from lines with timestamp [00:00] to [00:15].
 - Example: [00:02] Executive: "Hare Krishna" → capture "Hare Krishna"
 - Ignore greetings appearing after [00:15].
+- If no clear greeting phrase is found in that window, return the first spoken line (verbatim, any language) as the greeting — never return an empty array.
 
 3. closings:
 - Detect ONLY from the last 15 seconds of the call.
 - Ignore mid-call conversation.
+- If no clear closing phrase is found in that window, return the last spoken line (verbatim, any language) as the closing — never return an empty array.
 
 4. customer_mood:
 - "Frustrated": customer is SHOUTING, raising voice [Loudly]/[Shouting], sounds visibly annoyed/irritated,
@@ -891,17 +984,32 @@ Required fields:
 
 
 7. keywords
-    "Return keyword ONLY if exact phrase is actually spoken. 
-      Do NOT infer, guess, or use related/similar meaning."
-    - If no keyword found return [].   
+    - Select a keyword ONLY if that specific topic/feature was EXPLICITLY and CLEARLY
+      discussed in the conversation — the term itself, or a direct/obvious translation
+      of it (Hindi/Marathi), must actually be spoken.
+    - Do NOT select a keyword based on loose thematic association, general context of the
+      call (e.g. "this is a billing software support call so maybe printing came up"), or
+      because a related feature was mentioned. The specific topic itself must be concretely
+      present in the transcript.
+    - Do NOT select a keyword just because an unrelated word happens to sound similar —
+      the underlying topic must actually have been discussed, in explicit terms.
+    - When in doubt, DO NOT include it — it is better to return fewer keywords than wrong ones.
+    - If no keyword topic was clearly and explicitly discussed, return [].
+
+
 8. business_facts:
    - issues
    - requests
    - actions
-9. short_summary:
-   - 2-3 sentences
-10. summary:
-   - detailed summary (4-6 sentences)
+
+9. other_topics:
+   - Independently identify the MAIN issue/topic/feature discussed in this call, in 1-4 short phrases,
+     regardless of whether it matches the Keywords list below.
+   - Examples: "PAN card issue", "GST number update", "login problem", "invoice mismatch".
+   - Use short, specific phrases (2-5 words each), not full sentences.
+   - This is separate from the Keywords list — capture whatever the call was actually about.
+
+
 
 
 
@@ -1198,12 +1306,11 @@ Output JSON only.
             client,
             model=ANALYSIS_MODEL,
             contents=[prompt],
-            config=types.GenerateContentConfig(
+            config=types.GenerateContentConfig( 
                 temperature=0,
                 response_mime_type="application/json",
                 response_schema=response_schema,
-                max_output_tokens=3500,
-                thinking_config=types.ThinkingConfig(thinking_budget=0)
+                max_output_tokens=6000,
             )
         )
         try:
@@ -1257,13 +1364,21 @@ Output JSON only.
             data["executive_tone"] = "Neutral"
         # Sanity: default to Neutral if no strong signals
         # Sanity check: only override if mood contradicts transcript evidence
-        mood = data.get("customer_mood", "Neutral")
-        transcript_lower = transcript.lower()
+        
 
         # TONE-based anger signals ONLY (shouting/loud/abusive) — these are
         # the ONLY things that should ever produce "Frustrated".
+        mood = data.get("customer_mood", "Neutral")
+        transcript_lower = transcript.lower()
+        customer_text_lower = extract_speaker_text(transcript, "Customer")
+
+        # TONE-based anger signals ONLY (shouting/abusive) — "[loudly]"
+        # deliberately EXCLUDED: loud/insistent speech (e.g. customer
+        # confirming loudly so they're heard, or repeating a problem
+        # urgently) is NOT the same as anger, and was causing false
+        # "Frustrated" results.
         anger_tone_signals = [
-            "[shouting]", "[loudly]",
+            "[shouting]",
             "चिडलो", "चिडले", "गुस्सा", "गुस्से में",
             "irritated", "angry", "annoyed", "fed up",
             # Add specific abusive/swear words used in your calls here:
@@ -1282,26 +1397,59 @@ Output JSON only.
             "feature नाहीये", "option नाहीये", "missing",
         ]
 
-        has_anger_tone = any(s in transcript_lower for s in anger_tone_signals)
-        has_recurring_issue = any(s in transcript_lower for s in recurring_issue_signals)
+        # Check anger ONLY within the Customer's own dialogue (not the
+        # Executive's, not [Aside] background chatter) — otherwise the
+        # Executive's tone or an unrelated remark could wrongly flag the
+        # customer as angry.
+        # has_anger_tone = any(s in customer_text_lower for s in anger_tone_signals)
+        # has_recurring_issue = any(s in customer_text_lower for s in recurring_issue_signals)
 
-        if has_anger_tone:
-            # Tone evidence present -> Frustrated, no matter what the topic is.
-            data["customer_mood"] = "Frustrated"
-            data["mood_reason"] = "Customer's tone showed shouting/anger/abusive language during the call."
-        elif mood == "Frustrated" and not has_anger_tone:
-            # Model said Frustrated but no real tone evidence -> downgrade.
-            if has_recurring_issue:
-                data["customer_mood"] = "Concerned"
-                data["mood_reason"] = "Customer calmly reported a recurring issue or missing feature, without anger."
-            else:
+        # if has_anger_tone:
+        #     # Tone evidence present -> Frustrated, no matter what the topic is.
+        #     data["customer_mood"] = "Frustrated"
+        #     data["mood_reason"] = "Customer's tone showed shouting/anger/abusive language during the call."
+        # elif mood == "Frustrated" and not has_anger_tone:
+        #     # Model said Frustrated but no real tone evidence -> downgrade.
+        #     if has_recurring_issue:
+        #         data["customer_mood"] = "Concerned"
+        #         data["mood_reason"] = "Customer calmly reported a recurring issue or missing feature, without anger."
+        #     else:
+        #         data["customer_mood"] = "Neutral"
+        #         data["mood_reason"] = "Customer tone was calm throughout the call."
+        # elif mood == "Concerned" and not has_recurring_issue:
+        #     # Model said Concerned but transcript doesn't support a recurring issue -> Neutral.
+        #     data["customer_mood"] = "Neutral"
+        #     data["mood_reason"] = "No recurring issue or complaint detected in transcript."
+        MIN_CUSTOMER_CHARS = 15  # need this much Customer-labeled text to trust the mood check
+
+        if len(customer_text_lower.strip()) < MIN_CUSTOMER_CHARS:
+            # Speaker separation didn't give us enough Customer-labeled lines,
+            # so we genuinely can't judge mood — say so clearly instead of
+            # quietly defaulting to "Neutral".
+            data["customer_mood"] = "Mood Not Determined"
+            data["mood_reason"] = (
+                "Customer's speech could not be clearly separated from the "
+                "Executive's in this call, so mood could not be reliably judged."
+            )
+            print("[Mood sanity] Too little Customer-labeled speech — "
+                  "marking mood as 'Mood Not Determined' instead of guessing.")
+        else:
+            has_anger_tone = any(s in customer_text_lower for s in anger_tone_signals)
+            has_recurring_issue = any(s in customer_text_lower for s in recurring_issue_signals)
+
+            if has_anger_tone:
+                data["customer_mood"] = "Frustrated"
+                data["mood_reason"] = "Customer's tone showed shouting/anger/abusive language during the call."
+            elif mood == "Frustrated" and not has_anger_tone:
+                if has_recurring_issue:
+                    data["customer_mood"] = "Concerned"
+                    data["mood_reason"] = "Customer calmly reported a recurring issue or missing feature, without anger."
+                else:
+                    data["customer_mood"] = "Neutral"
+                    data["mood_reason"] = "Customer tone was calm throughout the call."
+            elif mood == "Concerned" and not has_recurring_issue:
                 data["customer_mood"] = "Neutral"
-                data["mood_reason"] = "Customer tone was calm throughout the call."
-        elif mood == "Concerned" and not has_recurring_issue:
-            # Model said Concerned but transcript doesn't support a recurring issue -> Neutral.
-            data["customer_mood"] = "Neutral"
-            data["mood_reason"] = "No recurring issue or complaint detected in transcript."
-       
+                data["mood_reason"] = "No recurring issue or complaint detected in transcript."
         # -------- GREETINGS / CLOSINGS SANITY FILTER --------
         VALID_GREETINGS = {
             "hello", "hi", "good morning",
@@ -1420,6 +1568,11 @@ Output JSON only.
             elif core_words[0] in VALID_GREETINGS:
                 clean_greetings.append(core_words[0])        
 
+        if not clean_greetings:
+            # No valid greeting phrase matched — default to "Hello" instead
+            # of falling back to a raw, unfiltered spoken line.
+            clean_greetings = ["Hello"]
+
         data["greetings"] = list(dict.fromkeys(clean_greetings))[:5]
 
         clean_closings = []
@@ -1439,35 +1592,56 @@ Output JSON only.
             ):
                 clean_closings.append(c_lower)
 
-        
         data["closings"] = list(dict.fromkeys(clean_closings))[:3]
 
+        import difflib
+
         transcript_lower = transcript.lower()
+        transcript_words = set(re.split(r'\W+', transcript_lower))
+
+        def keyword_match(kw, max_gap_chars=30):
+            """A multi-word keyword only matches if ALL its words appear close
+            together (within max_gap_chars characters of each other, any order) —
+            not just anywhere, independently, in the whole transcript."""
+            from itertools import permutations
+
+            kw_lower = kw.lower().strip()
+            if kw_lower in transcript_lower:
+                return True
+
+            words = [w for w in re.split(r'\W+', kw_lower) if len(w) > 2]
+            if len(words) < 2:
+                return False
+
+            for perm in permutations(words):
+                pattern = (r'\b.{0,' + str(max_gap_chars) + r'}\b').join(
+                    re.escape(w) for w in perm
+                )
+                if re.search(pattern, transcript_lower, re.DOTALL):
+                    return True
+
+            return False
+
+        detected_keywords = [kw for kw in keywords_list if keyword_match(kw)]
+
         
 
-        detected_keywords = []
-        for kw in keywords_list:
-            if kw.lower() in transcript_lower:
-                detected_keywords.append(kw)
+        # bring in Gemini's own semantic picks too, but only trust ones
+        # that actually exist in the master keyword list (no hallucinated labels)
+        keywords_list_lower = {k.lower(): k for k in keywords_list}
+        model_keywords = [
+            keywords_list_lower[k.lower()]
+            for k in data.get("keywords", [])
+            if k.lower() in keywords_list_lower
+            and keyword_match(keywords_list_lower[k.lower()])   # verify transcript actually supports it
+        ]
 
-        if "print" in transcript_lower and "Bill Print" in keywords_list:
-            detected_keywords.append("Bill Print")
-        if "bill modify" in transcript_lower and "Bill Modification or edit" in keywords_list:
-            detected_keywords.append("Bill Modification or edit")
+        final_keywords = list(dict.fromkeys(model_keywords + detected_keywords))
 
+        if not final_keywords:
+            final_keywords = ["No matching keyword detected"]
 
-        #data["keywords"] = list(dict.fromkeys(detected_keywords))
-        model_keywords = data.get("keywords", [])
-
-        final_keywords = (
-            model_keywords +
-            detected_keywords
-        )
-
-        data["keywords"] = list(
-            dict.fromkeys(final_keywords)
-        )
-        #     # -------- ROLE SANITY FIX --------
+        data["keywords"] = final_keywords
 
         facts = data.get("business_facts", {})
 
@@ -1556,8 +1730,14 @@ Output JSON only.
         analysis_text += f"Closings: {to_s(data.get('closings'))}\n"
         analysis_text += f"Executive Tone: {executive_tone}"
         
-        short_summary = data.get("short_summary", "Short summary not generated.")
-        long_summary = data.get("summary", "Summary not generated.")
+        short_summary, long_summary = generate_detailed_summary(
+            client,
+            clean_transcript,
+            data.get("business_facts", {}),
+            data.get("executive_name", "Not mentioned"),
+            customer_mood,
+            mood_reason
+        )
 
         combined_summary = (
             "SHORT SUMMARY\n"

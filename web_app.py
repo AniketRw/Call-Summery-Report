@@ -1239,10 +1239,28 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
 
         req = urllib.request.Request(audio_url, headers={"User-Agent": "CallSummaryTool/1.0"})
         try:
-            with urllib.request.urlopen(req, timeout=120) as resp, open(input_path, "wb") as f:
-                shutil.copyfileobj(resp, f)
+            with urllib.request.urlopen(req, timeout=120) as resp:
+                content_type = resp.headers.get("Content-Type", "")
+                logger.info(f"[DOWNLOAD] URL={audio_url} Content-Type={content_type!r}")
+                with open(input_path, "wb") as f:
+                    shutil.copyfileobj(resp, f)
         except Exception as e:
             raise RuntimeError(f"Could not fetch audio from URL: {e}")
+
+        file_size = os.path.getsize(input_path)
+        logger.info(f"[DOWNLOAD] Saved {file_size} bytes to {input_path}")
+
+        if file_size < 1000:
+            raise RuntimeError(
+                f"Downloaded file is too small ({file_size} bytes) — "
+                f"likely not a valid audio file (URL: {audio_url})"
+            )
+
+        if "html" in content_type.lower() or "text" in content_type.lower():
+            raise RuntimeError(
+                f"Downloaded content is not audio (Content-Type: {content_type}) — "
+                f"the recording URL may require login/authentication (URL: {audio_url})"
+            )
 
         return filename, input_path
 
@@ -1252,6 +1270,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             content_type = self.headers.get("Content-Type", "")
             filename = None
             input_path = None
+            audio_url = None
 
             if "multipart/form-data" in content_type:
                 form = cgi.FieldStorage(
@@ -1297,11 +1316,11 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             try:
                 # Use logic from testnew
                 converted_file = testnew.convert_audio(str(input_path))
-                
+
                 # analyze_audio_with_gemini returns:
                 # (transcript, raw_output, facts, analysis, combined_summary, keywords)
                 results = testnew.analyze_audio_with_gemini(converted_file)
-                
+
                 transcript = results[0]
                 facts = results[2]
                 analysis = results[3]
@@ -1328,8 +1347,10 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                 testnew.save_summary(summary, analysis, facts, keywords, str(input_path))
 
                 try:
+                    logger.info(f"[DEBUG-FILENAME] content_type={content_type!r} | audio_url={audio_url!r} | filename={filename!r}")
+                    db_filename = audio_url if audio_url else filename
                     db.save_call_summary(
-                        filename=filename,
+                        filename=db_filename,
                         analysis_text=analysis,
                         keywords=keywords,
                         facts=facts,
@@ -1341,7 +1362,6 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                 except Exception as db_err:
                     logger.exception(f"[DB] Failed to save call summary: {db_err}")
 
-
                 elapsed_time = time.time() - request_start
                 display_transcript = strip_speaker_labels(transcript)
                 self.respond_html(render_page(
@@ -1349,11 +1369,11 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                     keywords=keywords,
                     facts=facts,
                     summary=summary,
-                    transcript=display_transcript, 
+                    transcript=display_transcript,
                     filename=filename,
                     token_info=token_info,
                     elapsed_time=elapsed_time,
-                    show_transcript=show_transcript 
+                    show_transcript=show_transcript
                 ))
             finally:
                 if converted_file and os.path.exists(converted_file) and converted_file != str(input_path):
