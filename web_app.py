@@ -58,7 +58,7 @@ import shutil
 
 # Import the backend logic from testnew
 import testnew
-import autoprocesscall
+#import autoprocesscall
 logger.info("=== TESTNEW IMPORTED ===")
 HOST = ""
 PORT = int(os.getenv("PORT", "8080"))
@@ -1463,7 +1463,7 @@ def main():
     # background daemon thread inside THIS process, so it comes up
     # automatically whenever the "Call Summery Tool" Windows service
     # starts - no separate service/process needed.
-    start_auto_poller_thread()
+    #start_auto_poller_thread()
 
     server.serve_forever()
 

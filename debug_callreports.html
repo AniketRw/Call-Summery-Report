@@ -1,0 +1,1281 @@
+<title>Enjay Synapse</title>
+<link rel="shortcut icon" type="image/ico" href="http://192.168.200.188:6751/newcti/images/favicon.ico">
+<link href="http://192.168.200.188:6751/newcti/css/style.css" rel="stylesheet" type="text/css">
+<link href="http://192.168.200.188:6751/newcti/css/style2.css" rel="stylesheet" type="text/css">
+<link href="http://192.168.200.188:6751/newcti/css/pagination.css" rel="stylesheet" type="text/css">
+<link href="http://192.168.200.188:6751/newcti/css/tooltip.css" rel="stylesheet" type="text/css">
+<script type="text/javascript" src="http://192.168.200.188:6751/newcti/js/disableclick.js"></script>
+<script type="text/javascript" src="http://192.168.200.188:6751/newcti/js/jscall.js"></script>
+<script type="text/javascript" src="http://192.168.200.188:6751/newcti/js/jquery.js"></script>
+<script type="text/javascript" src="http://192.168.200.188:6751/newcti/js/tooltip.js"></script>
+<script type="text/javascript" src="http://192.168.200.188:6751/newcti/js/ajaxcall.js"></script>
+<script src="http://192.168.200.188:6751/newcti/js/jquery_002.js" type="text/javascript"></script>
+<link href="http://192.168.200.188:6751/newcti/css/jquery.css" rel="stylesheet" type="text/css">
+
+<html>
+     <head>
+          <script>
+           function dispdate(type)
+               {
+                    if(type=="isbetween")
+                    {
+                         document.getElementById('datesbetween').style.display="block";
+                    }
+                    else
+                    {
+                         document.getElementById('datesbetween').style.display="none";
+                    }
+               }
+
+               function change_event()
+               {
+                    var reportof=document.getElementById('reportof').value;
+                    var fromhr=document.getElementById('fromhr').value;
+                    var frommin=document.getElementById('frommin').value;
+                    var fromsec=document.getElementById('fromsec').value;
+                    var tohr=document.getElementById('tohr').value;
+                    var tomin=document.getElementById('tomin').value;
+                    var tosec=document.getElementById('tosec').value;
+                    var from=document.getElementById('from').value;
+                    var to=document.getElementById('to').value;
+                    var direction=document.getElementById('seldirection').value;
+                    var disposition=document.getElementById('seldisposition').value;
+                    var groupElem = document.getElementById('group');
+                    var pageElem = document.getElementById('pageoptions');
+                    if(groupElem!=null)
+                    {
+                         var groupid=document.getElementById('group').value;
+                         
+                    }
+                    else
+                         {
+                              var groupid="";
+                         }
+                    if(pageElem!=null)
+                    {
+                         var pagevalue=document.getElementById('pageoptions').value;
+                    }
+                    else
+                         {
+                              var pagevalue="";
+                         }
+                     //alert(groupid);
+                    var number=document.getElementById('txtnum').value;
+                    if (document.getElementById('numbertype').checked) {
+                         var numbertype="equals";
+                    }
+                    else {
+                         numbertype="contains";
+                    }
+                  /*  if(reportof!="isbetween")
+                    {*/
+                         //location.replace("callreports.php?reportof="+reportof+"&from="+from+"&to="+to+"&seldirection="+direction+"&seldisposition="+disposition+"&group="+groupid+"&txtnum="+number+"&numbertype="+numbertype+"&pagevalue="+pagevalue);
+                          location.replace("callreports.php?reportof="+reportof+"&from="+from+"&to="+to+"&seldirection="+direction+"&seldisposition="+disposition+"&group="+groupid+"&txtnum="+number+"&numbertype="+numbertype+"&pagevalue="+pagevalue+"&fromhr="+fromhr+"&frommin="+frommin+"&fromsec="+fromsec+"&tohr="+tohr+"&tomin="+tomin+"&tosec="+tosec);
+                    //}
+               }
+
+               function changetype(val)
+               {
+                    //alert(val);
+                    window.location="callreports.php?sid="+val
+               }
+               function deletesearch(delid)
+               {
+                    window.location = "callreports.php?delid=" + delid;
+               }
+               function savevalid()
+               {
+                    frm=document.frmsave;
+                    if(frm.txtsearch.value=='')
+                    {
+                         alert('Enter Search Name');
+                         frm.txtsearch.focus();
+                         return false;
+                    }
+               }
+               function showSuccessToast()
+               {
+                    $().toastmessage('showSuccessToast', "Report Saved");
+               }
+               function showDeleted()
+               {
+                   $().toastmessage('showDeleted', "Group Deleted Successfully");
+               }
+           </script>
+               <link href="../css/style.css" rel="stylesheet" type="text/css">
+               <link href="../css/style2.css" rel="stylesheet" type="text/css">
+               <link rel="stylesheet" type="text/css" href="../css/thickbox.css">
+               <script language="JavaScript" src="../js/thickbox.js" type="text/javascript" ></script>
+     </head>
+     <body>
+          <div>
+          <p>
+                   </div>
+          </p>
+          <div id="breadcrumb"><a href="#">&nbsp;&nbsp;Reports</a> &gt; Call Logs</div>&nbsp;
+          <br/>
+           <form name="frmrep" method="get" id="frmrep" action="" onSubmit="return searchVal(this);">
+                <!-------------------------------------Search Table------------------------------------------------>
+                <table align="center" cellpadding="6" cellspacing="1" class="table-1" width="75%" >
+                    <tr class="headbg">
+                         <td  colspan="10" align="center"><b>Search Call Reports</b>
+                         </td>
+                    </tr>
+                    <tr class="table-3">
+                         <td class="test-2" width="10%" ><b>Report of </b></td>
+                         <td   class="test-2" bgcolor="#EDF5FF" colspan="6" >
+                           <select name="reportof" id="reportof" onchange="dispdate(this.value),change_event(this.value);">
+                                   <option value="" >Today</option>
+                                   <option value="yesterday" >Yesterday</option>
+                                   <option value="last7days" >Last 7 Days</option>
+                                   <option value="last30days" >Last 30 Days</option>
+                                   <option value="lastmonth" >Last Month</option>
+                                   <option value="thismonth" >This Month</option>
+                                   <option value="isbetween" >Between</option>
+                              </select>
+
+                               <span id ="datesbetween"  style="display:none;">
+                                                                      <b>From : </b><a  href="javascript:void(0)" onClick="if(self.gfPop)gfPop.fPopCalendar(from);return false;"    hidefocus="HIDEFOCUS" style="text-decoration:none;" >
+                                        <input type="text" class="text" name="from" id="from"  size="8" readonly="readonly"
+                                               value="31/08/2026">
+                                        <img align="absmiddle" src="../images/calendar_16_black.png" border="0" alt="alt" /></a>&nbsp;&nbsp;
+                                   <b>To : </b><a href="javascript:void(0)" onClick="if(self.gfPop)gfPop.fPopCalendar(to);return false;" hidefocus="HIDEFOCUS" style="text-decoration:none; ">
+                                        <input type="text" class="text" name="to" id="to"  size="8" readonly="readonly" value="31/08/2026"  >
+                                        <img align="absmiddle" src="../images/calendar_16_black.png"  border="0" alt="alt" /></a>
+                               </span></td></tr>
+                           
+								
+                        
+                           <span><tr class="table-3">
+							    <td class="test-2" width="5%" ><b>From</b></td>
+							    <td class="test-2" bgcolor="#EDF5FF" colspan="4" >
+                                <!--<b>From : </b>-->
+                                <select name="fromhr" id="fromhr">
+                                    <option value="0" selected>0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option><option value="11">11</option><option value="12">12</option><option value="13">13</option><option value="14">14</option><option value="15">15</option><option value="16">16</option><option value="17">17</option><option value="18">18</option><option value="19">19</option><option value="20">20</option><option value="21">21</option><option value="22">22</option><option value="23">23</option>                                </select> Hour &nbsp;
+                                <select name="frommin" id="frommin">
+                                    <option value="0" selected>0</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option><option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option>                                    <option value="59" >59</option>
+                                </select> Min &nbsp;
+                                <select name="fromsec" id="fromsec">
+                                    <option value="0" selected>0</option><option value="5">5</option><option value="10">10</option><option value="15">15</option><option value="20">20</option><option value="25">25</option><option value="30">30</option><option value="35">35</option><option value="40">40</option><option value="45">45</option><option value="50">50</option><option value="55">55</option>                                    <option value="59" >59</option>
+                                </select> Sec
+                                &nbsp;&nbsp;&nbsp;<b>To : </b>
+                                <select name="tohr" id="tohr">
+                                    <option value="23" selected>23</option>
+                                    <option value="22" >22</option>
+                                    <option value="21" >21</option>
+                                    <option value="20" >20</option>
+                                    <option value="19" >19</option>
+                                    <option value="18" >18</option>
+                                    <option value="17" >17</option>
+                                    <option value="16" >16</option>
+                                    <option value="15" >15</option>
+                                    <option value="14" >14</option>
+                                    <option value="13" >13</option>
+                                    <option value="12" >12</option>
+                                    <option value="11" >11</option>
+                                    <option value="10" >10</option>
+                                    <option value="9" >9</option>
+                                    <option value="8" >8</option>
+                                    <option value="7" >7</option>
+                                    <option value="6" >6</option>
+                                    <option value="5" >5</option>
+                                    <option value="4" >4</option>
+                                    <option value="3" >3</option>
+                                    <option value="2" >2</option>
+                                    <option value="1" >1</option>
+                                </select> Hour &nbsp;
+                                <select name="tomin" id="tomin">
+                                    <option value="59" selected>59</option>
+                                    <option value="55" >55</option>
+                                    <option value="50" >50</option>
+                                    <option value="45" >45</option>
+                                    <option value="40" >40</option>
+                                    <option value="35" >35</option>
+                                    <option value="30" >30</option>
+                                    <option value="25" >25</option>
+                                    <option value="20" >20</option>
+                                    <option value="15" >15</option>
+                                    <option value="10" >10</option>
+                                    <option value="5" >5</option>
+                                    <option value="0" >0</option>
+                                </select> Min &nbsp;
+                                <select name="tosec" id="tosec">
+                                    <option value="59" selected>59</option>
+                                    <option value="50" >50</option>
+                                    <option value="40" >40</option>
+                                    <option value="30" >30</option>
+                                    <option value="20" >20</option>
+                                    <option value="10" >10</option>
+                                    <option value="0" >0</option>
+                                </select> Sec
+                            </span>
+
+
+                         </td>
+
+                                                      <td class="test-2" width="15%"><strong>Group</strong></td>
+                      <td class="test-2" bgcolor="#EDF5FF">
+                        <select name="group" id="group" onchange="change_event(this.value);">
+                              <option value="">All</option>
+                              
+                                                 <option value="1"  >support
+                         </option>
+                                                    </select>
+                      </td>
+                      				</td></td>	
+
+                    </tr>
+
+                     <tr class="table-3">
+
+                        <td class="test-2" ><b>Type</b></td>
+                        <td class="test-2" bgcolor="#EDF5FF">
+                        <select name="seldirection" id="seldirection" onchange='change_event(this.value)'>
+                        <option value="">ALL</option>
+                        <option value="outgoing" >Outgoing</option>
+                        <option value="incoming"  >Incoming</option>
+
+                        <option value="internal"  >Internal</option>
+
+                        <option value="clicktocall"  >Call Me</option>
+                        </select>
+                        </td>
+                         <td class="test-2" ><b>Disposition</b></td>
+                         <td class="test-2" bgcolor="#EDF5FF">
+                              <select name="seldisposition" id="seldisposition" onchange='change_event(this.value)'>
+                                   <option value="">ALL</option>
+                                   <option value="answered" selected>Answered</option>
+                                   <option value="unanswered"  >Un-Answered</option>
+                              </select>
+                         </td>
+
+                         <td class="test-2" bgcolor="#EDF5FF" colspan="10">
+                              <input type="text" name="txtnum" id="txtnum" placeholder="Number.." size="20" value="" onblur='change_event(this.value)'/>
+                             <input type="checkbox" name="numbertype" id="numbertype" style="vertical-align: middle;" value="equals" onclick='change_event(this.value)' ><b>Exactly</b>
+                         </td>
+                    </tr>
+                    <tr class="table-3">
+                         <td bgcolor="#EDF5FF" >&nbsp;</td>
+                         <td class="test-2" bgcolor="#EDF5FF" colspan="10">
+                              <input type="submit" name="btnsub" id="btnsub" value="Search" class="subbutton"/>&nbsp;&nbsp;<input type="submit" name="btnclear"  value="Clear Search" class="subbutton"/></td>
+                    </tr>
+                  </form>
+          <form name ="frmsave" method="post" onsubmit="return savevalid();">
+                      <tr class="table-3">
+                              <td bgcolor="#EDF5FF" >&nbsp;</td>
+                              <td class="test-2" bgcolor="#EDF5FF" align="right" colspan="10">
+                                   <input type="text" name="txtsearch" id="txtsearch">
+                                   <input type="submit" name="btnsave" id="btnsave" value="Save Search" onclick="validate();" class="subbutton"/>&nbsp;&nbsp;
+                              </td>
+                      </tr>
+          </form>
+          </table>
+          <br>
+         <table border="0" align="center" width="75%" class="table-1" bgcolor="#FFEEEE" style="border-color:#ED5858;box-shadow: 3px 2px 5px #888888;">
+          <tr style="font-weight:700;border-color:#E01212">
+               <td align="center" style="padding-right:5px;padding-top:8px;padding-bottom:8px" colspan="8">
+                                        <font>Total Calls : 203&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;Total Call Duration : 16:40:18&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;Average Duration : 00:04:56                    </font>
+               </td>
+          </tr>
+     </table>
+     <br/>
+
+           <table border="0"  cellpadding="4" cellspacing="2" class="table-1"  align="center" width="75%">
+          <tr bgcolor="#5FA3D2" style="color:#FFFFFF;">
+                              <td  width="3%" bgcolor="#F2F2F2" align=center><a href="FilterReports.php?keepThis=true&TB_iframe=true&height=300&width=500" title="Filter Records" class="thickbox"><img src="../images/search_12_black.png"></a></td>
+                                <td width="3%" bgcolor="#F2F2F2" align="center"><a href="exporttoexcel.php" target="_blank"><img src="../images/excel.png" type="image" name="exporttoexcel"   title="Export to Excel"></a>
+               </td>
+               <td width="3%" bgcolor="#F2F2F2" align="center"><a href="exporttopdf.php" target="_blank"><img src="../images/pdf.png" type="image" name="exporttopdf"   title="Export to PDF"></a>
+               </td>
+               <td  bgcolor="#F2F2F2" colspan="5" align="center"><div class="pagination"><span class="disabled">&laquo; previous</span><span class="current">1</span><a href="callreports.php?page=2&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">2</a><a href="callreports.php?page=3&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">3</a><a href="callreports.php?page=4&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">4</a><a href="callreports.php?page=5&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">5</a><a href="callreports.php?page=2&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">next &raquo;</a></div>
+</td>
+                <td  bgcolor="#F2F2F2"  align="right">
+                     <select name="pageoptions" id="pageoptions" onchange="change_event()" style="width: 50px">
+                                                     <option value="10" >10</option>
+                          <!--option value="10" >10</option>
+                          <option value="20" >20</option>
+                          <option value="30" >30</option-->
+                                                     <option value="20" >20</option>
+                          <!--option value="10" >10</option>
+                          <option value="20" >20</option>
+                          <option value="30" >30</option-->
+                                                     <option value="30" >30</option>
+                          <!--option value="10" >10</option>
+                          <option value="20" >20</option>
+                          <option value="30" >30</option-->
+                                               </select>
+                </td>
+            
+             </tr>
+          </table>
+         <!--###########################RESULT TABLE#######################################-->
+           <table border="0"  cellpadding="4" cellspacing="1" class="table-1"  align="center" width="75%">
+                <tr class="table-3">
+                    <td class="test-2" colspan="1"><strong>&nbsp;<b>Select Search</b></strong>
+                         <select name="selsearch" id="selsearch"  width="100" style="width: 100px" onchange="changetype(this.value)">
+                              <option value="">Select</option>
+                                                                      <option value="1" >9422283700</option>
+                                                                           <option value="2" >sardar</option>
+                                                                           <option value="3" >13</option>
+                                                                           <option value="4" >eka</option>
+                                                                           <option value="5" >9175889933</option>
+                                                                           <option value="6" >9175889933</option>
+                                                                           <option value="7" >9823662577</option>
+                                                                           <option value="8" >26</option>
+                                                                           <option value="9" >09449211588</option>
+                                                                           <option value="11" >9822971777</option>
+                                                                           <option value="13" >9370666400</option>
+                                                                           <option value="14" >9370666400</option>
+                                                                           <option value="15" >9890348846</option>
+                                                                           <option value="16" >9373512324</option>
+                                                                           <option value="17" >8600003635</option>
+                                                                           <option value="18" >65</option>
+                                                                           <option value="19" >9823108194</option>
+                                                                           <option value="20" >9422180810</option>
+                                                                           <option value="21" >9420510601</option>
+                                                                           <option value="22" >9970732111</option>
+                                                                           <option value="23" >9970732111</option>
+                                                                           <option value="24" >9970732111</option>
+                                                                           <option value="25" >9970732111</option>
+                                                                           <option value="26" >9773521931</option>
+                                                                           <option value="27" >9657614091</option>
+                                                                           <option value="28" >9881299955</option>
+                                                                           <option value="29" >919893109100</option>
+                                                                           <option value="30" >02060122106</option>
+                                                                           <option value="31" >49111121</option>
+                                                                           <option value="32" >madhur</option>
+                                                                           <option value="33" >8600199990</option>
+                                                                           <option value="34" >12</option>
+                                                                           <option value="35" >1122</option>
+                                                                           <option value="36" >6171</option>
+                                                                           <option value="37" >9890408080</option>
+                                                                           <option value="38" >9883408080</option>
+                                                                           <option value="39" >9226563854</option>
+                                                                           <option value="40" >manohar</option>
+                                                                           <option value="41" >9028644744</option>
+                                                                           <option value="42" >98222121</option>
+                                                                           <option value="43" >6319</option>
+                                                                           <option value="44" >1055</option>
+                                                                           <option value="45" >172</option>
+                                                                           <option value="46" >5656</option>
+                                                                           <option value="47" >9823055656</option>
+                                                                           <option value="48" >744</option>
+                                                                           <option value="49" >7744</option>
+                                                                           <option value="50" >6144</option>
+                                                                           <option value="51" >6144</option>
+                                                                           <option value="52" >6451</option>
+                                                                           <option value="53" >26915577</option>
+                                                                           <option value="54" >8366</option>
+                                                                           <option value="55" >8600001460</option>
+                                                                           <option value="56" >8600</option>
+                                                                           <option value="57" >1416</option>
+                                                                           <option value="58" >1460</option>
+                                                                           <option value="59" >86000</option>
+                                                                           <option value="60" >2095</option>
+                                                                           <option value="61" >71872</option>
+                                                                           <option value="62" >15444</option>
+                                                                           <option value="63" >9767676869</option>
+                                                                           <option value="64" >4466</option>
+                                                                           <option value="65" >39638133</option>
+                                                                           <option value="66" >9112626241</option>
+                                                                           <option value="67" >2492</option>
+                                                                           <option value="68" >9050</option>
+                                                                           <option value="69" >6087</option>
+                                                                           <option value="70" >80020</option>
+                                                                           <option value="71" >454977</option>
+                                                                           <option value="72" >2472221290</option>
+                                                                           <option value="73" >8592</option>
+                                                                           <option value="74" >9850416109</option>
+                                                                           <option value="75" >94222291</option>
+                                                                           <option value="76" >9422602436</option>
+                                                                           <option value="77" >919175669205</option>
+                                                                           <option value="78" >3682</option>
+                                                                           <option value="79" >9225832799</option>
+                                                                           <option value="80" >6560</option>
+                                                                           <option value="81" >1009</option>
+                                                                           <option value="82" >6979</option>
+                                                                           <option value="83" >9518</option>
+                                                                           <option value="84" >95133053</option>
+                                                                           <option value="85" >8983682255</option>
+                                                                           <option value="86" >PATEL	7024242371</option>
+                                                                           <option value="87" >9890017111</option>
+                                                                           <option value="88" >2184220291</option>
+                                                                           <option value="89" >8818</option>
+                                                                           <option value="90" >9970921111</option>
+                                                                           <option value="91" >9762565656</option>
+                                                                           <option value="92" >9511674940</option>
+                                                                           <option value="93" >3344</option>
+                                                                           <option value="94" >9860691195</option>
+                                                                           <option value="95" >60690</option>
+                                                                           <option value="96" >9325023641</option>
+                                                                           <option value="97" >9850096</option>
+                                                                           <option value="98" >9518301329</option>
+                                                                           <option value="99" >24455569</option>
+                                                                           <option value="100" >695918</option>
+                                                                           <option value="101" >19238</option>
+                                                                           <option value="102" >9823267266</option>
+                                                                           <option value="103" >830648302</option>
+                                                                           <option value="104" >6338880</option>
+                                                                           <option value="105" >19696</option>
+                                                                           <option value="106" >80</option>
+                                                                           <option value="107" >9065</option>
+                                                                           <option value="108" >9422287007</option>
+                                                                           <option value="109" >8805051818</option>
+                                                                           <option value="110" >9420414499</option>
+                                                                           <option value="111" >345347</option>
+                                                                           <option value="112" >553020</option>
+                                                                           <option value="113" >75</option>
+                                                                           <option value="114" >8111</option>
+                                                                           <option value="115" >chock</option>
+                                                                           <option value="116" >9850818570</option>
+                                                                           <option value="117" >342</option>
+                                                                           <option value="118" >4405</option>
+                                                                           <option value="119" >9673721111</option>
+                                                                           <option value="120" >9422269692</option>
+                                                                           <option value="121" >9422269692</option>
+                                                                           <option value="122" >9673721111</option>
+                                                                           <option value="123" >9673721111</option>
+                                                                           <option value="124" >9673721111</option>
+                                                                           <option value="125" >9673721111</option>
+                                                                           <option value="126" >69692</option>
+                                                                           <option value="127" >69692</option>
+                                                                           <option value="128" >69692</option>
+                                                                           <option value="129" >69692</option>
+                                                                           <option value="130" >69692</option>
+                                                                           <option value="131" >9422269692</option>
+                                                                           <option value="132" >8886</option>
+                                                                           <option value="133" >galani</option>
+                                                                           <option value="134" >8007704141</option>
+                                                                           <option value="135" >2453</option>
+                                                                           <option value="136" >70001</option>
+                                                                           <option value="137" >7676764676</option>
+                                                                           <option value="138" >9011800811</option>
+                                                                           <option value="139" >9011800811</option>
+                                                                           <option value="140" >9370809008</option>
+                                                                           <option value="141" >9422418138</option>
+                                                                           <option value="142" >9890503034</option>
+                                                                           <option value="143" >9028962325</option>
+                                                                           <option value="144" >9420184722</option>
+                                                                           <option value="145" >9850818570</option>
+                                                                           <option value="146" >9793935770</option>
+                                                                           <option value="147" >spi</option>
+                                                                           <option value="148" >8322726302</option>
+                                                                           <option value="149" >9822292009</option>
+                                                                           <option value="150" >8390252555</option>
+                                                                           <option value="151" >9881421420</option>
+                                                                           <option value="152" >9325070351</option>
+                                                                           <option value="153" >7083900865</option>
+                                                                           <option value="154" >Vinod supermarket Khamgaon</option>
+                                                                           <option value="155" >mudta</option>
+                                                                           <option value="156" >7020551039</option>
+                                                                           <option value="157" >7020551039</option>
+                                                                           <option value="158" >2716</option>
+                                                                           <option value="159" >57</option>
+                                                                           <option value="160" >57</option>
+                                                                           <option value="161" >9881421420</option>
+                                                                           <option value="162" >1080808</option>
+                                                                           <option value="163" >74</option>
+                                                                           <option value="164" >45</option>
+                                                                           <option value="165" >9823730055</option>
+                                                                           <option value="166" >55</option>
+                                                                           <option value="167" >55</option>
+                                                                           <option value="168" >55</option>
+                                                                           <option value="169" >55</option>
+                                                                           <option value="170" >55</option>
+                                                                           <option value="171" >9822901369</option>
+                                                                           <option value="172" >202551223721</option>
+                                                                           <option value="173" >02551223721</option>
+                                                                           <option value="174" >9822901369</option>
+                                                                           <option value="175" >202551223721</option>
+                                                                           <option value="176" >02551223721</option>
+                                                                           <option value="177" >202112221440</option>
+                                                                           <option value="178" >9890954893</option>
+                                                                           <option value="179" >7020</option>
+                                                                           <option value="180" >75</option>
+                                                                           <option value="181" >7588092400</option>
+                                                                           <option value="182" >75</option>
+                                                                           <option value="183" >75</option>
+                                                                           <option value="184" >mark</option>
+                                                                           <option value="185" >mark</option>
+                                                                           <option value="186" >7028087023</option>
+                                                                           <option value="187" >7028087023</option>
+                                                                           <option value="188" >7028087023</option>
+                                                                           <option value="189" >9595102424</option>
+                                                                           <option value="190" >7479</option>
+                                                                           <option value="191" >92869</option>
+                                                                           <option value="192" >9766639898</option>
+                                                                           <option value="193" >9067675472</option>
+                                                                           <option value="194" >24275665</option>
+                                                                           <option value="195" >24275665</option>
+                                                                           <option value="196" >24275665</option>
+                                                                           <option value="197" >24275665</option>
+                                                                           <option value="198" >24275665</option>
+                                                                           <option value="199" >24275665</option>
+                                                                           <option value="200" >24275665</option>
+                                                                           <option value="201" >24275665</option>
+                                                                           <option value="202" >24275665</option>
+                                                                           <option value="203" >24275665</option>
+                                                                           <option value="204" >51451</option>
+                                                                           <option value="205" >9766084388</option>
+                                                                           <option value="206" >9822901369</option>
+                                                                           <option value="207" >66690</option>
+                                                                           <option value="208" >66690</option>
+                                                                           <option value="209" >69970</option>
+                                                                           <option value="210" >61299</option>
+                                                                           <option value="211" >57</option>
+                                                                           <option value="212" >74</option>
+                                                                           <option value="213" >77</option>
+                                                                           <option value="214" >77</option>
+                                                                           <option value="215" >77</option>
+                                                                           <option value="216" >70</option>
+                                                                           <option value="217" >10</option>
+                                                                           <option value="218" >10</option>
+                                                                           <option value="219" >10</option>
+                                                                           <option value="220" >9822427777</option>
+                                                                           <option value="221" >9822427777</option>
+                                                                           <option value="222" >997007004</option>
+                                                                           <option value="223" >9822270864</option>
+                                                                           <option value="224" >9822270864</option>
+                                                                           <option value="225" >003346020789</option>
+                                                                           <option value="226" >17</option>
+                                                                           <option value="227" >9881267178</option>
+                                                                           <option value="228" >9881267178</option>
+                                                                           <option value="229" >481</option>
+                                                                           <option value="230" >29890785528</option>
+                                                                           <option value="231" >39</option>
+                                                                           <option value="232" >37</option>
+                                                                           <option value="233" >86</option>
+                                                                           <option value="234" >10</option>
+                                                                           <option value="235" >7030005552</option>
+                                                                           <option value="236" >7030005552</option>
+                                                                           <option value="237" >74</option>
+                                                                           <option value="238" >74</option>
+                                                                           <option value="239" >9822427777</option>
+                                                                           <option value="240" >9561227095</option>
+                                                                           <option value="241" >9561227095</option>
+                                                                           <option value="242" >9561227095</option>
+                                                                           <option value="243" >7276777753</option>
+                                                                           <option value="244" >29764809677</option>
+                                                                           <option value="245" >29529308984</option>
+                                                                           <option value="246" >29404989966</option>
+                                                                           <option value="247" >28830543972</option>
+                                                                           <option value="248" >29975636161</option>
+                                                                           <option value="249" >9975636161</option>
+                                                                           <option value="250" >29975636161</option>
+                                                                           <option value="251" >636161</option>
+                                                                           <option value="252" >9975636161</option>
+                                                                           <option value="253" >636161</option>
+                                                                           <option value="254" >7715934601</option>
+                                                                           <option value="255" >27272079393</option>
+                                                                           <option value="256" >9975636161</option>
+                                                                           <option value="257" >7875050871</option>
+                                                                           <option value="258" >9766407141</option>
+                                                                           <option value="259" >9766407141</option>
+                                                                           <option value="260" >mom</option>
+                                                                           <option value="261" >dipali</option>
+                                                                           <option value="262" >9420184722</option>
+                                                                           <option value="263" >9420184722</option>
+                                                                           <option value="264" >102</option>
+                                                                           <option value="265" >24465566</option>
+                                                                           <option value="266" >86</option>
+                                                                           <option value="267" >8888232323</option>
+                                                                           <option value="268" >63</option>
+                                                                           <option value="269" >24</option>
+                                                                           <option value="270" >24</option>
+                                                                           <option value="271" >9689222777</option>
+                                                                           <option value="272" >9850779517</option>
+                                                                           <option value="273" >8857956395</option>
+                                                                           <option value="274" >8857956395</option>
+                                                                           <option value="275" >8857956395</option>
+                                                                           <option value="276" >28857956395</option>
+                                                                           <option value="277" >28857956395</option>
+                                                                           <option value="278" >28857956395</option>
+                                                                           <option value="279" >7045652445</option>
+                                                                           <option value="280" >9673174844</option>
+                                                                           <option value="281" >8888349449</option>
+                                                                           <option value="282" >9820837654</option>
+                                                                           <option value="283" >9820837654</option>
+                                                                           <option value="284" >9860106336</option>
+                                                                           <option value="285" >9860106336</option>
+                                                                           <option value="286" >9860106336</option>
+                                                                           <option value="287" >9860106336</option>
+                                                                           <option value="288" >9860106336</option>
+                                                                           <option value="289" >9860106336</option>
+                                                                           <option value="290" >9867097105</option>
+                                                                           <option value="291" >9867097105</option>
+                                                                           <option value="292" >9867097105</option>
+                                                                           <option value="293" >9867097105</option>
+                                                                           <option value="294" >9886022414</option>
+                                                                           <option value="295" >919511901686</option>
+                                                                           <option value="296" >9511901686</option>
+                                                                           <option value="297" >9511901686</option>
+                                                                           <option value="298" >9325916241</option>
+                                                                           <option value="299" >9325916241</option>
+                                                                           <option value="300" >9767755400</option>
+                                                                           <option value="301" >9021067305</option>
+                                                                           <option value="302" >7887711166</option>
+                                                                           <option value="303" >28888655588</option>
+                                                                           <option value="304" >9423001341</option>
+                                                                           <option value="305" >29822322823</option>
+                                                                           <option value="306" >8855830713</option>
+                                                                           <option value="307" >6011</option>
+                                                                           <option value="308" >6011</option>
+                                                                           <option value="309" >54</option>
+                                                                           <option value="310" >54</option>
+                                                                           <option value="311" >54</option>
+                                                                           <option value="312" >54</option>
+                                                                           <option value="313" >54</option>
+                                                                           <option value="314" >54</option>
+                                                                           <option value="315" >54</option>
+                                                                           <option value="316" >100</option>
+                                                                           <option value="317" >sirvi</option>
+                                                                           <option value="318" >sirvi</option>
+                                                                           <option value="319" >sirvi</option>
+                                                                           <option value="320" >9028015600</option>
+                                                                           <option value="321" >9028015600</option>
+                                                                           <option value="322" >9028015600</option>
+                                                                           <option value="323" >9028015600</option>
+                                                                           <option value="324" >9028015600</option>
+                                                                           <option value="325" >9028015600</option>
+                                                                           <option value="326" >9028015600</option>
+                                                                           <option value="327" >9028015600</option>
+                                                                           <option value="328" >9028015600</option>
+                                                                           <option value="329" >9028015600</option>
+                                                                           <option value="330" >9372741805</option>
+                                                                           <option value="331" >9834225767</option>
+                                                                           <option value="332" >9834225767</option>
+                                                                           <option value="333" >8424061982</option>
+                                                                           <option value="334" >8424061982</option>
+                                                                           <option value="335" >116</option>
+                                                                           <option value="336" >8378035757</option>
+                                                                           <option value="337" >17</option>
+                                                                           <option value="338" >Akar</option>
+                                                                           <option value="339" >99</option>
+                                                                           <option value="340" >9422270933</option>
+                                                                           <option value="341" >7741943943</option>
+                                                                           <option value="342" >KANKARIYA SAREES NASI</option>
+                                                                           <option value="343" >9902302388</option>
+                                                                           <option value="344" >7275020661</option>
+                                                                           <option value="345" >9960304164</option>
+                                                                           <option value="346" >9786755961</option>
+                                                                           <option value="347" >9786755961</option>
+                                                                           <option value="348" >9422039988</option>
+                                                                           <option value="349" >9422039988</option>
+                                                                           <option value="350" >7840997951</option>
+                                                                           <option value="351" >7840997951</option>
+                                                                           <option value="352" >8888438989</option>
+                                                                           <option value="353" >8484818670</option>
+                                                                           <option value="354" >9096171718</option>
+                                                                           <option value="355" >9096171718</option>
+                                                                           <option value="356" >75</option>
+                                                                           <option value="357" >118</option>
+                                                                           <option value="358" >8888405282</option>
+                                                                           <option value="359" >94</option>
+                                                                           <option value="360" >94</option>
+                                                                           <option value="361" >54</option>
+                                                                           <option value="362" >54</option>
+                                                                           <option value="363" >54</option>
+                                                                           <option value="364" >54</option>
+                                                                           <option value="365" >9825124888</option>
+                                                                           <option value="366" >9322766516</option>
+                                                                           <option value="367" >7506198555</option>
+                                                                           <option value="368" >9881101025</option>
+                                                                           <option value="369" >8605941179</option>
+                                                                           <option value="370" >9326818181</option>
+                                                                           <option value="371" >9730233941</option>
+                                                                           <option value="372" >7630000064</option>
+                                                                           <option value="373" >9986383483</option>
+                                                                           <option value="374" >9986383483</option>
+                                                                           <option value="375" >9246192998</option>
+                                                                           <option value="376" >24</option>
+                                                                           <option value="377" >9673729771</option>
+                                                            </select>
+
+                    </td>
+                    <td colspan="9">
+                                             </td>
+                </tr>
+          <tr bgcolor="#5FA3D2" style="color:#FFFFFF;">
+               <td width="12%" bgcolor="#77c4ff" class="headbg" align="center"><strong>Call Date&nbsp;<a href="callreports.php?from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59&sortby=calldate&sorting=1"><img src="../images/down.png" border="0"/></a></strong></td>
+              <td width="10%" bgcolor="#77c4ff" class="headbg" align="center"><strong>Source&nbsp;<a href="callreports.php?from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59&sortby=src&sorting=1"><img src="../images/down.png" border="0"/></a></strong></td>
+               <td width="10%" bgcolor="#77c4ff" class="headbg" align="center"><strong>Destination&nbsp;<a href="callreports.php?from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59&sortby=dst&sorting=1"><img src="../images/down.png" border="0"/></a></strong></strong></td>
+               <td width="10%" bgcolor="#77c4ff" class="headbg" align="center"><strong>Disposition&nbsp;</strong><a href="callreports.php?from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59&sortby=disposition&sorting=1"><img src="../images/down.png" border="0"/></a></td>
+               <td width="5%" bgcolor="#77c4ff" class="headbg" align="center"><strong>Type&nbsp;</strong></td>
+               <td width="10%" bgcolor="#77c4ff" class="headbg" align="center"><strong>Duration&nbsp;<a href="callreports.php?from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59&sortby=duration&sorting=1"><img src="../images/down.png" border="0"/></a></strong></td>
+               <td width="10%" bgcolor="#77c4ff" class="headbg" colspan="2" align="center"><strong>Options</strong></td>
+               <td width="10%" bgcolor="#77c4ff" class="headbg" align="center"><strong>Department</strong></td>
+
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:59:13</td>
+                    <td align="center">&nbsp;103 (Akash Badadhe)</td>
+                    <td align="center">&nbsp;9767139526</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;03:49</td>
+                    <td align="center">&nbsp;---</td>
+                    <td align="center">&nbsp;---</td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:55:41</td>
+                    <td align="center">&nbsp;10 (Sandeep Agale)</td>
+                    <td align="center">&nbsp;9011953939 (TULSI EMPRIUM SONAI)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;06:14</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788161141.141597-10.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788161141.141597-10.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:51:16</td>
+                    <td align="center">&nbsp;101 (Vidya Korade)</td>
+                    <td align="center">&nbsp;9371422099 (MANOHAR RETAIL IND. PVT. LTD.  LONI)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;04:06</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160876.141586-101.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160876.141586-101.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:51:13</td>
+                    <td align="center">&nbsp;127 (Ganesh Pise)</td>
+                    <td align="center">&nbsp;9960649249</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:25</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160873.141584-127.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160873.141584-127.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:50:41</td>
+                    <td align="center">&nbsp;112 (Prathamesh Gaikwad)</td>
+                    <td align="center">&nbsp;7519042222 (SHRINIVAS JEWELLERS KASHTI,DAUND)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;05:38</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160841.141578-112.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160841.141578-112.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:50:37</td>
+                    <td align="center">&nbsp;39 (Satish Kharade)</td>
+                    <td align="center">&nbsp;9867576548 (WAMAN HARI PETHE SARAF  HO [MUMBAI]-SHOP NO)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;03:40</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160837.141574-39.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160837.141574-39.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:50:32</td>
+                    <td align="center">&nbsp;+919403355599 (PARSHWA JEWELLERS JAYSINGPUR)</td>
+                    <td align="center">&nbsp;39 (Satish Kharade)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Incoming</td>
+                    <td align="center">&nbsp;00:02</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160832.141571-+919403355599.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160832.141571-+919403355599.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:49:06</td>
+                    <td align="center">&nbsp;109 (Pratik Sathe)</td>
+                    <td align="center">&nbsp;8208567792 (JYOTI JEWELLERS PONDA, GOA)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;01:01</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160746.141566-109.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160746.141566-109.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:48:48</td>
+                    <td align="center">&nbsp;112 (Prathamesh Gaikwad)</td>
+                    <td align="center">&nbsp;9423309809 (KOTHARI JEWELLERS TEMBHURNI)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:59</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160728.141562-112.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160728.141562-112.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:47:53</td>
+                    <td align="center">&nbsp;109 (Pratik Sathe)</td>
+                    <td align="center">&nbsp;9222227751 (MAHALAXMI JEWELLERS  KHAMGAON)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:24</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160673.141560-109.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160673.141560-109.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:47:22</td>
+                    <td align="center">&nbsp;101 (Vidya Korade)</td>
+                    <td align="center">&nbsp;8208872845</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;01:37</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160642.141558-101.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160642.141558-101.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:45:26</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;9011913939</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;01:01</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160526.141553-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160526.141553-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:44:03</td>
+                    <td align="center">&nbsp;39 (Satish Kharade)</td>
+                    <td align="center">&nbsp;8698699887 (WAMAN HARI PETHE SARAF VIRAR BRANCH [MUMBAI]-ACC)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;03:22</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160443.141551-39.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160443.141551-39.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:43:14</td>
+                    <td align="center">&nbsp;15 (Rahul Budhwant)</td>
+                    <td align="center">&nbsp;9611639325</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;11:04</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160394.141547-15.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160394.141547-15.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:41:36</td>
+                    <td align="center">&nbsp;+919158901777</td>
+                    <td align="center">&nbsp;13 (Suresh Kolekar)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Incoming</td>
+                    <td align="center">&nbsp;15:44</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160295.141538-+919158901777.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160295.141538-+919158901777.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:40:08</td>
+                    <td align="center">&nbsp;126 (Shivam More)</td>
+                    <td align="center">&nbsp;7588296318</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;09:50</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160208.141532-126.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160208.141532-126.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:39:19</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;6026124434</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;01:02</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160159.141522-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160159.141522-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:37:45</td>
+                    <td align="center">&nbsp;127 (Ganesh Pise)</td>
+                    <td align="center">&nbsp;7720054519 (RASHMI ENTERPRISES  SHIRUR, GHODNADI)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:47</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788160065.141515-127.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788160065.141515-127.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:36:32</td>
+                    <td align="center">&nbsp;103 (Akash Badadhe)</td>
+                    <td align="center">&nbsp;9767139526</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;19:38</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159992.141512-103.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159992.141512-103.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:36:25</td>
+                    <td align="center">&nbsp;112 (Prathamesh Gaikwad)</td>
+                    <td align="center">&nbsp;8779234019 (P S KOTHARI JEWELLERS  URAN [URAN]-SHOP)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;05:43</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159985.141509-112.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159985.141509-112.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:34:10</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;9702986095 (NAKHYE FOODS LLP ASHOK SWEET KARKHANA)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;03:20</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159850.141494-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159850.141494-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:33:27</td>
+                    <td align="center">&nbsp;+919595985060</td>
+                    <td align="center">&nbsp;13 (Suresh Kolekar)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Incoming</td>
+                    <td align="center">&nbsp;02:08</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159807.141488-+919595985060.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159807.141488-+919595985060.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:33:26</td>
+                    <td align="center">&nbsp;15 (Rahul Budhwant)</td>
+                    <td align="center">&nbsp;9665387966 (PRADEEP SWEETS PVT LTD  BRANCH NINE - TALAWADE)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;09:05</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159806.141486-15.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159806.141486-15.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:33:10</td>
+                    <td align="center">&nbsp;10 (Sandeep Agale)</td>
+                    <td align="center">&nbsp;9763340101 (WADHWA COLLECTION [AHMEDNAGAR]-YOGESH)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;21:58</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159790.141484-10.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159790.141484-10.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:32:29</td>
+                    <td align="center">&nbsp;112 (Prathamesh Gaikwad)</td>
+                    <td align="center">&nbsp;8779234019 (P S KOTHARI JEWELLERS  URAN [URAN]-SHOP)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;01:16</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159749.141482-112.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159749.141482-112.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:32:20</td>
+                    <td align="center">&nbsp;15 (Rahul Budhwant)</td>
+                    <td align="center">&nbsp;8208500424</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:23</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159740.141480-15.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159740.141480-15.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:31:41</td>
+                    <td align="center">&nbsp;15 (Rahul Budhwant)</td>
+                    <td align="center">&nbsp;8208500424</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:27</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159701.141478-15.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159701.141478-15.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:31:24</td>
+                    <td align="center">&nbsp;+919326969601 (VISHWAS JEWELLERS  AURANGABAD)</td>
+                    <td align="center">&nbsp;39 (Satish Kharade)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Incoming</td>
+                    <td align="center">&nbsp;07:07</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159684.141474-+919326969601.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159684.141474-+919326969601.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:30:41</td>
+                    <td align="center">&nbsp;10 (Sandeep Agale)</td>
+                    <td align="center">&nbsp;9822270864 (KALIKA PALACE SHIRUR)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;01:03</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159641.141470-10.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159641.141470-10.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:29:15</td>
+                    <td align="center">&nbsp;15 (Rahul Budhwant)</td>
+                    <td align="center">&nbsp;9423271224 (SATISH DRESSES)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:41</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159555.141467-15.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159555.141467-15.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:28:47</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;9326262828 (NEW BORA FASHION  KOPARGAON [DIST-AHMEDNAGAR]-AKSHAY BORA)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;03:58</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159527.141465-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159527.141465-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:27:31</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;9146235958</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:51</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159451.141459-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159451.141459-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:26:07</td>
+                    <td align="center">&nbsp;15 (Rahul Budhwant)</td>
+                    <td align="center">&nbsp;9423271224 (SATISH DRESSES)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:13</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159367.141456-15.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159367.141456-15.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:24:54</td>
+                    <td align="center">&nbsp;103 (Akash Badadhe)</td>
+                    <td align="center">&nbsp;9124514158</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;05:21</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159294.141449-103.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159294.141449-103.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:24:18</td>
+                    <td align="center">&nbsp;112 (Prathamesh Gaikwad)</td>
+                    <td align="center">&nbsp;8779234019 (P S KOTHARI JEWELLERS  URAN [URAN]-SHOP)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;07:07</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159258.141447-112.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159258.141447-112.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:22:10</td>
+                    <td align="center">&nbsp;103 (Akash Badadhe)</td>
+                    <td align="center">&nbsp;9124997622</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;02:41</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159130.141439-103.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159130.141439-103.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:21:23</td>
+                    <td align="center">&nbsp;43 (Vaibhav Rajguru)</td>
+                    <td align="center">&nbsp;9620119633</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;02:36</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788159083.141437-43.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788159083.141437-43.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:18:57</td>
+                    <td align="center">&nbsp;15 (Rahul Budhwant)</td>
+                    <td align="center">&nbsp;8360287648</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;02:50</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158937.141431-15.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158937.141431-15.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:18:43</td>
+                    <td align="center">&nbsp;126 (Shivam More)</td>
+                    <td align="center">&nbsp;7385724456 (PARAMPARA BY SUNNY  NASHIK)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;09:31</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158923.141429-126.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158923.141429-126.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:17:34</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;9730973591 (TRIMURTI COLLECTION KARANJI)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;02:28</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158854.141426-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158854.141426-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:16:43</td>
+                    <td align="center">&nbsp;13 (Suresh Kolekar)</td>
+                    <td align="center">&nbsp;7798552323 (S.K.PANT WALAVALKAR KAPAD DUKAN TRUST [KOLHAPUR]-PRAMOD)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;02:42</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158803.141420-13.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158803.141420-13.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:16:30</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;8888181781 (RUCHIRA HOTEL  AHMEDNAGAR)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:30</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158790.141418-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158790.141418-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:15:41</td>
+                    <td align="center">&nbsp;101 (Vidya Korade)</td>
+                    <td align="center">&nbsp;8208872845</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;10:29</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158741.141415-101.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158741.141415-101.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:14:45</td>
+                    <td align="center">&nbsp;126 (Shivam More)</td>
+                    <td align="center">&nbsp;9503704016 (MORPANKH SAREES  PUNE [PUNE]-RAHUL PATIL)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;02:41</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158685.141411-126.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158685.141411-126.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:12:29</td>
+                    <td align="center">&nbsp;39 (Satish Kharade)</td>
+                    <td align="center">&nbsp;9326969601 (VISHWAS JEWELLERS  AURANGABAD)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;18:51</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158549.141407-39.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158549.141407-39.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:08:07</td>
+                    <td align="center">&nbsp;126 (Shivam More)</td>
+                    <td align="center">&nbsp;9423702728</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;05:56</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158287.141399-126.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158287.141399-126.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:07:29</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;9270003425 (H U GUGALE)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;06:35</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158249.141394-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158249.141394-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:06:43</td>
+                    <td align="center">&nbsp;101 (Vidya Korade)</td>
+                    <td align="center">&nbsp;8208872845</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;02:40</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158203.141392-101.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158203.141392-101.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="even" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:06:39</td>
+                    <td align="center">&nbsp;17 (Deepak Labade)</td>
+                    <td align="center">&nbsp;8805150920 (SAI AMRUT COLLECTION  AURANGABAD [AURANGABAD]-OFFICE)</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:33</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158199.141390-17.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158199.141390-17.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                    <tr  class="odd" valign="top">
+                    <td align="center">&nbsp;2026-08-31 12:05:54</td>
+                    <td align="center">&nbsp;101 (Vidya Korade)</td>
+                    <td align="center">&nbsp;8806899977</td>
+                    <td align="center">&nbsp;ANSWERED</td>
+                    <td align="center">&nbsp;Outgoing</td>
+                    <td align="center">&nbsp;00:16</td>
+                    <td align="center">&nbsp;<a href='../../callrecord/2026/August/31-08-2026/31-08-2026-1788158154.141388-101.wav' target='_blank'><img src='../images/play_16_black.png' title='Play File' border='0'/></a></td>
+                    <td align="center">&nbsp;<a href='downloadrecordfile.php?path=../../callrecord/2026/August/31-08-2026/31-08-2026-1788158154.141388-101.wav'><img src='../images/download_16_black.png' title='Download File' border='0'/></a></td>
+                     <td align="center">&nbsp;support</td>
+          </tr>
+                     </table>
+          <table border="0"  cellpadding="4" cellspacing="2" class="table-1"  align="center" width="75%">
+          <tr bgcolor="#5FA3D2" style="color:#FFFFFF;">
+                              <td  width="3%" bgcolor="#F2F2F2" align=center><a href="FilterReports.php?keepThis=true&TB_iframe=true&height=300&width=500" title="Filter Records" class="thickbox"><img src="../images/search_12_black.png"></a></td>
+                                <td width="3%" bgcolor="#F2F2F2" align="center"><a href="exporttoexcel.php" target="_blank"><img src="../images/excel.png" type="image" name="exporttoexcel"   title="Export to Excel"></a>
+               </td>
+               <td width="3%" bgcolor="#F2F2F2" align="center"><a href="exporttopdf.php" target="_blank"><img src="../images/pdf.png" type="image" name="exporttopdf"   title="Export to PDF"></a>
+               </td>
+               <td  bgcolor="#F2F2F2" colspan="5" align="center"><div class="pagination"><span class="disabled">&laquo; previous</span><span class="current">1</span><a href="callreports.php?page=2&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">2</a><a href="callreports.php?page=3&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">3</a><a href="callreports.php?page=4&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">4</a><a href="callreports.php?page=5&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">5</a><a href="callreports.php?page=2&from=&to=&seldirection=&seldisposition=answered&reportof=&group=&txtnum=&numbertype=&sid=&pagevalue=50&fromhr=00&frommin=00&fromsec=00&tohr=23&tomin=59&tosec=59">next &raquo;</a></div>
+</td>
+
+            
+             </tr>
+          </table>
+
+          <br>
+          <br>
+             <iframe width=174 height=189 name="gToday:normal:agenda.js" id="gToday:normal:agenda.js" src="ipopeng.htm" scrolling="no" frameborder="0" style="visibility:visible; z-index:999; position:absolute; left:-500px; top:0px;">
+     </iframe>
+     </body>
+</html>
+
+

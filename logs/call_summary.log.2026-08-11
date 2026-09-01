@@ -1,0 +1,120 @@
+2026-08-11 08:37:48 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786417223.86021-75.wav Content-Type='audio/x-wav'
+2026-08-11 08:37:48 | INFO | [DOWNLOAD] Saved 1652204 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786417223.86021-75.wav
+2026-08-11 08:38:21 | INFO | ========================================
+2026-08-11 08:38:21 | INFO | Input Tokens : 1622
+2026-08-11 08:38:21 | INFO | Output Tokens: 272
+2026-08-11 08:38:21 | INFO | Total Tokens : 1894
+2026-08-11 08:38:21 | INFO | ========================================
+2026-08-11 08:38:21 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786417223.86021-75.wav') -> 'Avinash Kore'
+2026-08-11 08:38:21 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 08:38:21 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 08:38:21 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786417223.86021-75.wav') -> 'KSHEER SAGAR PRIVATE LIMITED SARNATH'
+2026-08-11 08:38:21 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786417223.86021-75.wav' | filename='11-08-2026-1786417223.86021-75.wav'
+2026-08-11 08:48:22 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786417953.86023-75.wav Content-Type='audio/x-wav'
+2026-08-11 08:48:23 | INFO | [DOWNLOAD] Saved 2892844 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786417953.86023-75.wav
+2026-08-11 08:49:21 | INFO | ========================================
+2026-08-11 08:49:21 | INFO | Input Tokens : 1972
+2026-08-11 08:49:21 | INFO | Output Tokens: 216
+2026-08-11 08:49:21 | INFO | Total Tokens : 2188
+2026-08-11 08:49:21 | INFO | ========================================
+2026-08-11 08:49:22 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786417953.86023-75.wav') -> 'Avinash Kore'
+2026-08-11 08:49:22 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 08:49:22 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 08:49:22 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786417953.86023-75.wav') -> 'KSHEER SAGAR PRIVATE LIMITED SARNATH'
+2026-08-11 08:49:22 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786417953.86023-75.wav' | filename='11-08-2026-1786417953.86023-75.wav'
+2026-08-11 08:59:23 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786418268.86025-75.wav Content-Type='audio/x-wav'
+2026-08-11 08:59:23 | INFO | [DOWNLOAD] Saved 534124 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786418268.86025-75.wav
+2026-08-11 08:59:45 | INFO | ========================================
+2026-08-11 08:59:45 | INFO | Input Tokens : 1480
+2026-08-11 08:59:45 | INFO | Output Tokens: 230
+2026-08-11 08:59:45 | INFO | Total Tokens : 1710
+2026-08-11 08:59:45 | INFO | ========================================
+2026-08-11 08:59:45 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786418268.86025-75.wav') -> 'Avinash Kore'
+2026-08-11 08:59:45 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 08:59:45 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 08:59:45 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786418268.86025-75.wav') -> 'KSHEER SAGAR PRIVATE LIMITED SARNATH'
+2026-08-11 08:59:45 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786418268.86025-75.wav' | filename='11-08-2026-1786418268.86025-75.wav'
+2026-08-11 08:59:46 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786418586.86029-75.wav Content-Type='audio/x-wav'
+2026-08-11 08:59:46 | INFO | [DOWNLOAD] Saved 2222444 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786418586.86029-75.wav
+2026-08-11 09:00:17 | INFO | ========================================
+2026-08-11 09:00:17 | INFO | Input Tokens : 1716
+2026-08-11 09:00:17 | INFO | Output Tokens: 233
+2026-08-11 09:00:17 | INFO | Total Tokens : 1949
+2026-08-11 09:00:17 | INFO | ========================================
+2026-08-11 09:00:17 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786418586.86029-75.wav') -> 'Avinash Kore'
+2026-08-11 09:00:17 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 09:00:17 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 09:00:17 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786418586.86029-75.wav') -> 'Best Fashion House Gokulshirgaon HO'
+2026-08-11 09:00:17 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786418586.86029-75.wav' | filename='11-08-2026-1786418586.86029-75.wav'
+2026-08-11 09:10:20 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419143.86033-75.wav Content-Type='audio/x-wav'
+2026-08-11 09:10:20 | INFO | [DOWNLOAD] Saved 1606124 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786419143.86033-75.wav
+2026-08-11 09:10:47 | INFO | ========================================
+2026-08-11 09:10:47 | INFO | Input Tokens : 1536
+2026-08-11 09:10:47 | INFO | Output Tokens: 236
+2026-08-11 09:10:47 | INFO | Total Tokens : 1772
+2026-08-11 09:10:47 | INFO | ========================================
+2026-08-11 09:10:47 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786419143.86033-75.wav') -> 'Avinash Kore'
+2026-08-11 09:10:47 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 09:10:47 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 09:10:47 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786419143.86033-75.wav') -> 'Best Fashion House Gokulshirgaon HO'
+2026-08-11 09:10:47 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419143.86033-75.wav' | filename='11-08-2026-1786419143.86033-75.wav'
+2026-08-11 09:10:48 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419395.86037-75.wav Content-Type='audio/x-wav'
+2026-08-11 09:10:48 | INFO | [DOWNLOAD] Saved 418284 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786419395.86037-75.wav
+2026-08-11 09:11:10 | INFO | ========================================
+2026-08-11 09:11:10 | INFO | Input Tokens : 1497
+2026-08-11 09:11:10 | INFO | Output Tokens: 263
+2026-08-11 09:11:10 | INFO | Total Tokens : 1760
+2026-08-11 09:11:10 | INFO | ========================================
+2026-08-11 09:11:10 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786419395.86037-75.wav') -> 'Avinash Kore'
+2026-08-11 09:11:10 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 09:11:10 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 09:11:11 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786419395.86037-75.wav') -> 'KSHEER SAGAR PRIVATE LIMITED SARNATH'
+2026-08-11 09:11:11 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419395.86037-75.wav' | filename='11-08-2026-1786419395.86037-75.wav'
+2026-08-11 09:21:11 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419440.86039-75.wav Content-Type='audio/x-wav'
+2026-08-11 09:21:12 | INFO | [DOWNLOAD] Saved 2409004 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786419440.86039-75.wav
+2026-08-11 09:21:49 | INFO | ========================================
+2026-08-11 09:21:49 | INFO | Input Tokens : 2142
+2026-08-11 09:21:49 | INFO | Output Tokens: 310
+2026-08-11 09:21:49 | INFO | Total Tokens : 2452
+2026-08-11 09:21:49 | INFO | ========================================
+2026-08-11 09:21:49 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786419440.86039-75.wav') -> 'Avinash Kore'
+2026-08-11 09:21:49 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 09:21:49 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 09:21:49 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786419440.86039-75.wav') -> 'AGARWAL SUPER BAZAR Gulbarga'
+2026-08-11 09:21:49 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419440.86039-75.wav' | filename='11-08-2026-1786419440.86039-75.wav'
+2026-08-11 09:31:52 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419603.86041-75.wav Content-Type='audio/x-wav'
+2026-08-11 09:31:52 | INFO | [DOWNLOAD] Saved 8588204 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786419603.86041-75.wav
+2026-08-11 09:34:01 | INFO | ========================================
+2026-08-11 09:34:01 | INFO | Input Tokens : 2385
+2026-08-11 09:34:01 | INFO | Output Tokens: 340
+2026-08-11 09:34:01 | INFO | Total Tokens : 2725
+2026-08-11 09:34:01 | INFO | ========================================
+2026-08-11 09:34:01 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786419603.86041-75.wav') -> 'Avinash Kore'
+2026-08-11 09:34:01 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 09:34:01 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 09:34:01 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786419603.86041-75.wav') -> 'KUNALCOLLECTION Chichondi Patil, Ahmednagar'
+2026-08-11 09:34:01 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786419603.86041-75.wav' | filename='11-08-2026-1786419603.86041-75.wav'
+2026-08-11 09:44:05 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786420716.86047-75.wav Content-Type='audio/x-wav'
+2026-08-11 09:44:05 | INFO | [DOWNLOAD] Saved 3525804 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786420716.86047-75.wav
+2026-08-11 09:44:43 | INFO | ========================================
+2026-08-11 09:44:43 | INFO | Input Tokens : 2077
+2026-08-11 09:44:43 | INFO | Output Tokens: 294
+2026-08-11 09:44:43 | INFO | Total Tokens : 2371
+2026-08-11 09:44:43 | INFO | ========================================
+2026-08-11 09:44:43 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786420716.86047-75.wav') -> 'Avinash Kore'
+2026-08-11 09:44:43 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 09:44:43 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 09:44:43 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786420716.86047-75.wav') -> 'KHUSHBOO COLLECTION NEW OWNER'
+2026-08-11 09:44:43 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786420716.86047-75.wav' | filename='11-08-2026-1786420716.86047-75.wav'
+2026-08-11 09:44:44 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786421226.86052-75.wav Content-Type='audio/x-wav'
+2026-08-11 09:44:44 | INFO | [DOWNLOAD] Saved 3816364 bytes to D:\Aniket\Call Summery\web_uploads\11-08-2026-1786421226.86052-75.wav
+2026-08-11 09:46:12 | INFO | ========================================
+2026-08-11 09:46:12 | INFO | Input Tokens : 2106
+2026-08-11 09:46:12 | INFO | Output Tokens: 250
+2026-08-11 09:46:12 | INFO | Total Tokens : 2356
+2026-08-11 09:46:12 | INFO | ========================================
+2026-08-11 09:46:12 | INFO | [DB] resolve_executive_name(filename='11-08-2026-1786421226.86052-75.wav') -> 'Avinash Kore'
+2026-08-11 09:46:12 | INFO | [DB] Overriding Executive Name in analysis text -> 'Avinash Kore'
+2026-08-11 09:46:12 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-11 09:46:12 | INFO | [DB] resolve_customer_name(filename='11-08-2026-1786421226.86052-75.wav') -> 'SAILI SURGICALS MAI VASTRAM'
+2026-08-11 09:46:12 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/11-08-2026/11-08-2026-1786421226.86052-75.wav' | filename='11-08-2026-1786421226.86052-75.wav'

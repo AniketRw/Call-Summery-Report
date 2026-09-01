@@ -9,9 +9,69 @@ import time
 import json
 import sys
 
+USD_TO_INR = 95.0
+
+INPUT_PRICE_PER_1M = 1.50
+OUTPUT_PRICE_PER_1M = 9.00
+
 print("IMPORTING testnew.py")
 print("PID:", os.getpid())
-#from faster_whisper import WhisperModel
+from faster_whisper import WhisperModel
+
+
+def calculate_gemini_cost(usage):
+
+    if usage is None:
+        return {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "thinking_tokens": 0,
+            "total_tokens": 0,
+            "cost_usd": 0.0,
+            "cost_inr": 0.0
+        }
+
+    input_tokens = getattr(
+        usage, "prompt_token_count", 0
+    ) or 0
+
+    output_tokens = getattr(
+        usage, "candidates_token_count", 0
+    ) or 0
+
+    thinking_tokens = getattr(
+        usage, "thoughts_token_count", 0
+    ) or 0
+
+    input_cost_usd = (
+        input_tokens / 1_000_000
+    ) * INPUT_PRICE_PER_1M
+
+    output_cost_usd = (
+        output_tokens / 1_000_000
+    ) * OUTPUT_PRICE_PER_1M
+
+    total_cost_usd = (
+        input_cost_usd + output_cost_usd
+    )
+
+    total_cost_inr = (
+        total_cost_usd * USD_TO_INR
+    )
+
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "thinking_tokens": thinking_tokens,
+        "total_tokens": (
+            input_tokens +
+            output_tokens +
+            thinking_tokens
+        ),
+        "cost_usd": total_cost_usd,
+        "cost_inr": total_cost_inr
+    }
+
 
 def load_env_file(env_path=".env"):
     if not os.path.exists(env_path):
@@ -32,12 +92,15 @@ GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
 #GEMINI_MODEL = "models/gemini-2.5-flash"
 TRANSCRIPT_MODEL = "models/gemini-3.5-flash"
 print("Loading Whisper model...")
-# whisper_model = WhisperModel(
-#     "medium",
-#     device="cpu",
-#     compute_type="int8"
-# )
+
+whisper_model = WhisperModel(
+    "small",
+    device="cpu",
+    compute_type="int8"
+)
+
 print("Whisper model loaded.")
+
 ANALYSIS_MODEL = "models/gemini-3.5-flash"
 SUMMARY_SEED = 12345
 
@@ -49,27 +112,33 @@ TRANSCRIPT_CORRECTIONS = {
     "lost sale report": "loss sale report",
     "loss cell report": "loss sale report",
 }
-# def whisper_transcribe(audio_path):
+def whisper_transcribe(audio_path):
+    print(">>> ENTERED LOCAL WHISPER TRANSCRIPTION", flush=True)
+    print("Audio exists:", os.path.exists(audio_path), flush=True)
+    print("Audio size:", os.path.getsize(audio_path), "bytes", flush=True)
+    print("Audio path:", audio_path, flush=True)
 
-#     segments, info = whisper_model.transcribe(
-#         audio_path,
-#         language="hi",
-#         beam_size=5,
-#         vad_filter=True
-#     )
+    segments, info = whisper_model.transcribe(
+        audio_path,
+        language="hi",
+        beam_size=5,
+        vad_filter=False,
+        vad_parameters=dict(min_silence_duration_ms=500, threshold=0.3)
+    )
 
-#     lines = []
+    print("Language:", info.language, "| Probability:", info.language_probability, flush=True)
 
-#     for segment in segments:
+    lines = []
+    segment_count = 0
+    for segment in segments:
+        segment_count += 1
+        print("WHISPER SEGMENT:", segment.start, segment.end, repr(segment.text), flush=True)
+        m = int(segment.start // 60)
+        s = int(segment.start % 60)
+        lines.append(f"[{m:02d}:{s:02d}] {segment.text.strip()}")
 
-#         m = int(segment.start // 60)
-#         s = int(segment.start % 60)
-
-#         lines.append(
-#             f"[{m:02d}:{s:02d}] {segment.text.strip()}"
-#         )
-
-#     return "\n".join(lines)
+    print("WHISPER SEGMENT COUNT:", segment_count, flush=True)
+    return "\n".join(lines)
 
 def is_degenerate_text(text, min_char_run=25, min_word_repeats=35):
     if not text:
@@ -363,31 +432,44 @@ def safe_generate(client, **kwargs):
 def find_speech_start(wav_path):
     """
     Detect where ring-back tone ends and speech begins.
-    Indian telephone ring tone = ~400 Hz concentrated signal.
-    Returns start time in seconds (0 if no ring tone found).
+    wav_path OGG असू शकतो, म्हणून आधी तो तात्पुरता WAV मध्ये decode करतो.
     """
-    import wave, struct
+    import wave, struct, subprocess, os
     try:
         import numpy as np
     except ImportError:
         return 0.0
+
+    tmp_wav = wav_path + "_probe.wav"
     try:
-        with wave.open(wav_path, 'rb') as w:
-           framerate = w.getframerate()
-           max_frames = int(framerate * 15)   
-           data = w.readframes(min(w.getnframes(), max_frames))
-        # with wave.open(wav_path, 'rb') as w:
-        #     framerate = w.getframerate()
-        #     max_frames = int(framerate * 20)   # only scan first 20 seconds
-        #     data = w.readframes(min(w.getnframes(), max_frames))
+       
+        r = subprocess.run([
+            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+            "-i", wav_path,
+            "-t", "15",
+            "-ac", "1", "-ar", "16000",
+            "-c:a", "pcm_s16le",
+            tmp_wav
+        ], capture_output=True, text=True)
+
+        if r.returncode != 0 or not os.path.exists(tmp_wav):
+            print(f"[Ring trim] Probe conversion failed: {r.stderr[:200]}")
+            return 0.0
+
+        
+        with wave.open(tmp_wav, 'rb') as w:
+            framerate = w.getframerate()
+            max_frames = int(framerate * 15)
+            data = w.readframes(min(w.getnframes(), max_frames))
+
         samples = np.array(struct.unpack('<' + 'h' * (len(data)//2), data), dtype=np.float32)
-        step = int(framerate * 0.5)          # 0.5-second windows
+        step = int(framerate * 0.5)
         ring_pcts = []
         for i in range(0, len(samples) - step, step):
             seg = samples[i:i+step]
             rms = float(np.sqrt(np.mean(seg**2)))
             if rms < 200:
-                ring_pcts.append(None)       # silence
+                ring_pcts.append(None)
                 continue
             fft   = np.abs(np.fft.rfft(seg))
             freqs = np.fft.rfftfreq(step, 1.0/framerate)
@@ -396,7 +478,7 @@ def find_speech_start(wav_path):
             ring_e   = float(np.sum(fft[ring_mask]))
             speech_e = float(np.sum(fft[speech_mask]))
             ring_pcts.append(ring_e / max(ring_e + speech_e, 1))
-        # Find first 3 consecutive 0.5s windows where ring energy < 40%
+
         consecutive = 0
         for idx, rp in enumerate(ring_pcts):
             t = idx * 0.5
@@ -407,14 +489,24 @@ def find_speech_start(wav_path):
             if rp < 0.40:
                 consecutive += 1
                 if consecutive >= 3:
-                    speech_start = max(0.0, t - 1.0)   # 1s buffer
+                    speech_start = max(0.0, t - 1.0)
                     print(f"[Ring trim] Speech at {t:.1f}s → trim from {speech_start:.1f}s")
                     return speech_start
             else:
                 consecutive = 0
+
     except Exception as e:
         print(f"[Ring trim] Detection failed: {e}, using full audio")
+    finally:
+       
+        if os.path.exists(tmp_wav):
+            try:
+                os.remove(tmp_wav)
+            except Exception:
+                pass
+
     return 0.0
+
 
 
 def convert_audio(input_path):
@@ -655,13 +747,30 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
                 max_output_tokens=12000
             )
         )
-        # candidate_text = (response.text or "").strip()
-        # #is_degenerate = bool(re.search(r'(.)\1{24,}', candidate_text, re.DOTALL))
-        # is_degenerate = is_degenerate_text(candidate_text)
-        # if not is_degenerate:
-        #     raw_text = candidate_text
-        #     print(f"[Degeneration check] Clean output on attempt {attempt+1} (temp={temp})")
-        #     break
+
+        try:
+            transcript_usage = response.usage_metadata
+            transcript_cost_info = calculate_gemini_cost(transcript_usage)
+
+            print("\n" + "=" * 60)
+            print("GEMINI TRANSCRIPTION COST")
+            print("=" * 60)
+
+            print("Input Tokens    :", transcript_cost_info["input_tokens"])
+            print("Output Tokens   :", transcript_cost_info["output_tokens"])
+            print("Thinking Tokens :", transcript_cost_info["thinking_tokens"])
+            print("Total Tokens    :", transcript_cost_info["total_tokens"])
+            print("Cost USD        : $%.6f" % transcript_cost_info["cost_usd"])
+            print("Cost INR        : ₹%.4f" % transcript_cost_info["cost_inr"])
+
+            if hasattr(transcript_usage, "total_token_count"):
+                print("SDK Total Tokens:", transcript_usage.total_token_count)
+
+            print("=" * 60)
+
+        except Exception as e:
+            print("Transcription token usage not available:", e)
+       
         candidate_text = (response.text or "").strip()
         try:
             finish_reason = response.candidates[0].finish_reason
@@ -693,6 +802,29 @@ def get_audio_transcripts_with_gemini(client, uploaded_file):
                         max_output_tokens=10000
                     )
                 )
+                
+                try:
+                    cont_usage = cont_response.usage_metadata
+                    cont_cost_info = calculate_gemini_cost(cont_usage)
+
+                    print("\n" + "=" * 60)
+                    print("GEMINI TRANSCRIPTION CONTINUATION COST")
+                    print("=" * 60)
+
+                    print("Input Tokens    :", cont_cost_info["input_tokens"])
+                    print("Output Tokens   :", cont_cost_info["output_tokens"])
+                    print("Thinking Tokens :", cont_cost_info["thinking_tokens"])
+                    print("Total Tokens    :", cont_cost_info["total_tokens"])
+                    print("Cost USD        : $%.6f" % cont_cost_info["cost_usd"])
+                    print("Cost INR        : ₹%.4f" % cont_cost_info["cost_inr"])
+
+                    if hasattr(cont_usage, "total_token_count"):
+                        print("SDK Total Tokens:", cont_usage.total_token_count)
+
+                    print("=" * 60)
+
+                except Exception as e:
+                    print("Continuation token usage not available:", e)
                 cont_text = (cont_response.text or "").strip()
                 if cont_text and not is_degenerate_text(cont_text):
                     raw_text = raw_text + "\n" + cont_text
@@ -776,6 +908,29 @@ Return valid JSON only, in this exact format:
         )
     )
 
+    try:
+        summary_usage = response.usage_metadata
+        summary_cost_info = calculate_gemini_cost(summary_usage)
+
+        print("\n" + "=" * 60)
+        print("GEMINI DETAILED SUMMARY COST")
+        print("=" * 60)
+
+        print("Input Tokens    :", summary_cost_info["input_tokens"])
+        print("Output Tokens   :", summary_cost_info["output_tokens"])
+        print("Thinking Tokens :", summary_cost_info["thinking_tokens"])
+        print("Total Tokens    :", summary_cost_info["total_tokens"])
+        print("Cost USD        : $%.6f" % summary_cost_info["cost_usd"])
+        print("Cost INR        : ₹%.4f" % summary_cost_info["cost_inr"])
+
+        if hasattr(summary_usage, "total_token_count"):
+            print("SDK Total Tokens:", summary_usage.total_token_count)
+
+        print("=" * 60)
+
+    except Exception as e:
+        print("Summary token usage not available:", e)
+
     raw = (response.text or "").strip()
     try:
         data = parse_gemini_json(raw)
@@ -797,29 +952,39 @@ def analyze_audio_with_gemini(audio_path):
     client = get_google_client()
     keywords_list = load_keywords()
     keywords_str = ", ".join(keywords_list)
-    uploaded_file = None
-    try:
-        #uploaded_file = client.files.upload(file=audio_path, config=types.UploadFileConfig(mime_type="audio/wav"))
-        for attempt in range(3):
-            try:
-                uploaded_file = client.files.upload(
-                    file=audio_path,
-                    config=types.UploadFileConfig(
-                        mime_type="audio/ogg"
-                    )
-                )
-                break
+    # uploaded_file = None
+    # try:
+    #     #uploaded_file = client.files.upload(file=audio_path, config=types.UploadFileConfig(mime_type="audio/wav"))
+    #     for attempt in range(3):
+    #         try:
+    #             uploaded_file = client.files.upload(
+    #                 file=audio_path,
+    #                 config=types.UploadFileConfig(
+    #                     mime_type="audio/ogg"
+    #                 )
+    #             )
+    #             break
 
-            except Exception as e:
-                print(f"Upload Retry {attempt+1}: {e}")
+    #         except Exception as e:
+    #             print(f"Upload Retry {attempt+1}: {e}")
 
-                if attempt == 2:
-                    raise
+    #             if attempt == 2:
+    #                 raise
 
-                time.sleep(2)
-        print(">>> FILE UPLOADED, calling transcript function now", flush=True)
-        transcript = get_audio_transcripts_with_gemini(client, uploaded_file)
+    #             time.sleep(2)
+    #     print(">>> FILE UPLOADED, calling transcript function now", flush=True)
+    #     transcript = get_audio_transcripts_with_gemini(client, uploaded_file)
         #transcript = whisper_transcribe(audio_path)
+    try:
+
+        print(">>> STARTING LOCAL WHISPER", flush=True)
+
+        transcript = whisper_transcribe(audio_path)
+        print("========== WHISPER TRANSCRIPT ==========", flush=True)
+        print(transcript, flush=True)
+        print("========================================", flush=True)
+        print("WHISPER TRANSCRIPT LENGTH:", len(transcript), flush=True)
+        print(">>> LOCAL WHISPER TRANSCRIPTION COMPLETED", flush=True)
         
         if not transcript:
             empty_token_info = {"prompt": 0, "response": 0, "thinking": 0, "total": 0}
@@ -1314,10 +1479,30 @@ Output JSON only.
             )
         )
         try:
+            # usage = response.usage_metadata
+            # prompt_tokens = getattr(usage, "prompt_token_count", 0)
+            # response_tokens = getattr(usage, "candidates_token_count", 0)
+            # thinking_tokens = getattr(usage, "thoughts_token_count", 0)
             usage = response.usage_metadata
-            prompt_tokens = getattr(usage, "prompt_token_count", 0)
-            response_tokens = getattr(usage, "candidates_token_count", 0)
-            thinking_tokens = getattr(usage, "thoughts_token_count", 0)
+
+            cost_info = calculate_gemini_cost(usage)
+
+            prompt_tokens = cost_info["input_tokens"]
+            response_tokens = cost_info["output_tokens"]
+            thinking_tokens = cost_info["thinking_tokens"]
+
+            print("\n" + "=" * 60)
+            print("GEMINI ANALYSIS COST")
+            print("=" * 60)
+
+            print("Input Tokens    :", prompt_tokens)
+            print("Output Tokens   :", response_tokens)
+            print("Thinking Tokens :", thinking_tokens)
+            print("Total Tokens    :", cost_info["total_tokens"])
+            print("Cost USD        : $%.6f" % cost_info["cost_usd"])
+            print("Cost INR        : ₹%.4f" % cost_info["cost_inr"])
+
+            print("=" * 60)
             print("Thinking Tokens:", thinking_tokens) 
             total_tokens = prompt_tokens + response_tokens
 
@@ -1766,13 +1951,7 @@ Output JSON only.
             token_info
         )
     finally:
-        if uploaded_file:
-            # try: client.files.delete(name=uploaded_file.name)
-            # except: pass
-            threading.Thread(
-                target=lambda: client.files.delete(name=uploaded_file.name),
-                daemon=True
-            ).start()
+        pass
 def robust_parse(raw):
     try:
         return parse_gemini_json(raw)
