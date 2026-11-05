@@ -203,20 +203,22 @@ def init_db():
         )
     """)
 
-    # Safety net: if call_summaries already existed from an older install
-    # (without the newer columns), add them now — this keeps old installs
-    # working even though the CREATE TABLE above only runs once, on a
-    # brand-new database. Column order for a table that already exists
-    # can't be changed by ALTER, so if you need the exact new sequence on
-    # an EXISTING database, run recreate_call_summaries.sql once instead.
+    # Safety net / migration: adds any missing columns to an EXISTING
+    # call_summaries table. Also adds the new cost columns
+    # (deepseek_cost, bodhan_cost, bodhan_audio_sec) for both fresh and
+    # existing installs. Column order for an already-existing table can't
+    # be changed by ALTER; new columns are appended at the end.
     for col_name, col_def in [
-        ("mobile_no",      "NVARCHAR(20)"),
-        ("customer_name",  "NVARCHAR(300)"),
-        ("token_cost",     "DECIMAL(10,4)"),
-        ("usd_to_inr",     "DECIMAL(10,4)"),
-        ("call_date",      "DATETIME2"),
-        ("software_name",  "NVARCHAR(200)"),
-        ("call_duration",  "INT"),
+        ("mobile_no",        "NVARCHAR(20)"),
+        ("customer_name",    "NVARCHAR(300)"),
+        ("token_cost",       "DECIMAL(10,4)"),
+        ("usd_to_inr",       "DECIMAL(10,4)"),
+        ("call_date",        "DATETIME2"),
+        ("software_name",    "NVARCHAR(200)"),
+        ("call_duration",    "INT"),
+        ("deepseek_cost",    "DECIMAL(10,4)"),
+        ("bodhan_cost",      "DECIMAL(10,4)"),
+        ("bodhan_audio_sec", "FLOAT"),
     ]:
         cur.execute(f"""
             IF NOT EXISTS (
@@ -258,7 +260,8 @@ def extract_uniqueid_from_filename(filename):
     if not filename:
         return None
     stem = os.path.splitext(filename)[0]
-    match = re.search(r'(\d{10}\.\d{4,6})', stem)
+    #match = re.search(r'(\d{10}\.\d{4,6})', stem)
+    match = re.search(r'(\d{10}\.\d{1,6})', stem)
     return match.group(1) if match else None
 
 
@@ -270,7 +273,8 @@ def extract_reference_from_filename(filename):
     if not filename:
         return None
     stem = os.path.splitext(filename)[0]
-    match = re.search(r'\d{10}\.\d{4,6}-(\d+)$', stem)
+    #match = re.search(r'\d{10}\.\d{4,6}-(\d+)$', stem)
+    match = re.search(r'\d{10}\.\d{1,6}-(\d+)$', stem)
     return match.group(1) if match else None
 
 
@@ -500,7 +504,7 @@ def lookup_executive_name_by_reference(cur, reference):
         cur.execute("""
             SELECT TOP 1 Name
             FROM UserMaster
-            WHERE Reference = ?
+            WHERE SIPExtentionNo = ?
         """, (reference,))
         row = cur.fetchone()
         if row and row[0] and str(row[0]).strip():
@@ -733,35 +737,209 @@ def split_summary(combined_summary):
 #     conn.close()
 #     return call_id
 
+# def save_call_summary(filename, analysis_text, keywords, facts, summary,
+#                        transcript, token_info=None, elapsed_time=None):
+
+#     ti = token_info or {}
+
+#     total_tokens = ti.get("total", 0)
+
+#     # Real costs, calculated in testnew.py (DeepSeek tokens + Bodhan STT minutes)
+#     deepseek_cost_inr = float(ti.get("deepseek_cost_inr", 0.0) or 0.0)
+#     bodhan_cost_inr = float(ti.get("bodhan_cost_inr", 0.0) or 0.0)
+#     bodhan_audio_sec = float(ti.get("bodhan_audio_seconds", 0.0) or 0.0)
+
+#     USD_TO_INR = get_usd_to_inr()
+#     token_cost = round(deepseek_cost_inr + bodhan_cost_inr, 4)   # total cost (INR)
+
+#     # analysis_text is the multi-line "Customer Mood: ... \nExecutive Name: ..." block
+#     fields = {"customer_mood": "", "mood_reason": "", "executive_name": "",
+#               "greetings": "", "closings": "", "executive_tone": ""}
+#     for line in (analysis_text or "").splitlines():
+#         if ":" not in line:
+#             continue
+#         key, val = line.split(":", 1)
+#         key = key.strip().lower()
+#         val = val.strip()
+#         if key.startswith("customer mood"):
+#             if "(" in val and val.endswith(")"):
+#                 mood, reason = val.split("(", 1)
+#                 fields["customer_mood"] = mood.strip()
+#                 fields["mood_reason"] = reason.rstrip(")").strip()
+#             else:
+#                 fields["customer_mood"] = val
+#         elif key.startswith("executive name"):
+#             fields["executive_name"] = val
+#         elif key.startswith("greetings"):
+#             fields["greetings"] = val
+#         elif key.startswith("closings"):
+#             fields["closings"] = val
+#         elif key.startswith("executive tone"):
+#             fields["executive_tone"] = val
+
+#     short_summary, long_summary = split_summary(summary)
+
+#     conn = get_conn()
+#     cur = conn.cursor()
+
+#     call_date = resolve_call_date(cur, filename)
+#     mobile_no = resolve_mobile_no(cur, filename)
+#     customer_name = lookup_customer_name(cur, mobile_no)
+
+#     cust_id = resolve_cust_id(cur, mobile_no)
+#     # software name (via CustId) + call duration (via CDR uniqueid)
+#     cust_id = resolve_cust_id(cur, mobile_no)
+#     software_name = lookup_software_name(cur, cust_id)
+#     call_duration = resolve_call_duration(cur, filename)
+
+#     # Resolve executive name from the reference number embedded in the
+#     # filename (via UserMaster), overriding whatever the transcript-based
+#     # analysis produced. If no reference is embedded directly in the
+#     # filename (e.g. mobile-number-only filenames), fall back to resolving
+#     # the internal extension via the CDR uniqueid -> src/dst lookup instead.
+#     # If neither resolves to a UserMaster match, fall back to "Not mentioned".
+#     reference = extract_reference_from_filename(filename)
+#     if reference:
+#         db_executive_name = lookup_executive_name_by_reference(cur, reference)
+#     else:
+#         uniqueid = extract_uniqueid_from_filename(filename)
+#         extension = lookup_extension_from_cdr(cur, uniqueid)
+#         db_executive_name = lookup_executive_name_by_reference(cur, extension)
+#     fields["executive_name"] = db_executive_name if db_executive_name else "Not mentioned"
+
+#     # 1) Upsert the "main" row and get its id back
+#     cur.execute("""
+#         MERGE call_summaries AS target
+#         USING (SELECT ? AS filename) AS src
+#         ON target.filename = src.filename
+#         WHEN MATCHED THEN
+#             UPDATE SET
+#                 call_date = ?,
+#                 executive_name = ?,
+#                 customer_name = ?,
+#                 mobile_no = ?,
+#                 software_name = ?,
+#                 call_duration = ?,
+#                 customer_mood = ?,
+#                 mood_reason = ?,
+#                 executive_tone = ?,
+#                 greetings = ?,
+#                 closings = ?,
+#                 keywords = ?,
+#                 token_total = ?,
+#                 token_cost = ?,
+#                 usd_to_inr = ?,
+#                 elapsed_seconds = ?,
+#                 created_at = SYSDATETIME()
+#         WHEN NOT MATCHED THEN
+#             INSERT (
+#                 filename, call_date,
+#                 executive_name, customer_name, mobile_no, software_name, call_duration,
+#                 customer_mood, mood_reason, executive_tone, greetings, closings, keywords,
+#                 token_total, token_cost, usd_to_inr, elapsed_seconds
+#             )
+#             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+#             OUTPUT inserted.id;
+#     """, (
+#         filename,
+#         # UPDATE values
+#         call_date,
+#         fields["executive_name"], customer_name, mobile_no, software_name, call_duration,
+#         fields["customer_mood"], fields["mood_reason"], fields["executive_tone"],
+#         fields["greetings"], fields["closings"], keywords,
+#         total_tokens, token_cost, USD_TO_INR, elapsed_time,
+#         # INSERT values
+#         filename, call_date,
+#         fields["executive_name"], customer_name, mobile_no, software_name, call_duration,
+#         fields["customer_mood"], fields["mood_reason"], fields["executive_tone"],
+#         fields["greetings"], fields["closings"], keywords,
+#         total_tokens, token_cost, USD_TO_INR, elapsed_time
+#     ))
+#     row = cur.fetchone()
+#     conn.commit()
+
+#     if row:
+#         call_id = row[0]
+#     else:
+#         # Some ODBC drivers don't return OUTPUT rows through MERGE reliably —
+#         # fall back to a plain lookup.
+#         cur.execute("SELECT id FROM call_summaries WHERE filename = ?", (filename,))
+#         call_id = cur.fetchone()[0]
+
+#     # Save separate DeepSeek / Bodhan cost columns
+#     cur.execute("""
+#         UPDATE call_summaries
+#         SET deepseek_cost = ?, bodhan_cost = ?, bodhan_audio_sec = ?
+#         WHERE id = ?
+#     """, (
+#         round(deepseek_cost_inr, 4),
+#         round(bodhan_cost_inr, 4),
+#         bodhan_audio_sec,
+#         call_id
+#     ))
+#     conn.commit()
+
+#     # 2) Upsert the matching "details" row (the long text blocks)
+#     cur.execute("""
+#         MERGE call_summary_details AS target
+#         USING (SELECT ? AS call_id) AS src
+#         ON target.call_id = src.call_id
+#         WHEN MATCHED THEN
+#             UPDATE SET
+#                 facts = ?,
+#                 short_summary = ?,
+#                 long_summary = ?,
+#                 transcript = ?,
+#                 analysis_raw = ?
+#         WHEN NOT MATCHED THEN
+#             INSERT (call_id, facts, short_summary, long_summary, transcript, analysis_raw)
+#             VALUES (?, ?, ?, ?, ?, ?);
+#     """, (
+#         call_id,
+#         facts, short_summary, long_summary, transcript, analysis_text,
+#         call_id,
+#         facts, short_summary, long_summary, transcript, analysis_text
+#     ))
+#     conn.commit()
+
+#     cur.close()
+#     conn.close()
+#     return call_id
+    
+ 
 
 def save_call_summary(filename, analysis_text, keywords, facts, summary,
-                       transcript, token_info=None, elapsed_time=None):
+                      transcript, token_info=None, elapsed_time=None):
 
-    total_tokens = (token_info or {}).get("total", 0)
+    ti = token_info or {}
 
-    INPUT_PRICE_PER_MILLION = 0.30
-    OUTPUT_PRICE_PER_MILLION = 2.50
+    total_tokens = ti.get("total", 0)
 
-    input_tokens = (token_info or {}).get("prompt", 0)
-    output_tokens = (token_info or {}).get("response", 0)
-
-    usd_cost = (
-        (input_tokens / 1_000_000) * INPUT_PRICE_PER_MILLION +
-        (output_tokens / 1_000_000) * OUTPUT_PRICE_PER_MILLION
-    )
+    # DeepSeek + Bodhan costs
+    deepseek_cost_inr = float(ti.get("deepseek_cost_inr", 0.0) or 0.0)
+    bodhan_cost_inr = float(ti.get("bodhan_cost_inr", 0.0) or 0.0)
+    bodhan_audio_sec = float(ti.get("bodhan_audio_seconds", 0.0) or 0.0)
 
     USD_TO_INR = get_usd_to_inr()
+    token_cost = round(deepseek_cost_inr + bodhan_cost_inr, 4)
 
-    token_cost = round(usd_cost * USD_TO_INR, 4)
-    # analysis_text is the multi-line "Customer Mood: ... \nExecutive Name: ..." block
-    fields = {"customer_mood": "", "mood_reason": "", "executive_name": "",
-              "greetings": "", "closings": "", "executive_tone": ""}
+    fields = {
+        "customer_mood": "",
+        "mood_reason": "",
+        "executive_name": "",
+        "greetings": "",
+        "closings": "",
+        "executive_tone": ""
+    }
+
     for line in (analysis_text or "").splitlines():
         if ":" not in line:
             continue
+
         key, val = line.split(":", 1)
         key = key.strip().lower()
         val = val.strip()
+
         if key.startswith("customer mood"):
             if "(" in val and val.endswith(")"):
                 mood, reason = val.split("(", 1)
@@ -769,12 +947,16 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
                 fields["mood_reason"] = reason.rstrip(")").strip()
             else:
                 fields["customer_mood"] = val
+
         elif key.startswith("executive name"):
             fields["executive_name"] = val
+
         elif key.startswith("greetings"):
             fields["greetings"] = val
+
         elif key.startswith("closings"):
             fields["closings"] = val
+
         elif key.startswith("executive tone"):
             fields["executive_tone"] = val
 
@@ -783,116 +965,219 @@ def save_call_summary(filename, analysis_text, keywords, facts, summary,
     conn = get_conn()
     cur = conn.cursor()
 
-    call_date = resolve_call_date(cur, filename)
-    mobile_no = resolve_mobile_no(cur, filename)
-    customer_name = lookup_customer_name(cur, mobile_no)
+    try:
+        call_date = resolve_call_date(cur, filename)
 
-    # NEW: software name (via CustId) + call duration (via CDR uniqueid)
-    cust_id = resolve_cust_id(cur, mobile_no)
-    software_name = lookup_software_name(cur, cust_id)
-    call_duration = resolve_call_duration(cur, filename)
+        mobile_no = resolve_mobile_no(cur, filename)
 
-    # Resolve executive name from the reference number embedded in the
-    # filename (via UserMaster), overriding whatever the transcript-based
-    # analysis produced. If no reference is embedded directly in the
-    # filename (e.g. mobile-number-only filenames), fall back to resolving
-    # the internal extension via the CDR uniqueid -> src/dst lookup instead.
-    # If neither resolves to a UserMaster match, fall back to "Not mentioned".
-    reference = extract_reference_from_filename(filename)
-    if reference:
-        db_executive_name = lookup_executive_name_by_reference(cur, reference)
-    else:
-        uniqueid = extract_uniqueid_from_filename(filename)
-        extension = lookup_extension_from_cdr(cur, uniqueid)
-        db_executive_name = lookup_executive_name_by_reference(cur, extension)
-    fields["executive_name"] = db_executive_name if db_executive_name else "Not mentioned"
+        # Customer name and CustId
+        customer_name = lookup_customer_name(cur, mobile_no)
+        cust_id = resolve_cust_id(cur, mobile_no)
 
-    # 1) Upsert the "main" row and get its id back
-    cur.execute("""
-        MERGE call_summaries AS target
-        USING (SELECT ? AS filename) AS src
-        ON target.filename = src.filename
-        WHEN MATCHED THEN
-            UPDATE SET
-                call_date = ?,
-                executive_name = ?,
-                customer_name = ?,
-                mobile_no = ?,
-                software_name = ?,
-                call_duration = ?,
-                customer_mood = ?,
-                mood_reason = ?,
-                executive_tone = ?,
-                greetings = ?,
-                closings = ?,
-                keywords = ?,
-                token_total = ?,
-                token_cost = ?,
-                usd_to_inr = ?,
-                elapsed_seconds = ?,
-                created_at = SYSDATETIME()
-        WHEN NOT MATCHED THEN
-            INSERT (
-                filename, call_date,
-                executive_name, customer_name, mobile_no, software_name, call_duration,
-                customer_mood, mood_reason, executive_tone, greetings, closings, keywords,
-                token_total, token_cost, usd_to_inr, elapsed_seconds
+        # Software name and call duration
+        software_name = lookup_software_name(cur, cust_id)
+        call_duration = resolve_call_duration(cur, filename)
+
+        # Resolve executive name
+        reference = extract_reference_from_filename(filename)
+
+        if reference:
+            db_executive_name = lookup_executive_name_by_reference(
+                cur, reference
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        else:
+            uniqueid = extract_uniqueid_from_filename(filename)
+            extension = lookup_extension_from_cdr(cur, uniqueid)
+
+            db_executive_name = lookup_executive_name_by_reference(
+                cur, extension
+            )
+
+        fields["executive_name"] = (
+            db_executive_name if db_executive_name else "Not mentioned"
+        )
+
+        # Save/update call_summaries
+        cur.execute("""
+            MERGE call_summaries AS target
+            USING (SELECT ? AS filename) AS src
+            ON target.filename = src.filename
+
+            WHEN MATCHED THEN
+                UPDATE SET
+                    call_date = ?,
+                    executive_name = ?,
+                    customer_name = ?,
+                    CustId = ?,
+                    mobile_no = ?,
+                    software_name = ?,
+                    call_duration = ?,
+                    customer_mood = ?,
+                    mood_reason = ?,
+                    executive_tone = ?,
+                    greetings = ?,
+                    closings = ?,
+                    keywords = ?,
+                    token_total = ?,
+                    token_cost = ?,
+                    usd_to_inr = ?,
+                    elapsed_seconds = ?,
+                    created_at = SYSDATETIME()
+
+            WHEN NOT MATCHED THEN
+                INSERT (
+                    filename,
+                    call_date,
+                    executive_name,
+                    customer_name,
+                    CustId,
+                    mobile_no,
+                    software_name,
+                    call_duration,
+                    customer_mood,
+                    mood_reason,
+                    executive_tone,
+                    greetings,
+                    closings,
+                    keywords,
+                    token_total,
+                    token_cost,
+                    usd_to_inr,
+                    elapsed_seconds
+                )
+                VALUES (
+                    ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+                    ?, ?, ?, ?, ?, ?, ?, ?
+                )
+
             OUTPUT inserted.id;
-    """, (
-        filename,
-        # UPDATE values
-        call_date,
-        fields["executive_name"], customer_name, mobile_no, software_name, call_duration,
-        fields["customer_mood"], fields["mood_reason"], fields["executive_tone"],
-        fields["greetings"], fields["closings"], keywords,
-        total_tokens, token_cost, USD_TO_INR, elapsed_time,
-        # INSERT values
-        filename, call_date,
-        fields["executive_name"], customer_name, mobile_no, software_name, call_duration,
-        fields["customer_mood"], fields["mood_reason"], fields["executive_tone"],
-        fields["greetings"], fields["closings"], keywords,
-        total_tokens, token_cost, USD_TO_INR, elapsed_time
-    ))
-    row = cur.fetchone()
-    conn.commit()
+        """, (
+            # MERGE matching
+            filename,
 
-    if row:
-        call_id = row[0]
-    else:
-        # Some ODBC drivers don't return OUTPUT rows through MERGE reliably —
-        # fall back to a plain lookup.
-        cur.execute("SELECT id FROM call_summaries WHERE filename = ?", (filename,))
-        call_id = cur.fetchone()[0]
+            # UPDATE values
+            call_date,
+            fields["executive_name"],
+            customer_name,
+            cust_id,
+            mobile_no,
+            software_name,
+            call_duration,
+            fields["customer_mood"],
+            fields["mood_reason"],
+            fields["executive_tone"],
+            fields["greetings"],
+            fields["closings"],
+            keywords,
+            total_tokens,
+            token_cost,
+            USD_TO_INR,
+            elapsed_time,
 
-    # 2) Upsert the matching "details" row (the long text blocks)
-    cur.execute("""
-        MERGE call_summary_details AS target
-        USING (SELECT ? AS call_id) AS src
-        ON target.call_id = src.call_id
-        WHEN MATCHED THEN
-            UPDATE SET
-                facts = ?,
-                short_summary = ?,
-                long_summary = ?,
-                transcript = ?,
-                analysis_raw = ?
-        WHEN NOT MATCHED THEN
-            INSERT (call_id, facts, short_summary, long_summary, transcript, analysis_raw)
-            VALUES (?, ?, ?, ?, ?, ?);
-    """, (
-        call_id,
-        facts, short_summary, long_summary, transcript, analysis_text,
-        call_id,
-        facts, short_summary, long_summary, transcript, analysis_text
-    ))
-    conn.commit()
+            # INSERT values
+            filename,
+            call_date,
+            fields["executive_name"],
+            customer_name,
+            cust_id,
+            mobile_no,
+            software_name,
+            call_duration,
+            fields["customer_mood"],
+            fields["mood_reason"],
+            fields["executive_tone"],
+            fields["greetings"],
+            fields["closings"],
+            keywords,
+            total_tokens,
+            token_cost,
+            USD_TO_INR,
+            elapsed_time
+        ))
 
-    cur.close()
-    conn.close()
-    return call_id
+        row = cur.fetchone()
+        conn.commit()
 
+        if row:
+            call_id = row[0]
+        else:
+            cur.execute(
+                "SELECT id FROM call_summaries WHERE filename = ?",
+                (filename,)
+            )
+            result = cur.fetchone()
+
+            if not result:
+                raise RuntimeError(
+                    f"Could not retrieve call_summaries ID for {filename}"
+                )
+
+            call_id = result[0]
+
+        # Save separate DeepSeek / Bodhan costs
+        cur.execute("""
+            UPDATE call_summaries
+            SET deepseek_cost = ?,
+                bodhan_cost = ?,
+                bodhan_audio_sec = ?
+            WHERE id = ?
+        """, (
+            round(deepseek_cost_inr, 4),
+            round(bodhan_cost_inr, 4),
+            bodhan_audio_sec,
+            call_id
+        ))
+
+        conn.commit()
+
+        # Save/update call_summary_details
+        cur.execute("""
+            MERGE call_summary_details AS target
+            USING (SELECT ? AS call_id) AS src
+            ON target.call_id = src.call_id
+
+            WHEN MATCHED THEN
+                UPDATE SET
+                    facts = ?,
+                    short_summary = ?,
+                    long_summary = ?,
+                    transcript = ?,
+                    analysis_raw = ?
+
+            WHEN NOT MATCHED THEN
+                INSERT (
+                    call_id,
+                    facts,
+                    short_summary,
+                    long_summary,
+                    transcript,
+                    analysis_raw
+                )
+                VALUES (?, ?, ?, ?, ?, ?);
+        """, (
+            call_id,
+            facts,
+            short_summary,
+            long_summary,
+            transcript,
+            analysis_text,
+
+            call_id,
+            facts,
+            short_summary,
+            long_summary,
+            transcript,
+            analysis_text
+        ))
+
+        conn.commit()
+
+        return call_id
+
+    finally:
+        cur.close()
+        conn.close()
+   
 
 def backfill_customer_names():
     """One-time fix for existing rows: re-resolves the mobile number (using

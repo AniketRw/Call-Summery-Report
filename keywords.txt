@@ -1,78 +1,40 @@
 Whatsapp Issue
-
 PhonePe
-
 UPI
-
 Mobile Reports
-
 GSTR2A
-
 Multibranch
-
 Dashboard
-
-Analytics
-
+Analytics Dashboard
 Purchase Order
-
 Purchase
-
-
+Purchase Return
 Label designer
-
 Bill designer
-
 User rights
-
 Counterwise report
-
 Release notes
-
-Price Protection
-
 IMEI tracking
-
 Bill Print
-
 Expiry tracking
-
 Interbranch IBT
-
 Sync Issue
-
 Reports issue
-
 Tally Posting
-
-Purchase Order
-
-
-
 Product Scan Issue
-
 Bill Modification or edit
-
 Incentive
-
-data loss
-
-scheme apply
-
 Ecommerce
-
-data remove
-
+Data remove
 report not match
-
-loss sale report
-
 slowness
-
 software demo
-
 New License
-
 Supplier Purchase
-
 DayClose
+Sale Report
+Software Install
+Swiggy Zomato Integration
+Mobile App
+Mobile sale
+scheme apply

@@ -1,76 +1,21 @@
-from google import genai
-from google.genai import types
-tk = None
+from openai import OpenAI
 import re
-import threading
 import subprocess
 import os
 import time
 import json
 import sys
+import difflib
+import hashlib
+import itertools
+import wave
+from Schedule import wait_for_offpeak
 
-USD_TO_INR = 95.0
 
-INPUT_PRICE_PER_1M = 1.50
-OUTPUT_PRICE_PER_1M = 9.00
 
 print("IMPORTING testnew.py")
 print("PID:", os.getpid())
-from faster_whisper import WhisperModel
 
-
-def calculate_gemini_cost(usage):
-
-    if usage is None:
-        return {
-            "input_tokens": 0,
-            "output_tokens": 0,
-            "thinking_tokens": 0,
-            "total_tokens": 0,
-            "cost_usd": 0.0,
-            "cost_inr": 0.0
-        }
-
-    input_tokens = getattr(
-        usage, "prompt_token_count", 0
-    ) or 0
-
-    output_tokens = getattr(
-        usage, "candidates_token_count", 0
-    ) or 0
-
-    thinking_tokens = getattr(
-        usage, "thoughts_token_count", 0
-    ) or 0
-
-    input_cost_usd = (
-        input_tokens / 1_000_000
-    ) * INPUT_PRICE_PER_1M
-
-    output_cost_usd = (
-        output_tokens / 1_000_000
-    ) * OUTPUT_PRICE_PER_1M
-
-    total_cost_usd = (
-        input_cost_usd + output_cost_usd
-    )
-
-    total_cost_inr = (
-        total_cost_usd * USD_TO_INR
-    )
-
-    return {
-        "input_tokens": input_tokens,
-        "output_tokens": output_tokens,
-        "thinking_tokens": thinking_tokens,
-        "total_tokens": (
-            input_tokens +
-            output_tokens +
-            thinking_tokens
-        ),
-        "cost_usd": total_cost_usd,
-        "cost_inr": total_cost_inr
-    }
 
 
 def load_env_file(env_path=".env"):
@@ -87,58 +32,1599 @@ def load_env_file(env_path=".env"):
             if key and key not in os.environ:
                 os.environ[key] = value
 
+
 load_env_file()
-GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY")
-#GEMINI_MODEL = "models/gemini-2.5-flash"
-TRANSCRIPT_MODEL = "models/gemini-3.5-flash"
-print("Loading Whisper model...")
 
-whisper_model = WhisperModel(
-    "small",
-    device="cpu",
-    compute_type="int8"
-)
+# ---------------------------------------------------------------------------
+# ENGINE SPLIT:
+#   - Audio transcription (Whisper)              -> Groq
+#   - Speaker labeling / analysis / summary (LLM) -> DeepSeek
+# Gemini is no longer used anywhere in this file.
+# ---------------------------------------------------------------------------
 
-print("Whisper model loaded.")
 
-ANALYSIS_MODEL = "models/gemini-3.5-flash"
-SUMMARY_SEED = 12345
+#from groq import Groq
+from deepgram import DeepgramClient
 
-TRANSCRIPT_CORRECTIONS = {
-    "loss sheet report": "loss sale report",
-    "loss seal report": "loss sale report",
-    "los sale report": "loss sale report",
-    "loss sell report": "loss sale report",
-    "lost sale report": "loss sale report",
-    "loss cell report": "loss sale report",
-}
-def whisper_transcribe(audio_path):
-    print(">>> ENTERED LOCAL WHISPER TRANSCRIPTION", flush=True)
-    print("Audio exists:", os.path.exists(audio_path), flush=True)
-    print("Audio size:", os.path.getsize(audio_path), "bytes", flush=True)
-    print("Audio path:", audio_path, flush=True)
+# ---------------------------------------------------------
+# API KEYS
+# ---------------------------------------------------------
 
-    segments, info = whisper_model.transcribe(
-        audio_path,
-        language="hi",
-        beam_size=5,
-        vad_filter=False,
-        vad_parameters=dict(min_silence_duration_ms=500, threshold=0.3)
+DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY")
+BODHAN_API_KEY = os.getenv("BODHAN_API_KEY")
+
+
+# ---------------------------------------------------------
+# BODHAN CLIENT
+# ---------------------------------------------------------
+
+def get_bodhan_client():
+
+    if not BODHAN_API_KEY:
+        raise RuntimeError(
+            "Set BODHAN_API_KEY in your .env file before running this app."
+        )
+
+    return OpenAI(
+        base_url="https://api.bodhan.ai/v1",
+        api_key=BODHAN_API_KEY
     )
 
-    print("Language:", info.language, "| Probability:", info.language_probability, flush=True)
 
-    lines = []
-    segment_count = 0
-    for segment in segments:
-        segment_count += 1
-        print("WHISPER SEGMENT:", segment.start, segment.end, repr(segment.text), flush=True)
-        m = int(segment.start // 60)
-        s = int(segment.start % 60)
-        lines.append(f"[{m:02d}:{s:02d}] {segment.text.strip()}")
 
-    print("WHISPER SEGMENT COUNT:", segment_count, flush=True)
-    return "\n".join(lines)
+
+def get_deepseek_client():
+    if not DEEPSEEK_API_KEY:
+        raise RuntimeError("Set DEEPSEEK_API_KEY in your .env file before running this app.")
+    return OpenAI(api_key=DEEPSEEK_API_KEY, base_url="https://api.deepseek.com")
+
+
+#WHISPER_MODEL = "whisper-large-v3-turbo"   # Groq
+
+#DEEPGRAM_MODEL = "nova-3"
+
+# "deepseek-chat" alias was retired by DeepSeek on 24 July 2026.
+# Current live models: deepseek-v4-flash (cheap/fast) and deepseek-v4-pro (higher quality).
+DEEPSEEK_MODEL = "deepseek-flash"
+
+ANALYSIS_MODEL = DEEPSEEK_MODEL
+SUMMARY_MODEL = DEEPSEEK_MODEL
+LABELING_MODEL = DEEPSEEK_MODEL
+
+SUMMARY_SEED = 12345
+
+# ---------------------------------------------------------------------------
+# DeepSeek V4 Flash official pricing (per 1M tokens, cache-miss input).
+# Update these two numbers here if DeepSeek changes rates.
+# ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# USD -> INR LIVE EXCHANGE RATE
+# ---------------------------------------------------------------------------
+
+USD_TO_INR_FALLBACK = 95.0
+
+USD_TO_INR = USD_TO_INR_FALLBACK
+USD_TO_INR_DATE = None
+
+
+def get_usd_to_inr_rate():
+    """
+    Fetch latest USD -> INR rate once per day.
+    If already fetched today, reuse the same rate.
+    """
+
+    global USD_TO_INR
+    global USD_TO_INR_DATE
+
+    today = time.strftime("%Y-%m-%d")
+
+    # Already fetched today's rate
+    if USD_TO_INR_DATE == today:
+        return USD_TO_INR
+
+    try:
+        import requests
+
+        url = "https://api.frankfurter.dev/v2/rate/usd/inr"
+
+        print(
+            "[USD/INR] Fetching latest rate...",
+            flush=True
+        )
+
+        response = requests.get(
+            url,
+            timeout=5
+        )
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        rate = float(data["rate"])
+
+        if rate <= 0:
+            raise ValueError(
+                f"Invalid USD/INR rate: {rate}"
+            )
+
+        USD_TO_INR = rate
+        USD_TO_INR_DATE = today
+
+        print(
+            f"[USD/INR] Live Rate : ₹{USD_TO_INR:.6f}",
+            flush=True
+        )
+
+        print(
+            f"[USD/INR] Rate Date : {data.get('date', today)}",
+            flush=True
+        )
+
+        return USD_TO_INR
+
+    except Exception as e:
+
+        print(
+            f"[USD/INR] Rate API failed: {e}",
+            flush=True
+        )
+
+        print(
+            f"[USD/INR] Using fallback rate : ₹{USD_TO_INR:.6f}",
+            flush=True
+        )
+
+        return USD_TO_INR
+
+DEEPSEEK_CACHE_HIT_PRICE_OFFPEAK = 0.003
+DEEPSEEK_CACHE_MISS_PRICE_OFFPEAK = 0.15
+DEEPSEEK_OUTPUT_PRICE_OFFPEAK = 0.60
+
+DEEPSEEK_CACHE_HIT_PRICE_PEAK = 0.006
+DEEPSEEK_CACHE_MISS_PRICE_PEAK = 0.30
+DEEPSEEK_OUTPUT_PRICE_PEAK = 1.20
+
+# ---------------------------------------------------------------------------
+# Gemini 2.5 Flash-Lite pricing
+# Standard paid tier - per 1M tokens
+# Audio input  = $0.30 / 1M tokens
+# Output       = $0.40 / 1M tokens
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------
+# BODHAN STT
+# ---------------------------------------------------------
+
+BODHAN_MODEL = "indic-transcribe"
+
+# Bodhan STT pricing
+BODHAN_PRICE_PER_MINUTE_INR = 0.10
+
+# Bodhan accepts maximum 30 seconds per request.
+# Keep a safety margin.
+BODHAN_CHUNK_SECONDS = 29
+
+
+
+
+def empty_deepseek_usage():
+    return {
+        "input_tokens": 0,
+        "output_tokens": 0,
+        "thinking_tokens": 0,
+        "total_tokens": 0,
+        "cache_hit_tokens": 0,
+        "cache_miss_tokens": 0,
+        "cost_usd": 0.0,
+        "cost_inr": 0.0
+    }
+
+
+def add_deepseek_usage(total, usage_info):
+    if not usage_info:
+        return total
+
+    total["input_tokens"] += usage_info.get("input_tokens", 0)
+    total["output_tokens"] += usage_info.get("output_tokens", 0)
+    total["thinking_tokens"] += usage_info.get("thinking_tokens", 0)
+    total["total_tokens"] += usage_info.get("total_tokens", 0)
+
+    total["cache_hit_tokens"] += usage_info.get(
+        "cache_hit_tokens", 0
+    )
+
+    total["cache_miss_tokens"] += usage_info.get(
+        "cache_miss_tokens", 0
+    )
+
+    total["cost_usd"] += usage_info.get("cost_usd", 0.0)
+    total["cost_inr"] += usage_info.get("cost_inr", 0.0)
+
+    return total
+
+    
+
+def calculate_deepseek_cost(usage):
+    """
+    Calculate actual DeepSeek V4.1 Flash API cost.
+
+    Uses:
+      - prompt_cache_hit_tokens
+      - prompt_cache_miss_tokens
+      - completion_tokens
+      - peak/off-peak pricing
+    """
+
+    if usage is None:
+        return {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "thinking_tokens": 0,
+            "total_tokens": 0,
+            "cache_hit_tokens": 0,
+            "cache_miss_tokens": 0,
+            "cost_usd": 0.0,
+            "cost_inr": 0.0
+        }
+
+    # ---------------------------------------------------------
+    # Token usage
+    # ---------------------------------------------------------
+
+    input_tokens = getattr(usage, "prompt_tokens", 0) or 0
+    output_tokens = getattr(usage, "completion_tokens", 0) or 0
+
+    total_tokens = (
+        getattr(usage, "total_tokens", None)
+        or (input_tokens + output_tokens)
+    )
+
+    # ---------------------------------------------------------
+    # Cache hit / miss
+    # ---------------------------------------------------------
+
+    cache_hit_tokens = getattr(
+        usage,
+        "prompt_cache_hit_tokens",
+        0
+    ) or 0
+
+    cache_miss_tokens = getattr(
+        usage,
+        "prompt_cache_miss_tokens",
+        0
+    ) or 0
+
+    # Fallback
+    if cache_hit_tokens == 0:
+        details = getattr(
+            usage,
+            "prompt_tokens_details",
+            None
+        )
+
+        if details:
+            cache_hit_tokens = getattr(
+                details,
+                "cached_tokens",
+                0
+            ) or 0
+
+    # Safety fallback
+    if cache_miss_tokens == 0:
+        cache_miss_tokens = max(
+            input_tokens - cache_hit_tokens,
+            0
+        )
+
+    # ---------------------------------------------------------
+    # Thinking / reasoning tokens
+    # ---------------------------------------------------------
+
+    thinking_tokens = 0
+
+    completion_details = getattr(
+        usage,
+        "completion_tokens_details",
+        None
+    )
+
+    if completion_details:
+        thinking_tokens = getattr(
+            completion_details,
+            "reasoning_tokens",
+            0
+        ) or 0
+
+    # ---------------------------------------------------------
+    # Peak / Off-Peak
+    # ---------------------------------------------------------
+
+    from datetime import datetime, timezone
+
+    now_utc = datetime.now(timezone.utc)
+
+    weekday = now_utc.weekday() < 5
+    hour = now_utc.hour
+
+    # DeepSeek peak:
+    # 01:00-04:00 UTC
+    # 06:00-10:00 UTC
+    is_peak = (
+        weekday
+        and (
+            1 <= hour < 4
+            or
+            6 <= hour < 10
+        )
+    )
+
+    if is_peak:
+
+        cache_hit_price = DEEPSEEK_CACHE_HIT_PRICE_PEAK
+        cache_miss_price = DEEPSEEK_CACHE_MISS_PRICE_PEAK
+        output_price = DEEPSEEK_OUTPUT_PRICE_PEAK
+
+        pricing_period = "peak"
+
+    else:
+
+        cache_hit_price = DEEPSEEK_CACHE_HIT_PRICE_OFFPEAK
+        cache_miss_price = DEEPSEEK_CACHE_MISS_PRICE_OFFPEAK
+        output_price = DEEPSEEK_OUTPUT_PRICE_OFFPEAK
+
+        pricing_period = "off-peak"
+
+    # ---------------------------------------------------------
+    # Cost calculation
+    # ---------------------------------------------------------
+
+    cache_hit_cost = (
+        cache_hit_tokens / 1_000_000
+    ) * cache_hit_price
+
+    cache_miss_cost = (
+        cache_miss_tokens / 1_000_000
+    ) * cache_miss_price
+
+    output_cost = (
+        output_tokens / 1_000_000
+    ) * output_price
+
+    cost_usd = (
+        cache_hit_cost
+        + cache_miss_cost
+        + output_cost
+    )
+
+    #cost_inr = cost_usd * USD_TO_INR
+    usd_to_inr = get_usd_to_inr_rate()
+
+    cost_inr = cost_usd * usd_to_inr
+
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "thinking_tokens": thinking_tokens,
+        "total_tokens": total_tokens,
+
+        "cache_hit_tokens": cache_hit_tokens,
+        "cache_miss_tokens": cache_miss_tokens,
+
+        "cost_usd": cost_usd,
+        "cost_inr": cost_inr,
+
+        "pricing_period": pricing_period
+    }
+
+RESULT_CACHE_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)),
+    "result_cache"
+)
+
+os.makedirs(RESULT_CACHE_DIR, exist_ok=True)
+
+
+def get_audio_hash(audio_path):
+    """Generate SHA256 hash for the audio file."""
+    sha256 = hashlib.sha256()
+
+    with open(audio_path, "rb") as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b""):
+            sha256.update(chunk)
+
+    return sha256.hexdigest()
+
+def load_cached_result(audio_path):
+    audio_hash = get_audio_hash(audio_path)
+    cache_file = os.path.join(
+        RESULT_CACHE_DIR,
+        audio_hash + ".json"
+    )
+
+    if not os.path.exists(cache_file):
+        return None
+
+    try:
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    except Exception as e:
+        print("Cache read failed:", e, flush=True)
+        return None
+
+
+def save_cached_result(audio_path, result):
+    audio_hash = get_audio_hash(audio_path)
+
+    cache_file = os.path.join(
+        RESULT_CACHE_DIR,
+        audio_hash + ".json"
+    )
+
+    try:
+        with open(cache_file, "w", encoding="utf-8") as f:
+            json.dump(
+                result,
+                f,
+                ensure_ascii=False,
+                indent=2
+            )
+
+        print("CACHE SAVED:", cache_file, flush=True)
+
+    except Exception as e:
+        print("Cache save failed:", e, flush=True)
+
+
+whisper_prompt = None
+# Retailware customer support call.
+# The call may contain Marathi, Hindi, English, or Hinglish.
+
+# Common support terms:
+# product transfer, product scanning, product scan, barcode,
+# system ID, password, report, billing, purchase, sales, stock,
+# sync, printer, database, branch, scheme, loss sale report.
+
+# Transcribe only what is actually spoken.
+# Do not invent names, products, companies, IDs, numbers, or technical terms.
+# """
+
+# def whisper_transcribe(audio_path):
+#     print(">>> ENTERED GROQ WHISPER TRANSCRIPTION", flush=True)
+#     print("Audio exists:", os.path.exists(audio_path), flush=True)
+#     print("Audio size:", os.path.getsize(audio_path), "bytes", flush=True)
+#     print("Audio path:", audio_path, flush=True)
+
+#     client = get_groq_client()
+#     max_retries = 4
+#     response = None
+#     for attempt in range(max_retries):
+#         try:
+#             with open(audio_path, "rb") as f:
+#                 response = client.audio.transcriptions.create(
+#                     file=(os.path.basename(audio_path), f.read()),
+#                     model=WHISPER_MODEL,
+#                     prompt=whisper_prompt,
+#                     response_format="verbose_json",
+#                     temperature=0.0
+#                 )
+#             break
+#         except Exception as e:
+#             print(f"[Groq] Retry {attempt+1}/{max_retries}: {e}", flush=True)
+#             if attempt == max_retries - 1:
+#                 raise
+#             time.sleep(3 * (attempt + 1))
+
+#     segments = getattr(response, "segments", None) or []
+#     print("WHISPER LANGUAGE: mr", flush=True)
+#     print("GROQ SEGMENT COUNT:", len(segments), flush=True)
+
+#     groq_total = 0
+#     for seg in segments:
+#         if isinstance(seg, dict):
+#             seg_tokens = seg.get("tokens", []) or []
+#         else:
+#             seg_tokens = getattr(seg, "tokens", []) or []
+
+#         groq_total += len(seg_tokens)
+
+#     print("GROQ WHISPER TOKENS:", groq_total, flush=True)
+
+#     lines = []
+#     for seg in segments:
+#         start = seg.get("start", 0) if isinstance(seg, dict) else getattr(seg, "start", 0)
+#         text = seg.get("text", "") if isinstance(seg, dict) else getattr(seg, "text", "")
+#         text = (text or "").strip()
+#         if not text:
+#             continue
+#         m = int(start // 60)
+#         s = int(start % 60)
+#         print("GROQ SEGMENT:", start, repr(text), flush=True)
+#         lines.append(f"[{m:02d}:{s:02d}] {text}")
+
+#     if not lines:
+#         fallback_text = (getattr(response, "text", "") or "").strip()
+#         if fallback_text:
+#             lines.append(f"[00:00] {fallback_text}")
+
+#     return "\n".join(lines), groq_total
+# def whisper_transcribe(audio_path):
+#     """
+#     Bodhan Indic-Transcribe based speech-to-text.
+
+#     Supports:
+#         Marathi
+#         Hindi
+#         English
+#         Hinglish
+#         Marathi/Hindi/English mixed speech
+
+#     Bodhan accepts maximum 30 seconds per request,
+#     so the audio is automatically split into safe chunks.
+
+#     Returns:
+#         transcript, bodhan_cost_info
+#     """
+
+#     print(
+#         ">>> ENTERED BODHAN STT TRANSCRIPTION",
+#         flush=True
+#     )
+
+#     print(
+#         "Audio exists:",
+#         os.path.exists(audio_path),
+#         flush=True
+#     )
+
+#     if not os.path.exists(audio_path):
+#         raise FileNotFoundError(
+#             f"Audio file not found: {audio_path}"
+#         )
+
+#     print(
+#         "Audio size:",
+#         os.path.getsize(audio_path),
+#         "bytes",
+#         flush=True
+#     )
+
+#     print(
+#         "Audio path:",
+#         audio_path,
+#         flush=True
+#     )
+#     print(
+#         "[DEBUG] BODHAN INPUT DURATION:",
+#         round(get_wav_duration(audio_path), 2),
+#         "seconds",
+#         flush=True
+#     )
+
+#     client = get_bodhan_client()
+
+#     # ---------------------------------------------------------
+#     # CREATE TEMP CHUNK DIRECTORY
+#     # ---------------------------------------------------------
+
+#     chunk_dir = os.path.splitext(audio_path)[0] + "_bodhan_chunks"
+
+#     os.makedirs(
+#         chunk_dir,
+#         exist_ok=True
+#     )
+
+#     chunks = []
+
+#     try:
+
+#         # -----------------------------------------------------
+#         # READ WAV
+#         # -----------------------------------------------------
+
+#         with wave.open(audio_path, "rb") as wav:
+
+#             channels = wav.getnchannels()
+#             sample_width = wav.getsampwidth()
+#             frame_rate = wav.getframerate()
+#             total_frames = wav.getnframes()
+
+#             duration = (
+#                 total_frames / float(frame_rate)
+#                 if frame_rate
+#                 else 0
+#             )
+
+#             print(
+#                 "WAV channels:",
+#                 channels,
+#                 flush=True
+#             )
+
+#             print(
+#                 "WAV sample width:",
+#                 sample_width,
+#                 flush=True
+#             )
+
+#             print(
+#                 "WAV sample rate:",
+#                 frame_rate,
+#                 flush=True
+#             )
+
+#             print(
+#                 "WAV duration:",
+#                 round(duration, 2),
+#                 "seconds",
+#                 flush=True
+#             )
+
+#             # -------------------------------------------------
+#             # SPLIT INTO <= 29 SECOND CHUNKS
+#             # -------------------------------------------------
+
+#             chunk_frames = int(
+#                 frame_rate * BODHAN_CHUNK_SECONDS
+#             )
+
+#             chunk_number = 0
+
+#             while True:
+
+#                 frames = wav.readframes(
+#                     chunk_frames
+#                 )
+
+#                 if not frames:
+#                     break
+
+#                 chunk_number += 1
+
+#                 chunk_path = os.path.join(
+#                     chunk_dir,
+#                     f"chunk_{chunk_number:04d}.wav"
+#                 )
+
+#                 with wave.open(
+#                     chunk_path,
+#                     "wb"
+#                 ) as chunk_wav:
+
+#                     chunk_wav.setnchannels(
+#                         channels
+#                     )
+
+#                     chunk_wav.setsampwidth(
+#                         sample_width
+#                     )
+
+#                     chunk_wav.setframerate(
+#                         frame_rate
+#                     )
+
+#                     chunk_wav.writeframes(
+#                         frames
+#                     )
+
+#                 chunks.append(
+#                     (
+#                         chunk_number,
+#                         chunk_path,
+#                         len(frames) / float(
+#                             frame_rate * channels * sample_width
+#                         )
+#                     )
+#                 )
+
+#         print(
+#             "BODHAN CHUNK COUNT:",
+#             len(chunks),
+#             flush=True
+#         )
+
+#         # ---------------------------------------------------------
+#         # TRANSCRIBE EACH CHUNK
+#         # ---------------------------------------------------------
+
+#         transcript_lines = []
+
+#         total_audio_seconds = 0.0
+
+#         current_offset = 0.0
+
+#         for chunk_number, chunk_path, chunk_duration in chunks:
+
+#             total_audio_seconds += chunk_duration
+
+#             minutes = int(current_offset // 60)
+#             seconds = int(current_offset % 60)
+
+#             timestamp = (
+#                 f"[{minutes:02d}:{seconds:02d}]"
+#             )
+
+#             print(
+#                 "\n" + "=" * 70
+#             )
+
+#             print(
+#                 f"BODHAN CHUNK {chunk_number}/{len(chunks)}"
+#             )
+
+#             print(
+#                 "Chunk duration:",
+#                 round(chunk_duration, 2),
+#                 "seconds"
+#             )
+
+#             print(
+#                 "Timestamp:",
+#                 timestamp
+#             )
+
+#             print(
+#                 "Chunk:",
+#                 chunk_path
+#             )
+
+#             print(
+#                 "=" * 70
+#             )
+
+#             # -------------------------------------------------
+#             # RETRY
+#             # -------------------------------------------------
+
+#             response = None
+
+#             max_retries = 3
+
+#             for attempt in range(max_retries):
+
+#                 try:
+
+#                     print(
+#                         f">>> Sending chunk to Bodhan "
+#                         f"(attempt {attempt + 1}/{max_retries})",
+#                         flush=True
+#                     )
+
+#                     with open(
+#                         chunk_path,
+#                         "rb"            
+#                     ) as audio_file:
+#                         wait_for_offpeak(lambda msg: print(msg, flush=True))
+#                         response = client.audio.transcriptions.create(
+#                             model=BODHAN_MODEL,
+#                             file=audio_file
+#                         )
+
+
+#                     time.sleep(2)
+
+#                     break
+
+#                 # except Exception as e:
+
+#                 #     print(
+#                 #         f"[Bodhan] Chunk {chunk_number} failed:",
+#                 #         e,
+#                 #         flush=True
+#                 #     )
+
+#                 #     if attempt == max_retries - 1:
+#                 #         raise
+
+#                 #     wait_seconds = 2 ** (
+#                 #         attempt + 1
+#                 #     )
+
+#                 #     print(
+#                 #         f"[Bodhan] Retrying after "
+#                 #         f"{wait_seconds} seconds...",
+#                 #         flush=True
+#                 #     )
+
+#                 #     time.sleep(
+#                 #         wait_seconds
+#                 #     )
+#                 except Exception as e:
+
+#                     error_text = str(e)
+
+#                     print(
+#                         f"[Bodhan] Chunk {chunk_number} failed:",
+#                         e,
+#                         flush=True
+#                     )
+
+#                     if attempt == max_retries - 1:
+#                         raise
+
+   
+#                     if "429" in error_text or "rate limit" in error_text.lower():
+
+#                         wait_seconds = 10 * (attempt + 1)
+
+#                         print(
+#                             f"[Bodhan] Rate limit reached. "
+#                             f"Waiting {wait_seconds} seconds before retry...",
+#                             flush=True
+#                         )
+
+#                     else:
+
+#                         wait_seconds = 3 * (attempt + 1)
+
+#                         print(
+#                             f"[Bodhan] Temporary error. "
+#                             f"Waiting {wait_seconds} seconds before retry...",
+#                             flush=True
+#                         )
+
+#                     time.sleep(wait_seconds)
+#             # -------------------------------------------------
+#             # GET TEXT
+#             # -------------------------------------------------
+
+#             chunk_text = (
+#                 getattr(
+#                     response,
+#                     "text",
+#                     ""
+#                 )
+#                 or ""
+#             ).strip()
+
+#             if chunk_text:
+
+#                 transcript_lines.append(
+#                     f"{timestamp} {chunk_text}"
+#                 )
+
+#                 print(
+#                     "BODHAN TRANSCRIPT:",
+#                     chunk_text,
+#                     flush=True
+#                 )
+
+#             else:
+
+#                 print(
+#                     "BODHAN RETURNED EMPTY TRANSCRIPT",
+#                     flush=True
+#                 )
+
+#             current_offset += chunk_duration
+
+#         # ---------------------------------------------------------
+#         # FINAL TRANSCRIPT
+#         # ---------------------------------------------------------
+
+#         transcript = "\n".join(
+#             transcript_lines
+#         ).strip()
+
+#         # ---------------------------------------------------------
+#         # COST
+#         # ---------------------------------------------------------
+
+#         cost_inr = (
+#             total_audio_seconds / 60.0
+#         ) * BODHAN_PRICE_PER_MINUTE_INR
+
+#         bodhan_cost_info = {
+
+#             # Keep these keys for backward compatibility
+#             # with existing token_info code.
+
+#             "input_tokens": 0,
+#             "output_tokens": 0,
+#             "thinking_tokens": 0,
+#             "total_tokens": 0,
+
+#             "audio_tokens": 0,
+#             "text_tokens": 0,
+
+#             "cost_usd": 0.0,
+#             "cost_inr": cost_inr,
+
+#             # Bodhan specific
+#             "audio_seconds": total_audio_seconds,
+#             "audio_minutes": total_audio_seconds / 60.0,
+#             "price_per_minute_inr": BODHAN_PRICE_PER_MINUTE_INR,
+#             "provider": "Bodhan",
+#             "model": BODHAN_MODEL
+#         }
+
+#         # ---------------------------------------------------------
+#         # PRINT COST
+#         # ---------------------------------------------------------
+
+#         print(
+#             "\n" + "=" * 70
+#         )
+
+#         print(
+#             "BODHAN STT COST"
+#         )
+
+#         print(
+#             "=" * 70
+#         )
+
+#         print(
+#             "Audio Seconds :",
+#             round(total_audio_seconds, 2)
+#         )
+
+#         print(
+#             "Audio Minutes :",
+#             round(
+#                 total_audio_seconds / 60.0,
+#                 2
+#             )
+#         )
+
+#         print(
+#             "Rate          : ₹%.2f/min"
+#             % BODHAN_PRICE_PER_MINUTE_INR
+#         )
+
+#         print(
+#             "TOTAL COST    : ₹%.4f"
+#             % cost_inr
+#         )
+
+#         print(
+#             "=" * 70
+#         )
+
+#         print(
+#             "\n========== BODHAN RAW TRANSCRIPT =========="
+#         )
+
+#         print(
+#             transcript
+#         )
+
+#         print(
+#             "============================================"
+#         )
+
+#         return (
+#             transcript,
+#             bodhan_cost_info
+#         )
+
+#     except Exception as e:
+
+#         print(
+#             "[Bodhan] Transcription failed:",
+#             e,
+#             flush=True
+#         )
+
+#         raise
+
+#     finally:
+
+#         # ---------------------------------------------------------
+#         # CLEAN TEMP CHUNKS
+#         # ---------------------------------------------------------
+
+#         try:
+
+#             for _, chunk_path, _ in chunks:
+
+#                 if os.path.exists(
+#                     chunk_path
+#                 ):
+#                     os.remove(
+#                         chunk_path
+#                     )
+
+#             if os.path.isdir(chunk_dir):
+
+#                 try:
+#                     os.rmdir(
+#                         chunk_dir
+#                     )
+#                 except OSError:
+#                     pass
+
+#         except Exception as cleanup_error:
+
+#             print(
+#                 "[Bodhan] Chunk cleanup failed:",
+#                 cleanup_error,
+#                 flush=True
+#             )
+
+def debug_transcript(stage, transcript):
+    transcript = transcript or ""
+
+    timestamps = re.findall(
+        r"\[(\d{2}):(\d{2})\]",
+        transcript
+    )
+
+    print("\n" + "=" * 70, flush=True)
+    print(f"[TRANSCRIPT DEBUG] {stage}", flush=True)
+    print("CHAR COUNT:", len(transcript), flush=True)
+    print("LINE COUNT:", len(transcript.splitlines()), flush=True)
+    print("TIMESTAMP COUNT:", len(timestamps), flush=True)
+    print("FIRST TIMESTAMP:", timestamps[0] if timestamps else None, flush=True)
+    print("LAST TIMESTAMP:", timestamps[-1] if timestamps else None, flush=True)
+    print("LAST 1000 CHARACTERS:", repr(transcript[-1000:]), flush=True)
+    print("=" * 70, flush=True)
+
+def whisper_transcribe(audio_path, deepseek_client):
+    """
+    Bodhan Indic-Transcribe speech-to-text.
+
+    Supports Marathi, Hindi, English, Hinglish and mixed speech.
+    Splits audio into chunks of maximum 29 seconds.
+
+    If a chunk fails after all retries, it skips that chunk
+    and continues processing the remaining chunks.
+
+    Returns:
+        transcript, bodhan_cost_info
+    """
+
+    print(
+        ">>> ENTERED BODHAN STT TRANSCRIPTION",
+        flush=True
+    )
+
+    if not os.path.exists(audio_path):
+        raise FileNotFoundError(
+            f"Audio file not found: {audio_path}"
+        )
+
+    print(
+        "Audio exists:",
+        True,
+        flush=True
+    )
+    print(
+        "Audio size:",
+        os.path.getsize(audio_path),
+        "bytes",
+        flush=True
+    )
+    print(
+        "Audio path:",
+        audio_path,
+        flush=True
+    )
+    print(
+        "[DEBUG] BODHAN INPUT DURATION:",
+        round(get_wav_duration(audio_path), 2),
+        "seconds",
+        flush=True
+    )
+
+    client = get_bodhan_client()
+
+    # ---------------------------------------------------------
+    # CREATE TEMP CHUNK DIRECTORY
+    # ---------------------------------------------------------
+
+    chunk_dir = os.path.splitext(audio_path)[0] + "_bodhan_chunks"
+    os.makedirs(chunk_dir, exist_ok=True)
+
+    chunks = []
+
+    try:
+        # -----------------------------------------------------
+        # READ WAV AND SPLIT INTO CHUNKS
+        # -----------------------------------------------------
+
+        with wave.open(audio_path, "rb") as wav:
+            channels = wav.getnchannels()
+            sample_width = wav.getsampwidth()
+            frame_rate = wav.getframerate()
+            total_frames = wav.getnframes()
+
+            duration = (
+                total_frames / float(frame_rate)
+                if frame_rate
+                else 0
+            )
+
+            print("WAV channels:", channels, flush=True)
+            print("WAV sample width:", sample_width, flush=True)
+            print("WAV sample rate:", frame_rate, flush=True)
+            print("WAV duration:", round(duration, 2), "seconds", flush=True)
+
+            if frame_rate <= 0 or channels <= 0 or sample_width <= 0:
+                raise ValueError("Invalid WAV audio parameters.")
+
+            chunk_frames = int(
+                frame_rate * BODHAN_CHUNK_SECONDS
+            )
+
+            if chunk_frames <= 0:
+                raise ValueError(
+                    "BODHAN_CHUNK_SECONDS must be greater than zero."
+                )
+
+            chunk_number = 0
+
+            while True:
+                frames = wav.readframes(chunk_frames)
+
+                if not frames:
+                    break
+
+                chunk_number += 1
+
+                chunk_path = os.path.join(
+                    chunk_dir,
+                    f"chunk_{chunk_number:04d}.wav"
+                )
+
+                with wave.open(chunk_path, "wb") as chunk_wav:
+                    chunk_wav.setnchannels(channels)
+                    chunk_wav.setsampwidth(sample_width)
+                    chunk_wav.setframerate(frame_rate)
+                    chunk_wav.writeframes(frames)
+
+                chunk_duration = len(frames) / float(
+                    frame_rate * channels * sample_width
+                )
+
+                chunks.append(
+                    (chunk_number, chunk_path, chunk_duration)
+                )
+
+        print(
+            "BODHAN CHUNK COUNT:",
+            len(chunks),
+            flush=True
+        )
+
+        if not chunks:
+            raise RuntimeError("No audio chunks were created.")
+
+        # -----------------------------------------------------
+        # TRANSCRIBE EACH CHUNK
+        # -----------------------------------------------------
+
+        transcript_lines = []
+        total_audio_seconds = sum(
+            chunk_duration
+            for _, _, chunk_duration in chunks
+        )
+
+        current_offset = 0.0
+        successful_chunks = 0
+        skipped_chunks = []
+        detected_language = None
+        first_minute_transcript = []
+        first_chunk_retranscribed = False
+        extra_retranscribed_seconds = 0.0
+
+        for chunk_number, chunk_path, chunk_duration in chunks:
+            minutes = int(current_offset // 60)
+            seconds = int(current_offset % 60)
+            timestamp = f"[{minutes:02d}:{seconds:02d}]"
+
+            print("\n" + "=" * 70, flush=True)
+            print(
+                f"BODHAN CHUNK {chunk_number}/{len(chunks)}",
+                flush=True
+            )
+            print(
+                "Chunk duration:",
+                round(chunk_duration, 2),
+                "seconds",
+                flush=True
+            )
+            print("Timestamp:", timestamp, flush=True)
+            print("Chunk:", chunk_path, flush=True)
+            print("=" * 70, flush=True)
+
+            # -------------------------------------------------
+            # RETRY CURRENT CHUNK
+            # -------------------------------------------------
+
+            response = None
+            max_retries = 3
+
+            for attempt in range(max_retries):
+                try:
+                    print(
+                        f">>> Sending chunk to Bodhan "
+                        f"(attempt {attempt + 1}/{max_retries})",
+                        flush=True
+                    )
+
+                    with open(chunk_path, "rb") as audio_file:
+                        wait_for_offpeak(
+                            lambda msg: print(msg, flush=True)
+                        )
+
+                        if detected_language is None:
+                            response = client.audio.transcriptions.create(
+                                model=BODHAN_MODEL,
+                                file=audio_file
+                            )
+                        else:
+                            response = client.audio.transcriptions.create(
+                                model=BODHAN_MODEL,
+                                file=audio_file,
+                                language=detected_language
+                            )
+
+                    if response is None:
+                        raise RuntimeError(
+                            "Bodhan returned an empty response object."
+                        )
+
+                    time.sleep(2)
+                    break
+
+                except Exception as e:
+                    error_text = str(e)
+
+                    print(
+                        f"[Bodhan] Chunk {chunk_number} failed "
+                        f"(attempt {attempt + 1}/{max_retries}): {e}",
+                        flush=True
+                    )
+
+                    if attempt == max_retries - 1:
+                        print(
+                            f"[Bodhan][SKIP] Chunk {chunk_number} "
+                            f"failed after {max_retries} attempts. "
+                            f"Continuing to the next chunk.",
+                            flush=True
+                        )
+                        response = None
+                        break
+
+                    if (
+                        "429" in error_text
+                        or "rate limit" in error_text.lower()
+                    ):
+                        wait_seconds = 10 * (attempt + 1)
+
+                        print(
+                            f"[Bodhan] Rate limit reached. "
+                            f"Waiting {wait_seconds} seconds before retry...",
+                            flush=True
+                        )
+                    else:
+                        wait_seconds = 3 * (attempt + 1)
+
+                        print(
+                            f"[Bodhan] Temporary error. "
+                            f"Waiting {wait_seconds} seconds before retry...",
+                            flush=True
+                        )
+
+                    time.sleep(wait_seconds)
+
+            # -------------------------------------------------
+            # SKIP FAILED CHUNK; CONTINUE WITH NEXT ONE
+            # -------------------------------------------------
+
+            if response is None:
+                skipped_chunks.append(chunk_number)
+                current_offset += chunk_duration
+                continue
+
+            # -------------------------------------------------
+            # EXTRACT TRANSCRIPT TEXT
+            # -------------------------------------------------
+
+            chunk_text = (
+                getattr(response, "text", "") or ""
+            ).strip()
+          
+            # Collect first 2 SUCCESSFUL chunk transcripts
+            if chunk_text and len(first_minute_transcript) < 2:
+                first_minute_transcript.append(chunk_text)
+
+
+            if detected_language is None and len(first_minute_transcript) >= 2:
+
+                first_minute_text = "\n".join(first_minute_transcript)
+
+                detected_language = detect_call_language(
+                    deepseek_client,
+                    first_minute_text
+                )
+
+                if detected_language == "unsupported":
+                    print(
+                        "[LANGUAGE BLOCKED] Unsupported or uncertain language.",
+                        flush=True
+                    )
+                    raise RuntimeError(
+                        "Unsupported or uncertain call language."
+                    )
+
+
+                if (
+                     detected_language in ("hi", "mr", "en")
+                    and not first_chunk_retranscribed
+                ):
+                    try:
+                        first_chunk_number, first_chunk_path, first_chunk_duration = chunks[0]
+
+                        print(
+                            f"[RETRANSCRIBE] First chunk using language={detected_language}",
+                            flush=True
+                        )
+
+                        with open(first_chunk_path, "rb") as audio_file:
+
+                            wait_for_offpeak(
+                                lambda msg: print(msg, flush=True)
+                            )
+
+                            retry_response = client.audio.transcriptions.create(
+                                model=BODHAN_MODEL,
+                                file=audio_file,
+                                language=detected_language
+                            )
+                            extra_retranscribed_seconds = first_chunk_duration
+
+                        retry_text = (
+                            getattr(retry_response, "text", "") or ""
+                        ).strip()
+
+                        if retry_text:
+                            for i, line in enumerate(transcript_lines):
+
+                                if line.startswith("[00:00] "):
+
+                                    transcript_lines[i] = (
+                                        f"[00:00] {retry_text}"
+                                    )
+
+                                    first_chunk_retranscribed = True
+                                    
+
+                                    print(
+                                        "[RETRANSCRIBE] First chunk replaced successfully.",
+                                        flush=True
+                                    )
+
+                                    print(
+                                        "[UPDATED FIRST CHUNK]:",
+                                        retry_text,
+                                        flush=True
+                                    )
+
+                                    break
+
+                    except Exception as e:
+                        print(
+                            f"[RETRANSCRIBE] First chunk retry failed: {e}",
+                            flush=True
+                        )
+
+                    print(
+                        f"[LANGUAGE] Applying {detected_language} to remaining chunks.",
+                        flush=True
+                    )
+
+
+
+
+            
+
+            print("\n========== CHUNK DEBUG ==========", flush=True)
+            print("CHUNK NO:", chunk_number, "/", len(chunks), flush=True)
+            print("CHUNK TIMESTAMP:", timestamp, flush=True)
+            print("CHUNK DURATION:", chunk_duration, flush=True)
+            print("RESPONSE IS NONE:", response is None, flush=True)
+            print("CHUNK TEXT LENGTH:", len(chunk_text) if response else 0, flush=True)
+            print("CHUNK TEXT:", repr(chunk_text), flush=True)
+            print("=================================", flush=True)
+
+            if chunk_text:
+                transcript_lines.append(
+                    f"{timestamp} {chunk_text}"
+                )
+                successful_chunks += 1
+
+                print(
+                    "BODHAN TRANSCRIPT:",
+                    chunk_text,
+                    flush=True
+                )
+            else:
+                print(
+                    f"[Bodhan] Chunk {chunk_number} returned "
+                    f"an empty transcript.",
+                    flush=True
+                )
+                skipped_chunks.append(chunk_number)
+
+            current_offset += chunk_duration
+       
+        if detected_language is None and first_minute_transcript:
+
+            first_minute_text = "\n".join(first_minute_transcript)
+
+            detected_language = detect_call_language(
+                deepseek_client,
+                first_minute_text
+            )
+
+            if detected_language == "unsupported":
+                raise RuntimeError(
+                    "Unsupported or uncertain call language."
+                )
+
+        if detected_language is None:
+            raise RuntimeError(
+                "Language detection could not be completed."
+        )
+
+        transcript = "\n".join(transcript_lines).strip()
+
+        print(
+            f"[Bodhan] Successful chunks: {successful_chunks}/{len(chunks)}",
+            flush=True
+        )
+
+        if skipped_chunks:
+            print(
+                f"[Bodhan] Skipped chunks: {skipped_chunks}",
+                flush=True
+            )
+
+        if not transcript:
+            raise RuntimeError(
+                "Bodhan transcription failed: "
+                "No chunks produced a transcript."
+            )
+        # -----------------------------------------------------
+        # COST CALCULATION
+        # Cost is based on the entire submitted audio duration,
+        # including chunks that failed transcription.
+        # -----------------------------------------------------
+
+        # cost_inr = (
+        #     total_audio_seconds / 60.0
+        # ) * BODHAN_PRICE_PER_MINUTE_INR
+        billable_audio_seconds = (
+            total_audio_seconds + extra_retranscribed_seconds
+        )
+
+        cost_inr = (
+            billable_audio_seconds / 60.0
+        ) * BODHAN_PRICE_PER_MINUTE_INR
+        bodhan_cost_info = {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "thinking_tokens": 0,
+            "total_tokens": 0,
+            "audio_tokens": 0,
+            "text_tokens": 0,
+            "cost_usd": 0.0,
+            "cost_inr": cost_inr,
+            "audio_seconds": billable_audio_seconds,
+            "audio_minutes": billable_audio_seconds / 60.0,
+            "price_per_minute_inr": BODHAN_PRICE_PER_MINUTE_INR,
+            "provider": "Bodhan",
+            "model": BODHAN_MODEL,
+            "successful_chunks": successful_chunks,
+            "total_chunks": len(chunks),
+            "skipped_chunks": skipped_chunks
+        }
+
+        # -----------------------------------------------------
+        # PRINT COST AND TRANSCRIPT
+        # -----------------------------------------------------
+
+        print("\n" + "=" * 70, flush=True)
+        print("BODHAN STT COST", flush=True)
+        print("=" * 70, flush=True)
+
+        # print(
+        #     "Audio Seconds :",
+        #     round(total_audio_seconds, 2),
+        #     flush=True
+        # )
+        # print(
+        #     "Audio Minutes :",
+        #     round(total_audio_seconds / 60.0, 2),
+        #     flush=True
+        # )
+        print(
+            "Original Audio Seconds :",
+            round(total_audio_seconds, 2),
+            flush=True
+        )
+
+        print(
+            "Re-transcribed Seconds :",
+            round(extra_retranscribed_seconds, 2),
+            flush=True
+        )
+
+        print(
+            "Billable Audio Seconds :",
+            round(billable_audio_seconds, 2),
+            flush=True
+        )
+
+        print(
+            "Billable Audio Minutes :",
+            round(billable_audio_seconds / 60.0, 2),
+            flush=True
+        )
+        print(
+            "Rate          : ₹%.2f/min"
+            % BODHAN_PRICE_PER_MINUTE_INR,
+            flush=True
+        )
+        print(
+            "TOTAL COST    : ₹%.4f" % cost_inr,
+            flush=True
+        )
+        print(
+            "Successful    : %s/%s"
+            % (successful_chunks, len(chunks)),
+            flush=True
+        )
+        print("=" * 70, flush=True)
+
+        print(
+            "\n========== BODHAN RAW TRANSCRIPT ==========",
+            flush=True
+        )
+        print(transcript, flush=True)
+        print(
+            "============================================",
+            flush=True
+        )
+
+        return transcript, bodhan_cost_info
+
+    except Exception as e:
+        print(
+            "[Bodhan] Transcription failed:",
+            e,
+            flush=True
+        )
+        raise
+
+    finally:
+        # -----------------------------------------------------
+        # CLEAN TEMP CHUNKS
+        # -----------------------------------------------------
+
+        try:
+            for _, chunk_path, _ in chunks:
+                if os.path.exists(chunk_path):
+                    os.remove(chunk_path)
+
+            if os.path.isdir(chunk_dir):
+                try:
+                    os.rmdir(chunk_dir)
+                except OSError:
+                    pass
+
+        except Exception as cleanup_error:
+            print(
+                "[Bodhan] Chunk cleanup failed:",
+                cleanup_error,
+                flush=True
+            )
+
+
 
 def is_degenerate_text(text, min_char_run=25, min_word_repeats=35):
     if not text:
@@ -164,6 +1650,9 @@ def clean_degenerate_output(raw_text, min_char_run=25, min_word_repeats=35):
         )
     return raw_text
 
+
+TRANSCRIPT_CORRECTIONS = {}
+
 def apply_corrections(text):
     for wrong, right in TRANSCRIPT_CORRECTIONS.items():
         text = re.sub(re.escape(wrong), right, text, flags=re.IGNORECASE)
@@ -182,7 +1671,7 @@ KNOWN_EXECUTIVE_NAMES = {
     "Rahul": ["rahul", "राहुल"],
     "Sandeep": ["sandeep", "sandip", "संदीप"],
     "Vidya": ["vidya", "विद्या"],
-    "Akshay": ["akshay", "अक्षय"],          # ← Devanagari added
+    "Akshay": ["akshay", "अक्षय"],
     "Suresh": ["suresh", "सुरेश"],
     "Avinash": ["avinash", "अविनाश"],
     "Amol": ["amol", "अमोल"],
@@ -190,19 +1679,17 @@ KNOWN_EXECUTIVE_NAMES = {
     "Dilip": ["dilip", "deelip", "दिलीप"],
     "Dipak": ["dipak", "deepak", "दीपक"],
     "Gautam": ["gautam", "गौतम"],
-    "Sagar" : ["sagar", "सागर"],
-    "Sandeep Gosavi" : ["sandeep gosavi" , "गोसावी संदीप"],
-    "Rajesh" :["rajesh", "राजेश "],
-    "Akash" : ["akash", "आकाश "],
-    "Kishor" : ["kishor" , "किशोर"],
-    "Sandeep" : ["sandeep" , "संदीप"],
-    "Prathmesh" : ["prathmesh" , "प्रथमेश"],
-    "Pratik" : ["pratik" , "प्रतीक"],
-    "Abhijit" : ["abhijit" , "अभिजीत"],
-    "Aniket" : ["aniket", "अनिकेत"],
-
-
+    "Sagar": ["sagar", "सागर"],
+    "Sandeep Gosavi": ["sandeep gosavi", "गोसावी संदीप"],
+    "Rajesh": ["rajesh", "राजेश "],
+    "Akash": ["akash", "आकाश "],
+    "Kishor": ["kishor", "किशोर"],
+    "Prathmesh": ["prathmesh", "प्रथमेश"],
+    "Pratik": ["pratik", "प्रतीक"],
+    "Abhijit": ["abhijit", "अभिजीत"],
+    "Aniket": ["aniket", "अनिकेत"],
 }
+
 
 def _build_alias_lookup(name_dict):
     lookup = {}
@@ -211,16 +1698,17 @@ def _build_alias_lookup(name_dict):
             lookup[v.strip().lower()] = standard
     return lookup
 
+
 KNOWN_EXECUTIVE_ALIAS_LOOKUP = _build_alias_lookup(KNOWN_EXECUTIVE_NAMES)
 
 STOPWORDS_NOT_NAMES = {
     "मी", "आम्ही", "हा", "ही", "ते", "सर", "मॅडम",
     "sir", "madam", "i", "we", "you", "he", "she",
-    # company/connector words — हे कधीच नाव नसतात
     "कडनं", "कडून", "कडुन", "वेअर", "रिटेलवेअर", "रिटेल",
     "retailware", "कंपनी", "team", "टीम", "support",
     "सपोर्ट", "हेल्पडेस्क", "helpdesk"
 }
+
 
 def normalize_executive_name(raw_name):
     """Dictionary मध्ये match झालं तर standard spelling वापर,
@@ -230,23 +1718,279 @@ def normalize_executive_name(raw_name):
         return None
     if key in KNOWN_EXECUTIVE_ALIAS_LOOKUP:
         return KNOWN_EXECUTIVE_ALIAS_LOOKUP[key]
-    # Devanagari किंवा Latin दोन्हीत योग्य capitalize कर
     if re.match(r'^[a-zA-Z]+$', raw_name.strip()):
         return raw_name.strip().title()
     return raw_name.strip()
 
-import re
-def fix_speaker_consistency(transcript: str) -> str:
-    import re
+def safe_generate(client, model, messages, temperature=0, max_tokens=6000, json_mode=False):
+    """OpenAI-compatible chat-completion wrapper with retry."""
 
+    max_retries = 6
+
+    kwargs = dict(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
+    )
+
+    # DeepSeek V4 Flash:
+    # Disable thinking/reasoning for short deterministic tasks.
+    if model == DEEPSEEK_MODEL:
+        kwargs["extra_body"] = {
+            "thinking": {
+                "type": "disabled"
+            }
+        }
+
+    if json_mode:
+        kwargs["response_format"] = {"type": "json_object"}
+
+    for attempt in range(max_retries):
+        try:
+            wait_for_offpeak(
+                lambda msg: print(msg, flush=True)
+            )
+
+            return client.chat.completions.create(**kwargs)
+
+
+        except Exception as e:
+            err = str(e).lower()
+            print(f"Retry {attempt+1}/{max_retries}: {e}")
+
+            retryable = any(x in err for x in [
+                "server disconnected",
+                "timeout",
+                "503",
+                "connection",
+                "429",
+                "internal",
+                "unavailable",
+                "rate limit",
+                "rate_limit"
+            ])
+
+            if not retryable:
+                raise
+
+            if attempt == max_retries - 1:
+                raise
+
+            wait = 3 * (attempt + 1)
+            print(f"Waiting {wait}s before retry...")
+            time.sleep(wait)
+
+def detect_call_language(client, first_minute_transcript):
+    prompt = f"""
+Identify the primary spoken language of this customer support call.
+
+Allowed languages:
+- Hindi = hi
+- Marathi = mr
+- English = en
+- Any other language or uncertain = unsupported
+
+Rules:
+- Identify the language being SPOKEN, not merely the script.
+- Hindi may appear in Devanagari or Urdu script.
+- Marathi generally appears in Devanagari.
+- English may appear in Latin script.
+- Do not classify Hindi as Urdu just because its transcript uses Urdu script.
+- If the transcript contains mixed languages, identify the dominant language.
+- If uncertain, return unsupported.
+
+Transcript:
+{first_minute_transcript}
+
+Return JSON only:
+{{"language": "hi"}}
+
+The language value must be exactly one of:
+hi, mr, en, unsupported
+"""
+
+    response = safe_generate(
+        client,
+        model=DEEPSEEK_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        max_tokens=100,
+        json_mode=True
+    )
+
+    raw = (response.choices[0].message.content or "").strip()
+
+    try:
+        data = parse_llm_json(raw)
+        language = str(data.get("language", "")).strip().lower()
+    except Exception:
+        language = "unsupported"
+
+    if language not in ("hi", "mr", "en"):
+        language = "unsupported"
+
+    print("[LANGUAGE DETECTED]:", language, flush=True)
+
+    return language
+def label_speakers_with_deepseek(client, plain_transcript):
+    """Groq Whisper कडून आलेल्या [MM:SS] text (speaker label नसलेल्या) transcript ला
+    DeepSeek कडून Executive/Customer label लावून घेतो — text-only, fast."""
+    if not plain_transcript.strip():
+        return plain_transcript, empty_deepseek_usage()
+
+    prompt = (
+        "You are given a support call transcript where each line has a "
+        "[MM:SS] timestamp but NO speaker label. Add a speaker label "
+        "('Executive' or 'Customer') to the START of every line:\n"
+        "[MM:SS] Executive: <text>\n[MM:SS] Customer: <text>\n\n"
+        "RULES:\n"
+        "- Executive = Retailware support agent (usually opens with a "
+        "self-introduction mentioning Retailware / रिटेलवेअर).\n"
+        "- Customer = person reporting the issue.\n"
+        "- Use context: who asks for ID/password/troubleshoots (Executive), "
+        "who reports the problem and answers (Customer).\n"
+        "- Keep the SAME speaker consistent throughout unless there's clear "
+        "evidence of a turn change.\n"
+        "- If a line is a side remark to someone nearby (unrelated to the "
+        "support topic), add [Aside] after the label.\n"
+        "- Do NOT change, merge, reorder, or drop any line's text — only add labels.\n"
+        "- Keep original language/script exactly as given.\n\n"
+        "Transcript:\n" + plain_transcript + "\n\n"
+        "Output ONLY the relabeled transcript, nothing else."
+    )
+
+    response = safe_generate(
+        client,
+        model=LABELING_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        max_tokens=6000,
+    )
+    finish_reason = response.choices[0].finish_reason
+
+    input_timestamp_count = len(
+        re.findall(r"\[\d{2}:\d{2}\]", plain_transcript)
+    )
+
+    labeled = (
+        response.choices[0].message.content or ""
+    ).strip()
+
+    output_timestamp_count = len(
+        re.findall(r"\[\d{2}:\d{2}\]", labeled)
+    )
+
+    print(
+        "[LABELING] Input timestamps:",
+        input_timestamp_count,
+        flush=True
+    )
+
+    print(
+        "[LABELING] Output timestamps:",
+        output_timestamp_count,
+        flush=True
+    )
+
+    if (
+        finish_reason == "length"
+        or output_timestamp_count != input_timestamp_count
+    ):
+        print(
+            "[LABELING WARNING] Incomplete speaker labeling. "
+            "Using original complete transcript.",
+            flush=True
+        )
+        labeled = plain_transcript
+    # finish_reason = response.choices[0].finish_reason
+
+    # input_timestamp_count = len(
+    #     re.findall(r"\[\d{2}:\d{2}\]", plain_transcript)
+    # )
+    # labeled = (
+    #     response.choices[0].message.content or ""
+    # ).strip()
+
+    # output_timestamp_count = len(
+    #     re.findall(r"\[\d{2}:\d{2}\]", labeled)
+    # )
+
+    # print(
+    #     "[LABELING] Input timestamps:",
+    #     input_timestamp_count,
+    #     flush=True
+    # )
+
+    # print(
+    #     "[LABELING] Output timestamps:",
+    #     output_timestamp_count,
+    #     flush=True
+    # )
+
+    # if (
+    #     finish_reason == "length"
+    #     or output_timestamp_count != input_timestamp_count
+    # ):
+    #     print(
+    #         "[LABELING WARNING] Incomplete speaker labeling. "
+    #         "Using original complete transcript.",
+    #         flush=True
+    #     )
+
+    # labeled = plain_transcript
+    # labeled = (response.choices[0].message.content or "").strip()
+    print("\n========== LABELING DEBUG ==========", flush=True)
+
+    print(
+        "[LABELING DEBUG] FINISH REASON:",
+        response.choices[0].finish_reason,
+        flush=True
+    )
+
+    print(
+        "[LABELING DEBUG] INPUT LENGTH:",
+        len(plain_transcript),
+        flush=True
+    )
+
+    print(
+        "[LABELING DEBUG] OUTPUT LENGTH:",
+        len(labeled),
+        flush=True
+    )
+
+    print(
+        "[LABELING DEBUG] INPUT LINES:",
+        len(plain_transcript.splitlines()),
+        flush=True
+    )
+
+    print(
+        "[LABELING DEBUG] OUTPUT LINES:",
+        len(labeled.splitlines()),
+        flush=True
+    )
+
+    print("=====================================", flush=True)
+
+    print("========== DEEPSEEK LABELED OUTPUT ==========")
+    print(labeled)
+    print("==============================================")
+
+    return (
+        labeled if labeled else plain_transcript,
+        calculate_deepseek_cost(response.usage)
+    )
+
+
+def fix_speaker_consistency(transcript: str) -> str:
     lines = transcript.splitlines()
     fixed = []
 
-    prev_speaker = None
     prev_text = ""
 
     for line in lines:
-
         m = re.match(r"(\[\s*\d{2}:\d{2}\s*\])\s*(Executive|Customer)(\s*\[[^\]]+\])?\s*:\s*(.*)", line)
 
         if not m:
@@ -260,15 +2004,10 @@ def fix_speaker_consistency(transcript: str) -> str:
 
         lower = text.lower()
 
-        # -------------------------
-        # NAME QUESTION
-        # -------------------------
-
         if "आपका नाम" in lower or "नाम?" in lower:
             speaker = "Customer"
 
         elif prev_text.startswith("आपका नाम"):
-
             if (
                 len(text.split()) <= 3
                 and "लिखो" not in lower
@@ -276,7 +2015,6 @@ def fix_speaker_consistency(transcript: str) -> str:
                 and "सामने" not in lower
             ):
                 speaker = "Executive"
-
             elif (
                 "लिखो" in lower
                 or "लिखिए" in lower
@@ -284,61 +2022,33 @@ def fix_speaker_consistency(transcript: str) -> str:
             ):
                 speaker = "Customer"
 
-        # -------------------------
-        # PASSWORD
-        # -------------------------
-
         elif "पासवर्ड" in lower:
             speaker = "Executive"
 
-        elif (
-            "पासवर्ड" in prev_text
-            and len(text.split()) <= 5
-        ):
+        elif "पासवर्ड" in prev_text and len(text.split()) <= 5:
             speaker = "Customer"
-
-        # -------------------------
-        # ID
-        # -------------------------
 
         elif "आईडी" in lower or "id" in lower:
             speaker = "Executive"
 
-        elif (
-            ("आईडी" in prev_text or "id" in prev_text)
-            and len(text.split()) <= 5
-        ):
+        elif ("आईडी" in prev_text or "id" in prev_text) and len(text.split()) <= 5:
             speaker = "Customer"
 
-        # -------------------------
-        # COMPLAINT NUMBER
-        # -------------------------
-
-        elif (
-            "कंप्लेंट नंबर" in lower
-            or "complaint number" in lower
-        ):
+        elif "कंप्लेंट नंबर" in lower or "complaint number" in lower:
             speaker = "Executive"
 
-        elif (
-            "कंप्लेंट नंबर" in prev_text
-            and len(text.split()) <= 5
-        ):
+        elif "कंप्लेंट नंबर" in prev_text and len(text.split()) <= 5:
             speaker = "Customer"
 
-        fixed.append(
-            f"{ts} {speaker}{aside}: {text}"
-        )
-
-        prev_speaker = speaker
+        fixed.append(f"{ts} {speaker}{aside}: {text}")
         prev_text = text
 
     return "\n".join(fixed)
 
+
 def extract_speaker_text(transcript, speaker="Customer"):
     """Extract ONLY the given speaker's actual dialogue (skipping [Aside]
-    lines), so mood/tone keyword checks don't get polluted by the other
-    speaker's words or by background chatter."""
+    lines), so mood/tone keyword checks don't get polluted."""
     lines = transcript.splitlines()
     out = []
     pattern = re.compile(
@@ -357,15 +2067,12 @@ def extract_speaker_text(transcript, speaker="Customer"):
 def detect_known_executive(transcript):
     transcript_lower = transcript.lower()
 
-    # Priority 1: explicit self-introduction — "X बोलतोय", "This is X speaking" इ.
-    # dictionary मध्ये नाव नसलं तरी directly तेच नाव वापरायचं (normalize फक्त spelling साठी)
     self_intro_patterns = [
         r"([a-zA-Z\u0900-\u097F]+)\s*बोलतोय",
         r"([a-zA-Z\u0900-\u097F]+)\s*बोल रहा",
         r"this is\s+([a-zA-Z]+)\s+speaking",
         r"मेरा नाम\s+([a-zA-Z\u0900-\u097F]+)",
         r"माझं नाव\s+([a-zA-Z\u0900-\u097F]+)",
-        # "रिटेलवेअर कडून/कडनं ... बोलतोय ... सर, <Name>" पॅटर्न
         r"(?:रिटेलवेअर|retailware)[^,।\n]{0,25}?(?:कडून|कडनं)[^,।\n]{0,25}?"
         r"बोलतोय[^,।\n]{0,10}?(?:सर|मॅडम)?\s*,?\s*([a-zA-Z\u0900-\u097F]+)",
     ]
@@ -376,8 +2083,6 @@ def detect_known_executive(transcript):
             if normalized:
                 return normalized
 
-    # Priority 2: fallback — known dictionary substring match
-    # (loose/generic match इथे नाही कारण customer चं नावही चुकून पकडलं जाऊ शकतं)
     for standard_name, variants in KNOWN_EXECUTIVE_NAMES.items():
         for variant in variants:
             if re.search(r'\b' + re.escape(variant.lower()) + r'\b', transcript_lower):
@@ -385,56 +2090,10 @@ def detect_known_executive(transcript):
     return None
 
 
-
-def get_google_client():
-    if not GOOGLE_API_KEY:
-        raise RuntimeError("Set GOOGLE_API_KEY in your .env file before running this app.")
-    return genai.Client(api_key=GOOGLE_API_KEY)
-def safe_generate(client, **kwargs):
-    max_retries = 6
-    for attempt in range(max_retries):
-        try:
-            return client.models.generate_content(**kwargs)
-        except Exception as e:
-            err = str(e).lower()
-            print(f"Retry {attempt+1}/{max_retries}: {e}")
-            retryable = any(x in err for x in [
-                "server disconnected", "timeout", "503",
-                "connection", "429", "internal", "unavailable"
-            ])
-            if not retryable:
-                raise
-            if attempt == max_retries - 1:
-                raise
-            wait = 3 * (attempt + 1)   # 5s, 10s, 15s, 20s, 25s
-            print(f"Waiting {wait}s before retry...")
-            time.sleep(wait)
-
-
-
-# def convert_audio(input_path):
-#     output_path = os.path.splitext(input_path)[0] + "_16k.wav"
-#     result = subprocess.run([
-#         "ffmpeg", "-y",
-#         "-hide_banner",
-#         "-loglevel", "error",
-#         "-i", input_path,
-#         "-vn",
-#         "-ac", "1",
-#         "-ar", "16000",
-#         "-c:a", "pcm_s16le",
-#         output_path
-#     ], capture_output=True, text=True)
-#     if result.returncode != 0:
-#         raise RuntimeError(f"FFmpeg failed: {result.stderr.strip()[:300]}")
-#     return output_path
-
 def find_speech_start(wav_path):
-    """
-    Detect where ring-back tone ends and speech begins.
-    wav_path OGG असू शकतो, म्हणून आधी तो तात्पुरता WAV मध्ये decode करतो.
-    """
-    import wave, struct, subprocess, os
+    """Detect where ring-back tone ends and speech begins."""
+    import wave
+    import struct
     try:
         import numpy as np
     except ImportError:
@@ -442,7 +2101,6 @@ def find_speech_start(wav_path):
 
     tmp_wav = wav_path + "_probe.wav"
     try:
-       
         r = subprocess.run([
             "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
             "-i", wav_path,
@@ -456,26 +2114,25 @@ def find_speech_start(wav_path):
             print(f"[Ring trim] Probe conversion failed: {r.stderr[:200]}")
             return 0.0
 
-        
         with wave.open(tmp_wav, 'rb') as w:
             framerate = w.getframerate()
             max_frames = int(framerate * 15)
             data = w.readframes(min(w.getnframes(), max_frames))
 
-        samples = np.array(struct.unpack('<' + 'h' * (len(data)//2), data), dtype=np.float32)
+        samples = np.array(struct.unpack('<' + 'h' * (len(data) // 2), data), dtype=np.float32)
         step = int(framerate * 0.5)
         ring_pcts = []
         for i in range(0, len(samples) - step, step):
-            seg = samples[i:i+step]
-            rms = float(np.sqrt(np.mean(seg**2)))
+            seg = samples[i:i + step]
+            rms = float(np.sqrt(np.mean(seg ** 2)))
             if rms < 200:
                 ring_pcts.append(None)
                 continue
-            fft   = np.abs(np.fft.rfft(seg))
-            freqs = np.fft.rfftfreq(step, 1.0/framerate)
-            ring_mask   = (freqs >= 300) & (freqs <= 500)
+            fft = np.abs(np.fft.rfft(seg))
+            freqs = np.fft.rfftfreq(step, 1.0 / framerate)
+            ring_mask = (freqs >= 300) & (freqs <= 500)
             speech_mask = (freqs >= 100) & (freqs <= 3400) & ~ring_mask
-            ring_e   = float(np.sum(fft[ring_mask]))
+            ring_e = float(np.sum(fft[ring_mask]))
             speech_e = float(np.sum(fft[speech_mask]))
             ring_pcts.append(ring_e / max(ring_e + speech_e, 1))
 
@@ -498,7 +2155,6 @@ def find_speech_start(wav_path):
     except Exception as e:
         print(f"[Ring trim] Detection failed: {e}, using full audio")
     finally:
-       
         if os.path.exists(tmp_wav):
             try:
                 os.remove(tmp_wav)
@@ -508,75 +2164,181 @@ def find_speech_start(wav_path):
     return 0.0
 
 
+def get_wav_duration(wav_path):
+    try:
+        with wave.open(wav_path, "rb") as wav:
+            frames = wav.getnframes()
+            frame_rate = wav.getframerate()
 
-def convert_audio(input_path):
-    """Convert audio to 16 kHz mono WAV, trimming ring-back tone if present."""
+            if frame_rate == 0:
+                return 0.0
+
+            return frames / float(frame_rate)
+
+    except Exception as e:
+        print(
+            f"[DEBUG] Could not read WAV duration: {e}",
+            flush=True
+        )
+        return 0.0
+
+
+
+def trim_internal_silences(input_path, silence_threshold_db=-35, min_silence_duration=1.5):
+    """Removes long silent gaps (hold music, dead air, line noise) from
+    ANYWHERE in the audio — not just the start. This prevents Whisper from
+    hallucinating repeated/garbage text during silent stretches (e.g. calls
+    on hold for 60-90+ seconds).
+
+    silence_threshold_db: audio below this level is considered silence
+    min_silence_duration: only gaps LONGER than this (seconds) get removed,
+                           so brief natural pauses in speech are untouched
+    """
     start_time = time.time()
-    #output_path = os.path.splitext(input_path)[0] + "_16k.wav"
-    output_path = os.path.splitext(input_path)[0] + "_16k.ogg" 
-    # Step 1: standard conversion
-    # result = subprocess.run([
-    #     "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-    #     "-i", input_path,
-    #     "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le",
-    #     output_path
-    # ], capture_output=True, text=True)
+    output_path = os.path.splitext(input_path)[0] + "_desilenced.wav"
+
+    # stop_periods=-1 => apply repeatedly through the whole file, not just once
+    silence_filter = (
+        f"silenceremove="
+        f"stop_periods=-1:"
+        f"stop_duration={min_silence_duration}:"
+        f"stop_threshold={silence_threshold_db}dB:"
+        f"start_periods=0"  # don't touch leading silence here — ring-trim handles that separately
+    )
+
     result = subprocess.run([
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
         "-i", input_path,
-        "-vn", "-ac", "1", "-ar", "16000",
-        "-c:a", "libopus", "-b:a", "96k",
+        "-af", silence_filter,
+        "-ac", "1", "-ar", "8000",
         output_path
     ], capture_output=True, text=True)
+
     if result.returncode != 0:
-        raise RuntimeError(f"FFmpeg failed: {result.stderr.strip()[:300]}")
+        print(f"[Silence trim] FFmpeg failed, using original audio: {result.stderr.strip()[:300]}")
+        return input_path
 
-    # Step 2: trim ring-back tone
-    speech_start = find_speech_start(output_path)
-    if speech_start > 2.0:                   # only trim if >2s of ring detected
-        trimmed = os.path.splitext(input_path)[0] + "_trimmed.wav"
-        r2 = subprocess.run([
-            "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
-            "-i", output_path,
-            "-ss", str(speech_start),
-            "-c", "copy", trimmed
-        ], capture_output=True, text=True)
-        if r2.returncode == 0:
-            os.replace(trimmed, output_path)
-            print(f"[Ring trim] Removed {speech_start:.1f}s of ring tone")
-        else:
-            print(f"[Ring trim] Trim step failed, using full audio")
+    original_size = os.path.getsize(input_path)
+    new_size = os.path.getsize(output_path)
+    print(f"[Silence trim] {original_size} -> {new_size} bytes "
+          f"({time.time() - start_time:.2f}s)")
 
-    elapsed = time.time() - start_time
-    print(f"[TIMER] convert_audio took {elapsed:.2f} seconds")
     return output_path
 
 
-def parse_gemini_json(text):
+def convert_audio(input_path):
+    """Convert audio to 16 kHz mono, trimming ring-back tone AND long
+    internal silence gaps (hold periods, dead air) that cause Whisper
+    to hallucinate repeated/garbage text."""
+    start_time = time.time()
+    original_duration = get_wav_duration(input_path)
+
+    print(
+        f"[DEBUG] ORIGINAL AUDIO DURATION: "
+        f"{original_duration:.2f} seconds",
+        flush=True
+    )
+
+    # STEP 1: Remove long silent gaps ANYWHERE in the original audio first
+    # (working on the original file, before any lossy re-encoding)
+    #desilenced_path = trim_internal_silences(input_path)
+    desilenced_path = input_path
+    speech_start = find_speech_start(input_path)
+
+    print(f"[DEBUG] Detected speech start: {speech_start:.2f} seconds")
+    #output_path = os.path.splitext(input_path)[0] + "_16k.ogg"
+    output_path = os.path.splitext(input_path)[0] + "_16k.wav"
+    result = subprocess.run([
+        "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+        
+        "-i", desilenced_path,
+        "-vn", "-ac", "1", "-ar", "16000",
+        # "-af", "highpass=f=250,lowpass=f=3800",
+        # "-c:a", "libopus", "-b:a", "96k",
+        "-c:a", "pcm_s16le",
+        output_path
+    ], capture_output=True, text=True)
+
+    # Clean up intermediate desilenced file if it's not the original
+    if desilenced_path != input_path and os.path.exists(desilenced_path):
+        try:
+            os.remove(desilenced_path)
+        except Exception:
+            pass
+
+    if result.returncode != 0:
+        raise RuntimeError(f"FFmpeg failed: {result.stderr.strip()[:300]}")
+
+    # STEP 2: Existing ring-back tone trim (for the very start of the call)
+    # speech_start = find_speech_start(output_path)
+    # if speech_start > 2.0:
+    #     trimmed = os.path.splitext(input_path)[0] + "_trimmed.wav"
+    #     r2 = subprocess.run([
+    #         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
+    #         "-i", output_path,
+    #         "-ss", str(speech_start),
+    #         "-c", "copy", trimmed
+    #     ], capture_output=True, text=True)
+    #     if r2.returncode == 0:
+    #         os.replace(trimmed, output_path)
+    #         print(f"[Ring trim] Removed {speech_start:.1f}s of ring tone")
+    #     else:
+    #         print("[Ring trim] Trim step failed, using full audio")
+
+    converted_duration = get_wav_duration(output_path)
+
+    print(
+        f"[DEBUG] CONVERTED AUDIO DURATION: "
+        f"{converted_duration:.2f} seconds",
+        flush=True
+    )
+
+    elapsed = time.time() - start_time
+
+    print(
+        f"[TIMER] convert_audio took {elapsed:.2f} seconds",
+        flush=True
+    )
+
+    return output_path
+
+
+def parse_llm_json(text):
     text = text.strip()
     if text.startswith("```"):
         text = text.strip("`").strip()
-        if text.lower().startswith("json"): text = text[4:].strip()
+        if text.lower().startswith("json"):
+            text = text[4:].strip()
     start = text.find("{")
     end = text.rfind("}")
-    if start != -1 and end != -1: text = text[start:end+1]
+    if start != -1 and end != -1:
+        text = text[start:end + 1]
     return json.loads(text)
 
+
+# Backwards-compatible alias (old name used elsewhere)
+parse_gemini_json = parse_llm_json
+
+
 def clean_json_string(raw_text):
-    import re
     text = raw_text.strip()
+
     def escape_inside_quotes(match):
         return match.group(0).replace("\n", "\\n").replace("\r", "\\r").replace("\t", "\\t")
+
     return re.sub(r'"(?:\\.|[^"\\])*"', escape_inside_quotes, text)
 
+
 def format_facts(facts):
-    if not isinstance(facts, dict): return str(facts or "").strip()
+    if not isinstance(facts, dict):
+        return str(facts or "").strip()
     labels = [("issues", "Customer issues"), ("requests", "Customer requests"), ("actions", "Support action")]
     sections = []
     for key, label in labels:
         vals = facts.get(key) or ["None detected"]
         sections.append(f"{label}:\n" + "\n".join(f"- {v}" for v in (vals if isinstance(vals, list) else [vals])))
     return "\n".join(sections)
+
 
 def collapse_alternating_filler(transcript, filler_words=None, min_run=4):
     if filler_words is None:
@@ -603,10 +2365,10 @@ def collapse_alternating_filler(transcript, filler_words=None, min_run=4):
     flush()
     return "\n".join(result)
 
+
 def merge_orphan_lines(transcript):
     """Any line that doesn't start with [MM:SS] gets merged into the
-    previous line — fixes cases where Gemini inserts a stray newline
-    in the middle of a single logical line."""
+    previous line — fixes stray mid-line newlines."""
     lines = transcript.split("\n")
     merged = []
     for line in lines:
@@ -615,6 +2377,7 @@ def merge_orphan_lines(transcript):
         else:
             merged[-1] = merged[-1].rstrip() + " " + line.strip()
     return "\n".join(merged)
+
 
 def collapse_repeated_lines(transcript, max_repeats=3):
     lines = transcript.split("\n")
@@ -643,9 +2406,9 @@ def collapse_repeated_lines(transcript, max_repeats=3):
 
     return "\n".join(result)
 
+
 def collapse_alternating_pairs(transcript, min_cycles=6, max_period=4):
-    """Detects short repeating cycles (e.g. A,B,A,B,A,B...) of length 1-4 lines
-    that repeat many times in a row, and collapses them."""
+    """Detects short repeating cycles (A,B,A,B,...) and collapses them."""
     lines = transcript.split("\n")
 
     def get_content(line):
@@ -662,12 +2425,12 @@ def collapse_alternating_pairs(transcript, min_cycles=6, max_period=4):
         for period in range(1, max_period + 1):
             if contents[i] is None:
                 continue
-            cycle = contents[i:i+period]
+            cycle = contents[i:i + period]
             if any(c is None for c in cycle):
                 continue
             repeats = 1
             j = i + period
-            while j + period <= n and contents[j:j+period] == cycle:
+            while j + period <= n and contents[j:j + period] == cycle:
                 repeats += 1
                 j += period
             if repeats >= min_cycles:
@@ -683,169 +2446,6 @@ def collapse_alternating_pairs(transcript, min_cycles=6, max_period=4):
 
     return "\n".join(result)
 
-def get_audio_transcripts_with_gemini(client, uploaded_file):
-    print(">>> ENTERED get_audio_transcripts_with_gemini", flush=True)
-    start_time = time.time()
-    prompt = (
-    "Transcribe this support call exactly. Add [MM:SS] timestamps. "
-    "Identify speakers as 'Executive' and 'Customer'. "
-    "The Executive usually opens the call with a self-introduction naming "
-    "the company 'Retailware' (may sound like 'रिटेलवेअर', 'रिटेल वेअर', 'रिटेल वाला', "
-    "or similar phonetic variants) — do NOT transcribe this as unrelated words like "
-    "'children' (चिल्ड्रन) or any other common word. If unclear, prefer 'Retailware'. "
-
-    "SPEAKER IDENTITY RULES: "
-    "The Executive is the support/helpdesk agent. Establish who is who EARLY using clues like: "
-    "company/product name self-introduction (e.g. 'रिटेलWARE  बोलतोय'), being addressed respectfully by name/title, "
-    "or asking troubleshooting questions. Once established, KEEP that speaker's label consistent by voice "
-    "for the entire call, even through noisy or unclear sections. "
-    "If audio is unclear, silent, noisy, or overlapping and you cannot confidently tell who is speaking, "
-    "do NOT guess or alternate the speaker label —  "
-    "Never change a speaker unless there is clear conversational evidence."
-    "If one speaker asks a question and the next short reply logically answers it,keep that reply with the opposite speaker."
-    "Do not alternate speakers randomly."
-    "Keep conversation turns intact."
-    "or write [MM:SS] [Unclear speaker] and skip to the next distinct segment. "
-    "ASIDE / BACKGROUND SPEECH RULE: "
-    "Sometimes a speaker (usually the Customer, who is often physically at a shop/counter) briefly talks to "
-    "someone else nearby instead of the other person on the call — e.g. asking a bystander for coins/change, "
-    "giving an unrelated instruction to staff, calling out a name, or a side remark unrelated to the support issue. "
-    "Watch carefully for ANY of these signs (even just ONE is enough to mark it as an aside): "
-    "1) The sentence has NO connection to the support topic (ID, password, scanning, billing, label, rate, "
-    "troubleshooting, login) — e.g. random names being called out, instructions to staff/family, casual chit-chat. "
-    "2) The audio sounds farther from the phone / muffled / echoey / lower volume compared to the speaker's "
-    "normal speaking level for this call. "
-    "3) The sentence is a short one-word or few-word utterance directed at someone else, not phrased as if "
-    "talking to the person on the call (e.g. missing the polite tone or 'sir/ji' typically used with the caller). "
-    "4) There is a brief overlapping voice, background chatter, or a second person's voice audible along with "
-    "the main speaker. "
-    "Err on the side of marking something as [Aside] if you are even moderately confident it fits — it is better "
-    "to over-mark an aside than to silently merge unrelated background speech into the main conversation. "
-    "If you detect this, label the line with the speaker's normal role but ADD the tag [Aside] right after the "
-    "role, like '[MM:SS] Customer [Aside]: ...'. Do NOT let an aside change who you think is the Executive or "
-    "Customer for the rest of the call — the role identity stays the same, only this one line is marked as an aside. "
-    "IMPORTANT: In brackets, note the tone or volume if it changes significantly "
-    "(e.g., [Loudly], [Shouting], [Silently], [Calmly]). "
-    "Keep the original language (Hindi/Marathi/English) as spoken. "
-    "Use Devanagari script for Hindi/Marathi and Latin script for English. "
-    "If there is silence, hold music, or unclear/repetitive background audio for "
-    "an extended period, do NOT repeat the same word or number over and over. "
-    "Instead write a single line like [MM:SS] [Hold music / silence] and move to "
-    "the next distinct speech segment."
-)
-
-    max_attempts = 3
-    raw_text = ""
-    for attempt in range(max_attempts):
-        temp = 0 if attempt == 0 else 0.2 + (0.15 * (attempt - 1))  # 0 → 0.2 → 0.35
-        response = safe_generate(
-            client,
-            model=TRANSCRIPT_MODEL,
-            contents=[uploaded_file, prompt],
-            config=types.GenerateContentConfig(
-                temperature=temp,
-                max_output_tokens=12000
-            )
-        )
-
-        try:
-            transcript_usage = response.usage_metadata
-            transcript_cost_info = calculate_gemini_cost(transcript_usage)
-
-            print("\n" + "=" * 60)
-            print("GEMINI TRANSCRIPTION COST")
-            print("=" * 60)
-
-            print("Input Tokens    :", transcript_cost_info["input_tokens"])
-            print("Output Tokens   :", transcript_cost_info["output_tokens"])
-            print("Thinking Tokens :", transcript_cost_info["thinking_tokens"])
-            print("Total Tokens    :", transcript_cost_info["total_tokens"])
-            print("Cost USD        : $%.6f" % transcript_cost_info["cost_usd"])
-            print("Cost INR        : ₹%.4f" % transcript_cost_info["cost_inr"])
-
-            if hasattr(transcript_usage, "total_token_count"):
-                print("SDK Total Tokens:", transcript_usage.total_token_count)
-
-            print("=" * 60)
-
-        except Exception as e:
-            print("Transcription token usage not available:", e)
-       
-        candidate_text = (response.text or "").strip()
-        try:
-            finish_reason = response.candidates[0].finish_reason
-        except Exception:
-            finish_reason = None
-        print(f"[Transcription] finish_reason={finish_reason}")
-
-        is_degenerate = is_degenerate_text(candidate_text)
-        if not is_degenerate:
-            raw_text = candidate_text
-            print(f"[Degeneration check] Clean output on attempt {attempt+1} (temp={temp})")
-
-            # Agar output token-limit mule truncate zala, continuation mागव
-            if str(finish_reason) in ("MAX_TOKENS", "FinishReason.MAX_TOKENS"):
-                print("[Continuation] Truncated output detected, requesting continuation...")
-                cont_prompt = (
-                    "Continue the transcription EXACTLY from where it stopped. "
-                    "Do not repeat any earlier lines. Continue using the same "
-                    "[MM:SS] timestamp format and speaker/aside rules as before.\n\n"
-                    "Transcript so far (last part, for reference only, do not repeat):\n"
-                    + raw_text[-800:]
-                )
-                cont_response = safe_generate(
-                    client,
-                    model=TRANSCRIPT_MODEL,
-                    contents=[uploaded_file, cont_prompt],
-                    config=types.GenerateContentConfig(
-                        temperature=temp,
-                        max_output_tokens=10000
-                    )
-                )
-                
-                try:
-                    cont_usage = cont_response.usage_metadata
-                    cont_cost_info = calculate_gemini_cost(cont_usage)
-
-                    print("\n" + "=" * 60)
-                    print("GEMINI TRANSCRIPTION CONTINUATION COST")
-                    print("=" * 60)
-
-                    print("Input Tokens    :", cont_cost_info["input_tokens"])
-                    print("Output Tokens   :", cont_cost_info["output_tokens"])
-                    print("Thinking Tokens :", cont_cost_info["thinking_tokens"])
-                    print("Total Tokens    :", cont_cost_info["total_tokens"])
-                    print("Cost USD        : $%.6f" % cont_cost_info["cost_usd"])
-                    print("Cost INR        : ₹%.4f" % cont_cost_info["cost_inr"])
-
-                    if hasattr(cont_usage, "total_token_count"):
-                        print("SDK Total Tokens:", cont_usage.total_token_count)
-
-                    print("=" * 60)
-
-                except Exception as e:
-                    print("Continuation token usage not available:", e)
-                cont_text = (cont_response.text or "").strip()
-                if cont_text and not is_degenerate_text(cont_text):
-                    raw_text = raw_text + "\n" + cont_text
-                    print("[Continuation] Appended continued transcript.")
-            break
-        else:
-            print(f"[Degeneration check] Attempt {attempt+1} (temp={temp}) hit a repetition loop, retrying...")
-            raw_text = candidate_text  # keep last attempt in case all fail
-
-    raw_text = clean_degenerate_output(raw_text)
-    with open("debug_raw_transcript.txt", "w", encoding="utf-8") as f:
-        f.write(raw_text)  
-    raw_text = merge_orphan_lines(raw_text)
-    elapsed = time.time() - start_time
-    print(f"[TIMER] Transcription (Gemini) took {elapsed:.2f} seconds")
-    corrected = apply_corrections(raw_text)
-    corrected = fix_speaker_consistency(corrected)
-    corrected = collapse_alternating_filler(corrected)
-    corrected = collapse_repeated_lines(corrected)
-    return collapse_repeated_lines(corrected)
-
 
 def load_keywords(file_path="keywords.txt"):
     if not os.path.exists(file_path):
@@ -856,42 +2456,139 @@ def load_keywords(file_path="keywords.txt"):
             "Bill designer", "User rights", "Counterwise report",
             "Release notes", "Price Protection", "IMEI tracking",
             "Bill Print", "Expiry tracking", "Interbranch IBT",
-            "Sync Issue", "Reports issue", 
+            "Sync Issue", "Reports issue",
             "Product Scan Issue", "Bill Modification or edit", "Incentive", "loss",
             "scheme"
         ]
     with open(file_path, "r", encoding="utf-8") as f:
         return [line.strip() for line in f if line.strip()]
 
-
 def generate_detailed_summary(client, clean_transcript, business_facts, executive_name, customer_mood, mood_reason):
-    """Second, focused pass: generate ONLY the short + long summary,
-    using the already-extracted facts as grounding context. Keeping this
-    separate from the big extraction call means the model isn't juggling
-    9 different fields at once — it can focus purely on writing a coherent,
-    well-structured summary."""
+    summary_cost_info = calculate_deepseek_cost(None)
+
+    """Second, focused DeepSeek pass: generate ONLY the short + long summary,
+    using the transcript as the primary source and business facts as supporting context."""
 
     facts_str = format_facts(business_facts)
 
     prompt = f"""
-Using the transcript and the already-extracted facts below, write a clear summary of this support call.
+You are summarizing a Retailware customer support call.
+
+The TRANSCRIPT is the PRIMARY SOURCE OF TRUTH.
+The business_facts are supporting information extracted from the same transcript.
+Do NOT blindly trust business_facts if they are empty, incomplete, or inconsistent with
+what is clearly present in the transcript.
 
 Transcript:
 {clean_transcript}
 
-Known facts (already verified — use these, don't re-derive):
+Supporting information:
 - Executive: {executive_name}
 - Customer mood: {customer_mood} ({mood_reason})
+
+Business facts:
 {facts_str}
 
-Write:
-1. short_summary: 2-3 sentences covering why the customer called, the main issue, and current status/outcome.
-2. summary: A detailed 4-6 sentence summary covering the issue, what the executive did, troubleshooting/guidance given, resolution status, and any pending follow-up.
+Your task is to understand the ACTUAL conversation and write an accurate summary.
 
-Rules:
-- Do NOT reverse who did what — Executive helps/troubleshoots, Customer reports/requests.
-- Be specific and factual, grounded only in the transcript and facts given above.
-- No generic filler sentences.
+Before writing the summary, identify from the transcript:
+1. Why did the customer contact support?
+2. What exact issue/problem/request was discussed?
+3. What did the Executive do or explain?
+4. Was any troubleshooting performed?
+5. Was the issue resolved, partially resolved, unresolved, or is follow-up pending?
+6. What was the main business topic/feature/report involved?
+
+IMPORTANT TRANSCRIPT INTERPRETATION RULES:
+- The transcript may contain Marathi, Hindi, English, Hinglish, or Marathi/Hindi spoken in Roman script.
+- Whisper may produce phonetic or imperfect spellings.
+- Do NOT assume that imperfect spelling means there was no issue.
+- Use context only to understand sentences that are explicitly
+  present in the transcript.
+- Context must NOT be used to invent missing words or facts.
+- Do not normalize an unclear word into a specific business
+  term unless that term is clearly supported by the transcript.
+- Do NOT invent information that is not supported by the transcript.
+- If the transcript contains a clear issue/request/action, include it even if business_facts missed it.
+- If the transcript genuinely contains only a greeting and no meaningful support discussion, then say that clearly.
+- Do NOT convert a meaningful support conversation into "no issue" merely because the business_facts are empty.
+- Do NOT say "no specific issue" unless you have actually checked the complete transcript and there is genuinely no identifiable issue or request.
+
+SPEAKER RULES:
+- Executive = Retailware support person.
+- Customer = person contacting support/reporting the issue.
+- Executive performs troubleshooting, explains solutions, gives instructions, or confirms status.
+- Customer reports problems, asks questions, or requests help.
+- Never reverse these roles.
+
+SUMMARY REQUIREMENTS:
+
+1. short_summary:
+Write 2-3 concise sentences.
+Must include:
+- why the customer called,
+- main issue/request/topic,
+- current status/outcome if known.
+
+2. summary:
+Write 4-6 factual sentences.
+Must include:
+- customer's issue/request,
+- relevant report/feature/module/topic,
+- what the Executive did/explained,
+- troubleshooting or guidance provided,
+- resolution/current status,
+- pending follow-up if any.
+
+STRICT SUMMARY RULES:
+
+- Use ONLY facts explicitly supported by the transcript.
+- Do NOT add information from your general knowledge.
+- Do NOT infer missing words.
+- Do NOT invent IDs, names, products, companies, branches,
+  payment methods, reports, or technical details.
+- Do NOT treat business_facts as additional facts.
+- business_facts may only confirm information already present
+  in the transcript.
+- If the transcript does not clearly mention a fact, omit it.
+- If the resolution is not explicitly confirmed, say:
+  "No confirmed resolution was stated in the call."
+- Never create a plausible story from incomplete conversation.
+- Do NOT fill gaps in the conversation using assumptions.
+- Do NOT convert unclear speech into a specific product,
+  report, ID, branch, or technical issue.
+- If a word or phrase is unclear in the transcript, omit it
+  instead of guessing.
+- Preserve the actual issue exactly as supported by the transcript.
+- If the customer clearly says that a product transfer is not
+  working, report that as the issue. Do NOT replace it with
+  another product, branch transfer, ID, or technical explanation.
+
+
+KEYWORD EXTRACTION RULES:
+
+1. Extract only meaningful business topics, software modules,
+   reports, features, or actual customer issues.
+
+2. Prefer exact names from the Preferred keyword names list
+   whenever the conversation clearly matches a listed topic.
+
+3. Do not extract incidental technical details such as UltraViewer ID,
+   Server ID, System ID, Password, Server Connection, or remote
+   connection instructions as standalone keywords.
+
+4. Do not create keywords from every technical word mentioned.
+   Capture why the customer contacted support.
+
+5. Preserve important topics even when troubleshooting details
+   are discussed in the same conversation.
+
+6. Return only 1-4 relevant keywords.
+   Never force extra keywords to reach a minimum count.
+
+7. If no meaningful topic is identifiable, return an empty list.
+
+
 
 Return valid JSON only, in this exact format:
 {{"short_summary": "...", "summary": "..."}}
@@ -899,95 +2596,218 @@ Return valid JSON only, in this exact format:
 
     response = safe_generate(
         client,
-        model=ANALYSIS_MODEL,
-        contents=[prompt],
-        config=types.GenerateContentConfig(
-            temperature=0.2,
-            response_mime_type="application/json",
-            max_output_tokens=2000,
-        )
+        model=SUMMARY_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0,
+        max_tokens=2000,
+        json_mode=True,
     )
 
     try:
-        summary_usage = response.usage_metadata
-        summary_cost_info = calculate_gemini_cost(summary_usage)
+        summary_usage = response.usage
+        summary_cost_info = calculate_deepseek_cost(summary_usage)
 
         print("\n" + "=" * 60)
-        print("GEMINI DETAILED SUMMARY COST")
+        print("DEEPSEEK DETAILED SUMMARY COST")
         print("=" * 60)
-
         print("Input Tokens    :", summary_cost_info["input_tokens"])
         print("Output Tokens   :", summary_cost_info["output_tokens"])
-        print("Thinking Tokens :", summary_cost_info["thinking_tokens"])
         print("Total Tokens    :", summary_cost_info["total_tokens"])
         print("Cost USD        : $%.6f" % summary_cost_info["cost_usd"])
         print("Cost INR        : ₹%.4f" % summary_cost_info["cost_inr"])
-
-        if hasattr(summary_usage, "total_token_count"):
-            print("SDK Total Tokens:", summary_usage.total_token_count)
-
         print("=" * 60)
 
     except Exception as e:
         print("Summary token usage not available:", e)
 
-    raw = (response.text or "").strip()
+    raw = (response.choices[0].message.content or "").strip()
+
     try:
-        data = parse_gemini_json(raw)
+        data = parse_llm_json(raw)
     except Exception:
         data = {}
 
-    short_summary = data.get("short_summary", "Short summary not generated.")
-    long_summary = data.get("summary", "Summary not generated.")
-    return short_summary, long_summary
+    short_summary = data.get(
+        "short_summary",
+        "Short summary not generated."
+    )
 
+    long_summary = data.get(
+        "summary",
+        "Summary not generated."
+    )
 
+    return (
+        short_summary,
+        long_summary,
+        summary_cost_info
+    )
 def analyze_audio_with_gemini(audio_path):
+    preferred_block = ""
+    """Name kept as-is for backwards compatibility with web_app.py
+    (testnew.analyze_audio_with_gemini(...)). Internally: Groq for
+    Whisper transcription, DeepSeek for labeling / analysis / summary."""
     print(">>> ENTERED analyze_audio_with_gemini", flush=True)
     print("====================================")
     print("START analyze_audio_with_gemini")
     print("Audio Path :", audio_path)
     print("====================================")
+    cached_result = load_cached_result(audio_path)
+
+    if cached_result:
+        print("====================================")
+        print("CACHE HIT - RETURNING SAVED RESULT")
+        print("====================================", flush=True)
+
+        return (
+            cached_result["transcript"],
+            cached_result["raw_output"],
+            cached_result["business_facts"],
+            cached_result["analysis_text"],
+            cached_result["combined_summary"],
+            cached_result["keywords"],
+            cached_result["token_info"]
+        )
+
+    print("CACHE MISS - PROCESSING AUDIO", flush=True)
     total_start = time.time()
-    client = get_google_client()
-    keywords_list = load_keywords()
-    keywords_str = ", ".join(keywords_list)
-    # uploaded_file = None
-    # try:
-    #     #uploaded_file = client.files.upload(file=audio_path, config=types.UploadFileConfig(mime_type="audio/wav"))
-    #     for attempt in range(3):
-    #         try:
-    #             uploaded_file = client.files.upload(
-    #                 file=audio_path,
-    #                 config=types.UploadFileConfig(
-    #                     mime_type="audio/ogg"
-    #                 )
-    #             )
-    #             break
+    deepseek_usage_total = empty_deepseek_usage()
+    deepseek_client = get_deepseek_client()  # labeling / analysis / summary
+    #keywords_list = load_keywords()
+    # KEYWORDS_FILE = os.path.join(
+    #     os.path.dirname(os.path.abspath(__file__)),
+    #     "keywords.txt"
+    # )
 
-    #         except Exception as e:
-    #             print(f"Upload Retry {attempt+1}: {e}")
-
-    #             if attempt == 2:
-    #                 raise
-
-    #             time.sleep(2)
-    #     print(">>> FILE UPLOADED, calling transcript function now", flush=True)
-    #     transcript = get_audio_transcripts_with_gemini(client, uploaded_file)
-        #transcript = whisper_transcribe(audio_path)
+    # keywords_list = load_keywords(KEYWORDS_FILE)
+    # keywords_str = ", ".join(keywords_list)
+    # print("KEYWORDS FILE:", KEYWORDS_FILE, flush=True)
+    # print("KEYWORDS FILE EXISTS:", os.path.exists(KEYWORDS_FILE), flush=True)
+    # print("LOADED KEYWORDS:", keywords_list, flush=True)
     try:
+        print(">>> STARTING BODHAN WHISPER", flush=True)
 
-        print(">>> STARTING LOCAL WHISPER", flush=True)
 
-        transcript = whisper_transcribe(audio_path)
-        print("========== WHISPER TRANSCRIPT ==========", flush=True)
+
+        transcript, bodhan_usage = whisper_transcribe(audio_path,deepseek_client)
+
+        debug_transcript("01 - RAW BODHAN", transcript)
+
+
+        transcript = merge_orphan_lines(transcript)
+
+        debug_transcript("02 - AFTER merge_orphan_lines", transcript)
+
+
+
+
+        if is_degenerate_text(transcript):
+
+            print("[DEBUG] DEGENERATE TEXT DETECTED", flush=True)
+
+            transcript = clean_degenerate_output(transcript)
+
+        debug_transcript("03 - AFTER clean_degenerate_output", transcript)
+
+
+
+
+        transcript = collapse_repeated_lines(transcript)
+
+        debug_transcript("04 - AFTER collapse_repeated_lines", transcript)
+
+
+
+
+        transcript = collapse_alternating_pairs(transcript)
+
+        debug_transcript("05 - AFTER collapse_alternating_pairs", transcript)
+
+
+
+
+        transcript = apply_corrections(transcript)
+
+        debug_transcript("06 - AFTER apply_corrections", transcript)
+
+
+
+
+        transcript, labeling_usage = label_speakers_with_deepseek(
+            deepseek_client,
+            transcript
+        )
+
+        debug_transcript("07 - AFTER DEEPSEEK LABELING", transcript)
+
+
+
+
+        transcript = fix_speaker_consistency(transcript)
+
+        debug_transcript("08 - AFTER fix_speaker_consistency", transcript)
+
+
+
+
+        transcript = collapse_alternating_filler(transcript)
+
+        debug_transcript("09 - FINAL TRANSCRIPT", transcript)
+        print("\n" + "=" * 80)
+        print("DEBUG 4 - AFTER SPEAKER LABELING")
+        print("=" * 80)
+        print(transcript)
+        print("=" * 80)
+
+        deepseek_usage_total = add_deepseek_usage(
+            deepseek_usage_total,
+            labeling_usage
+        )
+        transcript = fix_speaker_consistency(transcript)
+        transcript = collapse_alternating_filler(transcript)
+        print("========== TRANSCRIPT ==========", flush=True)
         print(transcript, flush=True)
-        print("========================================", flush=True)
-        print("WHISPER TRANSCRIPT LENGTH:", len(transcript), flush=True)
-        print(">>> LOCAL WHISPER TRANSCRIPTION COMPLETED", flush=True)
-        
+        print("=================================", flush=True)
+        print("TRANSCRIPT LENGTH:", len(transcript), flush=True)
+        print(">>> TRANSCRIPTION + LABELING COMPLETED", flush=True)
+
         if not transcript:
-            empty_token_info = {"prompt": 0, "response": 0, "thinking": 0, "total": 0}
+            empty_token_info = {
+                "bodhan_input": bodhan_usage.get("input_tokens", 0),
+                "bodhan_output": bodhan_usage.get("output_tokens", 0),
+                "bodhan_thinking": bodhan_usage.get("thinking_tokens", 0),
+                "bodhan_total": bodhan_usage.get("total_tokens", 0),
+
+                "bodhan_audio_seconds": bodhan_usage.get(
+                    "audio_seconds",
+                    0
+                ),
+
+                "bodhan_audio_minutes": bodhan_usage.get(
+                    "audio_minutes",
+                     0
+                ),
+
+                "bodhan_cost_inr": bodhan_usage.get(
+                    "cost_inr",
+                    0.0
+                ),
+
+                "bodhan_provider": bodhan_usage.get(
+                    "provider",
+                    "Bodhan"
+                ),
+                "prompt": deepseek_usage_total["input_tokens"],
+                "response": deepseek_usage_total["output_tokens"],
+                "thinking": deepseek_usage_total["thinking_tokens"],
+                "total": deepseek_usage_total["total_tokens"],
+                "deepseek_input": deepseek_usage_total["input_tokens"],
+                "deepseek_output": deepseek_usage_total["output_tokens"],
+                "deepseek_thinking": deepseek_usage_total["thinking_tokens"],
+                "deepseek_total": deepseek_usage_total["total_tokens"],
+                "deepseek_cost_usd": deepseek_usage_total["cost_usd"],
+                "deepseek_cost_inr": deepseek_usage_total["cost_inr"]
+            }
             return (
                 "No transcript generated.",
                 "",
@@ -997,95 +2817,14 @@ def analyze_audio_with_gemini(audio_path):
                 "None detected",
                 empty_token_info
             )
-
-        response_schema = {
-            "type": "object",
-            "properties": {
-                "executive_name": {"type": "string"},
-                "greetings": {"type": "array", "items": {"type": "string"}},
-                "closings": {"type": "array", "items": {"type": "string"}},
-                "customer_mood": {"type": "string", "enum": ["Frustrated", "Concerned", "Satisfied", "Neutral"]},
-                "mood_reason": {"type": "string"},
-                "executive_tone": {
-                    "type": "string",
-                    "enum": [
-                        "Helpful",
-                        "Helpful but Defensive",
-                        "Defensive",
-                        "Neutral"
-                    ]
-                },
-                "keywords": {"type": "array", "items": {"type": "string"}},
-                "business_facts": {
-                    "type": "object",
-                    "properties": {
-                        "issues": {"type": "array", "items": {"type": "string"}},
-                        "requests": {"type": "array", "items": {"type": "string"}},
-                        "actions": {"type": "array", "items": {"type": "string"}}
-                    },
-                    "required": ["issues", "requests", "actions"]
-                },
-                "other_topics": {
-                    "type": "array",
-                    "items": {"type": "string"}
-                }
-                
-
-            },
-            "required": ["executive_name", "greetings", "closings", "customer_mood", "mood_reason", "executive_tone", "keywords", "business_facts","other_topics"]
-            
-        }
-        import re
-
-        # Remove timestamps + tone labels + speaker labels
-        clean_transcript = re.sub(
-            r"\[\d{2}:\d{2}\]|\[(Loudly|Shouting|Silently|Calmly)\]",
-            "",
-            transcript,
-            flags=re.IGNORECASE
-        )
-
-        clean_transcript = re.sub(
-            r"\b(Executive|Customer)\s*:\s*",
-            "",
-            clean_transcript,
-            flags=re.IGNORECASE
-        )
-        clean_transcript = re.sub(
-            r"\b(ok|okay|बरं|hmm|sir|madam)\b",
-            "",
-            clean_transcript,
-            flags=re.IGNORECASE
-        )
-
-        # Remove repeated greetings
-        clean_transcript = re.sub(
-            r"(हॅलो\s*){2,}",
-            " ",
-            clean_transcript,
-            flags=re.IGNORECASE
-        )
-
-        clean_transcript = re.sub(
-            r"(hello\s*){2,}",
-            " ",
-            clean_transcript,
-            flags=re.IGNORECASE
-        )
-        clean_transcript = re.sub(
-            r"\s+",
-            " ",
-            clean_transcript
-        ).strip()
-
-        
-
-        prompt = f"""
-Analyze this customer support transcript.
+        clean_transcript = transcript
+        # preferred_block = ""
+        # if len(keywords_list) <= 60:
+        #     preferred_block = "Preferred keyword names:\n" + keywords_str + "\n\n"
+        prompt = f"""Analyze this customer support transcript.
 
 Transcript:
 {clean_transcript}
-
 
 Rules:
 - Executive = support person
@@ -1099,23 +2838,20 @@ Rules:
   Do NOT use these lines for business_facts, greetings, closings, customer_mood, executive_tone, or keywords —
   treat them as if they were not part of the support conversation at all.
 
-Return valid JSON only.
-
-Required fields:
+Field rules:
 
 1. executive_name:
 - Scan the ENTIRE conversation from start to end carefully — the name can appear anywhere: beginning, middle, or end of the call.
 - Case A: The customer (or anyone else) addresses the Executive by name at any point — in any language or script (Hindi/Marathi/English, Devanagari or Latin), with or without honorifics like "जी"/"सर"/"ji"/"sir".
-  Example: "Thank you Rahul", "Ravi, can you help?", "अजीत जी हेलो", "धन्यवाद अजीत सर", Sandeep 
+  Example: "Thank you Rahul", "Ravi, can you help?", "अजीत जी हेलो", "धन्यवाद अजीत सर", Sandeep
 - Case B: The Executive states their own name at any point in the call (not just the beginning) — e.g. "मेरा नाम अजीत है", "This is Rahul speaking", "अजीत बोल रहा हूं".
-- Casual, broken, or informal sentence phrasing is fine in both cases — still extract the name as long as it is clearly being used as a name (by the customer addressing the executive, OR by the executive referring to themselves).
+- Casual, broken, or informal sentence phrasing is fine in both cases — still extract the name as long as it is clearly being used as a name.
 - If a name is found under EITHER Case A or Case B anywhere in the transcript, use it as executive_name.
 - Only return "Not mentioned" if NO name is spoken anywhere in the entire conversation, by either party.
 - NEVER invent a name that is not explicitly present in the transcript.
 
 2. greetings:
 - Detect ONLY from lines with timestamp [00:00] to [00:15].
-- Example: [00:02] Executive: "Hare Krishna" → capture "Hare Krishna"
 - Ignore greetings appearing after [00:15].
 - If no clear greeting phrase is found in that window, return the first spoken line (verbatim, any language) as the greeting — never return an empty array.
 
@@ -1126,452 +2862,215 @@ Required fields:
 
 4. customer_mood:
 - "Frustrated": customer is SHOUTING, raising voice [Loudly]/[Shouting], sounds visibly annoyed/irritated,
-  or uses abusive/swear words. This is ONLY about TONE, not topic — a customer calmly reporting a problem
-  is NOT Frustrated.
+  or uses abusive/swear words. This is ONLY about TONE, not topic.
 - "Concerned": customer calmly/normally mentions that an issue is repeating, has happened before,
   or that a feature/option is missing — but WITHOUT raising voice, anger, or abusive language.
-  Normal conversational tone while describing a real, recurring problem = Concerned, not Frustrated.
-- "Neutral": calm tone throughout, normal question-answer flow, no repeated/recurring issue mentioned.
+- "Neutral": calm tone throughout, normal question-answer flow, no recurring issue mentioned.
 - "Satisfied": thanks executive, confirms issue resolved, positive closing.
 - DEFAULT to "Neutral" if no clear signal exists.
-- CRITICAL: Do NOT choose Frustrated just because the customer mentions a problem/issue/complaint —
-  only choose Frustrated if the TONE itself (shouting, loud, angry, abusive) shows it.
+- CRITICAL: Do NOT choose Frustrated just because the customer mentions a problem/issue/complaint — only choose Frustrated if the TONE itself shows it.
 
-5. mood_reason
-6. executive_tone
+5. mood_reason: explain why.
 
-    Return ONLY one of these values:
-
-    - Helpful
-    - Helpful but Defensive
-    - Defensive
-    - Neutral
+6. executive_tone: one of Helpful / Helpful but Defensive / Defensive / Neutral.
 
 
-7. keywords
-    - Select a keyword ONLY if that specific topic/feature was EXPLICITLY and CLEARLY
-      discussed in the conversation — the term itself, or a direct/obvious translation
-      of it (Hindi/Marathi), must actually be spoken.
-    - Do NOT select a keyword based on loose thematic association, general context of the
-      call (e.g. "this is a billing software support call so maybe printing came up"), or
-      because a related feature was mentioned. The specific topic itself must be concretely
-      present in the transcript.
-    - Do NOT select a keyword just because an unrelated word happens to sound similar —
-      the underlying topic must actually have been discussed, in explicit terms.
-    - When in doubt, DO NOT include it — it is better to return fewer keywords than wrong ones.
-    - If no keyword topic was clearly and explicitly discussed, return [].
+7. keywords:
+
+- Extract maximum 3 most important keywords from the conversation.
+- Generate keywords dynamically based on the actual customer issue.
+- Do not use or depend on any predefined keyword list.
+- Understand Marathi, Hindi, English and Hinglish.
+- Return keywords in English.
+- Identify the main reason for the customer's call.
+- Use meaningful business topics, software features, modules,
+  reports or customer issues as keywords.
+- Do not include names, greetings, IDs, passwords or routine
+  troubleshooting steps.
+- Do not generate multiple keywords describing the same issue.
+- Do not invent topics.
+- Never return "None", "None detected", "No keyword detected",
+  "N/A", "Not mentioned" or "null".
+- If no meaningful topic exists, return an empty array [].
+
+IMPORTANT KEYWORD ACCURACY RULES:
+
+- Identify the customer's MAIN problem, not every topic
+  or technical word mentioned in the conversation.
+
+- Distinguish between the actual customer issue and
+  troubleshooting steps suggested by the Executive.
+
+- Do not generate a keyword just because a feature or
+  module is mentioned incidentally.
+
+- Select Product Scan Issue ONLY when the customer
+  actually reports a product scanning or barcode scanning problem.
+
+- Select Reports issue ONLY when the customer reports
+  a problem with reports.
+
+- Select Bill Modification or edit ONLY when bill
+  editing or modification is the actual customer issue.
+
+- If products are printing multiple times, generate
+  keywords such as Duplicate Product Printing or
+  Order Print Issue.
+
+- Prioritize the customer's original complaint over
+  the Executive's suggested solution.
+
+- Return only keywords directly supported by the
+  customer's actual problem.
+
+8. business_facts: issues / requests / actions — split correctly (Customer requests vs Executive actions).
+
+IMPORTANT TRANSCRIPT INTERPRETATION RULE:
+- The transcript may contain Marathi, Hindi, English, Hinglish, or Marathi/Hindi spoken using English letters (Roman script).
+- Whisper may produce imperfect spelling, grammar, or phonetic transliteration.
+- Do NOT treat a sentence as unintelligible only because its spelling or grammar is imperfect.
+- If the transcript says "product scanning", "product scan", "product barcode scanning", or an equivalent clearly identifiable phrase, the issue MUST retain the word "product".
+- Example: "Product scanning is not working" -> "Product scanning not working".
+- Do NOT reduce "Product scanning not working" to "Scanning not working".
+- Preserve specific report names, module names, feature names, product names, error terms, and technical terms whenever they are reasonably identifiable from the transcript.
+- When a specific business term is slightly misspelled by Whisper but the intended term is clear from context, normalize it to the correct business term rather than removing the specificity.
+- If the transcript clearly discusses product scanning / product scan / scanning a product barcode and the issue is that it is not working, select "Product Scan Issue".
+- If the transcript clearly indicates a business issue, request, action, or outcome despite imperfect transliteration, capture it in business_facts.
+- If the transcript clearly indicates an Executive action, put it in business_facts.actions.
+- If the transcript clearly indicates a Customer request or requirement, put it in business_facts.requests.
+- If the transcript clearly indicates a problem/issue, put it in business_facts.issues.
+- Do NOT invent an issue, request, product name, technical detail, or resolution that is not supported by the transcript.
+- Do NOT mark a call as unintelligible only because the Marathi/Hindi/Hinglish is imperfectly transcribed.
+- Example: "upload ke le le report ... download karun ... solve ke le" should be interpreted using the surrounding context. If the context supports it, capture the report upload/download action and resolution-related outcome in business_facts.actions.
+
+IMPORTANT ANTI-HALLUCINATION RULES:
+
+- The transcript is the ONLY source of truth.
+- NEVER invent or assume information.
+- Do not infer a product name, company name, payment method,
+  branch name, ID, password, customer name, executive name,
+  report name, or technical term unless it is explicitly supported
+  by the transcript.
+- Do not convert unclear speech into a specific known brand or product.
+- If a word or phrase is unclear, omit it rather than guessing.
+- Every keyword MUST be supported by the transcript.
+- Every customer issue MUST be supported by the transcript.
+- Every customer request MUST be supported by the transcript.
+- Every executive action MUST be supported by the transcript.
+- If something is not clearly supported, return an empty list or
+  "Not mentioned".
+- Accuracy is more important than completeness.
 
 
-8. business_facts:
-   - issues
-   - requests
-   - actions
 
-9. other_topics:
-   - Independently identify the MAIN issue/topic/feature discussed in this call, in 1-4 short phrases,
-     regardless of whether it matches the Keywords list below.
-   - Examples: "PAN card issue", "GST number update", "login problem", "invoice mismatch".
-   - Use short, specific phrases (2-5 words each), not full sentences.
-   - This is separate from the Keywords list — capture whatever the call was actually about.
+{preferred_block}
 
+Return ONLY valid JSON (no markdown, no commentary) matching EXACTLY this shape:
 
-
-
-
-Keywords:
-{keywords_str}
+{{
+  "executive_name": "string",
+  "greetings": ["string", ...],
+  "closings": ["string", ...],
+  "customer_mood": "Frustrated" | "Concerned" | "Satisfied" | "Neutral",
+  "mood_reason": "string",
+  "executive_tone": "Helpful" | "Helpful but Defensive" | "Defensive" | "Neutral",
+  "keywords": ["string", ...],
+  "business_facts": {{
+    "issues": ["string", ...],
+    "requests": ["string", ...],
+    "actions": ["string", ...]
+  }}
+}}
 
 Output JSON only.
 """
 
-#         prompt = f"""
-# Analyze this customer support call transcript carefully.
-
-# Pay close attention to:
-# - Speaker identity
-# - Speaker consistency
-# - Role ownership
-# - Vocal cues in brackets like [Loudly], [Shouting], [Silently], [Calmly]
-
-# TRANSCRIPT:
-# {transcript}
-
-# =================================================
-# IMPORTANT ROLE IDENTIFICATION
-# =================================================
-
-# "Executive" =
-# - Support agent
-# - Company representative
-# - Person providing troubleshooting
-# - Person helping solve issue
-# - Person giving technical guidance
-
-# "Customer" =
-# - Person calling for support
-# - Person reporting issue
-# - Person asking questions
-# - Person requesting solution
-# - Person demanding complaint number or escalation
-
-# IMPORTANT:
-# Never confuse Executive and Customer.
-
-# Usually:
-
-# CUSTOMER:
-# - reports issue
-# - repeats issue
-# - explains problem
-# - shares system ID/password
-# - answers troubleshooting questions
-# - sounds frustrated
-
-# EXECUTIVE:
-# - asks for system ID/password
-# - provides troubleshooting
-# - gives instructions
-# - asks customer to keep machine connected
-# - informs callback timing
-# - provides technical guidance
-# - confirms follow-up
-
-# =================================================
-# CRITICAL ROLE ACCURACY RULES
-# =================================================
-
-# - Carefully identify WHO spoke each statement.
-# - NEVER reverse customer and executive actions.
-# - Always use transcript evidence.
-# - Never assume based on sentence structure alone.
-
-# ABSOLUTE RULE:
-
-# PERSON ASKING = requester.
-
-# PERSON PROVIDING = provider.
-
-# Examples:
-
-# WRONG:
-# "Executive requested callback after 10 minutes."
-
-# CORRECT:
-# "Customer requested callback after 10 minutes."
-
-# WRONG:
-# "Executive requested complaint number."
-
-# CORRECT:
-# "Customer requested complaint number."
-
-# WRONG:
-# "Executive requested machine remain connected."
-
-# CORRECT:
-# "Customer requested machine remain connected."
-
-# WRONG:
-# "Customer shared system ID and password."
-
-# CORRECT:
-# "Executive shared system ID and password."
-
-# =================================================
-# FIELD RULES
-# =================================================
-
-# 1. executive_name:
-# - Extract executive name ONLY if explicitly spoken.
-# - Never guess names.
-# - If not mentioned return:
-# "Not mentioned"
-
-# 2. customer_mood:
-# Analyze ONLY CUSTOMER behavior.
-
-# Angry:
-# - shouting
-# - rude tone
-# - aggressive behavior
-# - threatening complaint
-# - argumentative discussion
-
-# Frustrated:
-# - repeating issue
-# - demanding fast solution
-# - sounding impatient
-# - asking repeatedly
-# - complaint-related discussion
-# - unresolved issue frustration
-
-# Neutral:
-# - calm professional discussion
-
-# Satisfied:
-# - happy with resolution
-
-# 3. mood_reason:
-# - Clearly explain WHY customer mood was selected.
-# - Mention exact CUSTOMER behavior.
-# - NEVER describe executive behavior here.
-
-# 4. executive_tone:
-# Analyze ONLY EXECUTIVE behavior.
-
-# Possible values:
-# - Professional
-# - Helpful
-# - Calm
-# - Supportive
-# - Patient
-# - Polite
-# - Defensive
-# - Confused
-
-# IMPORTANT:
-# Never mix customer tone with executive tone.
-
-# 5. keywords:
-# ONLY extract keywords if mentioned exactly.
-
-# Allowed keywords:
-# - "Whatsapp"
-# - "PhonePe"
-# - "UPI"
-# - "Mobile Reports"
-# - "GSTR2A"
-# - "Multibranch"
-# - "Dashboard"
-# - "Analytics"
-# - "Purchase Order"
-# - "Purchase"
-# - "Barcode printing"
-# - "Label designer"
-# - "Bill designer"
-# - "User rights"
-# - "Counterwise report"
-# - "Release notes"
-# - "Price Protection"
-# - "IMEI tracking"
-# - "Bill Print"
-# - "Expiry tracking"
-# - "Interbranch IBT"
-# - "Sync Issue"
-# - "Reports issue"
-# - "Printing issue"
-# - "Product Scan Issue"
-# - "Product used by thousands of clients"
-
-# 6. short_summary:
-# Write concise professional summary.
-
-# Rules:
-# - 2 to 3 sentences only
-# - Include:
-#   * why customer called
-#   * main issue
-#   * current status / outcome
-
-# 7. summary:
-# Write detailed LONG summary.
-
-# Rules:
-# - Minimum 10 to 15 sentences
-# - Include:
-#   * why customer called
-#   * issue discussed
-#   * customer complaints
-#   * customer requests
-#   * executive explanations
-#   * troubleshooting provided
-#   * technical guidance
-#   * resolution status
-#   * pending actions
-#   * callback/follow-up
-#   * customer reaction
-#   * final outcome
-
-# IMPORTANT:
-# Do NOT make it short.
-
-# 8. business_facts:
-
-# Extract ONLY transcript-supported facts.
-
-# Maintain STRICT speaker accuracy.
-
-# Customer issues:
-# - problems reported by customer
-
-# Customer requests:
-# ONLY requests made BY CUSTOMER:
-# - complaint number request
-# - callback request
-# - urgent resolution request
-# - wait request
-# - machine connection request
-# - system ID/password request
-# - remote support request
-
-# Executive actions:
-# ONLY actions done BY EXECUTIVE:
-# - troubleshooting provided
-# - explanations provided
-# - guidance shared
-# - system ID shared
-# - password shared
-# - callback agreement
-# - follow-up confirmation
-# - escalation
-
-# IMPORTANT:
-# Split request vs action correctly.
-
-# Example:
-
-# CORRECT:
-
-# Customer request:
-# - Customer requested machine remain connected for 10 minutes.
-# - Customer requested callback after 10 minutes.
-
-# Executive action:
-# - Executive agreed to callback after 10 minutes.
-
-# WRONG:
-# - Executive requested callback after 10 minutes.
-
-# Minimum:
-# 2 to 5 detailed points whenever possible.
-
-# 9. analysis:
-# Internally analyze:
-# - customer behavior
-# - executive handling
-# - communication quality
-# - resolution quality
-
-# Ensure correct role mapping before finalizing.
-
-
-# =================================================
-# STRICT JSON RULES
-# =================================================
-
-# - Output VALID JSON only
-# - NO markdown
-# - NO explanation outside JSON
-# - NO literal newlines inside JSON strings
-# - Use \\n for line breaks
-# """
-        
         analysis_start = time.time()
         response = safe_generate(
-            client,
+            deepseek_client,
             model=ANALYSIS_MODEL,
-            contents=[prompt],
-            config=types.GenerateContentConfig( 
-                temperature=0,
-                response_mime_type="application/json",
-                response_schema=response_schema,
-                max_output_tokens=6000,
-            )
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0,
+            max_tokens=2500,
+            json_mode=True,
         )
         try:
-            # usage = response.usage_metadata
-            # prompt_tokens = getattr(usage, "prompt_token_count", 0)
-            # response_tokens = getattr(usage, "candidates_token_count", 0)
-            # thinking_tokens = getattr(usage, "thoughts_token_count", 0)
-            usage = response.usage_metadata
+            usage = response.usage
+            cost_info = calculate_deepseek_cost(usage)
 
-            cost_info = calculate_gemini_cost(usage)
 
             prompt_tokens = cost_info["input_tokens"]
             response_tokens = cost_info["output_tokens"]
             thinking_tokens = cost_info["thinking_tokens"]
+            deepseek_usage_total = add_deepseek_usage(
+                deepseek_usage_total,
+                cost_info
+            )
 
             print("\n" + "=" * 60)
-            print("GEMINI ANALYSIS COST")
+            print("DEEPSEEK ANALYSIS COST")
             print("=" * 60)
-
             print("Input Tokens    :", prompt_tokens)
             print("Output Tokens   :", response_tokens)
-            print("Thinking Tokens :", thinking_tokens)
             print("Total Tokens    :", cost_info["total_tokens"])
             print("Cost USD        : $%.6f" % cost_info["cost_usd"])
             print("Cost INR        : ₹%.4f" % cost_info["cost_inr"])
-
             print("=" * 60)
-            print("Thinking Tokens:", thinking_tokens) 
+
             total_tokens = prompt_tokens + response_tokens
 
-            print("Prompt Tokens:", prompt_tokens)
-            print("Response Tokens:", response_tokens)
-            print("Actual Total Tokens:", total_tokens)
-
-            if hasattr(usage, "total_token_count"):
-                print("SDK Total Tokens:", usage.total_token_count)
-            try:                                                             
-                finish_reason = response.candidates[0].finish_reason         
-                print("FINISH REASON:", finish_reason)                       
-            except Exception as fe:                                          
-                print("Could not get finish_reason:", fe)     
+            try:
+                finish_reason = response.choices[0].finish_reason
+                print("FINISH REASON:", finish_reason)
+            except Exception as fe:
+                print("Could not get finish_reason:", fe)
 
         except Exception as e:
             print("Token usage not available:", e)
+            prompt_tokens = response_tokens = thinking_tokens = total_tokens = 0
+
+        print("ANALYSIS CONTENT LENGTH:",
+            len(response.choices[0].message.content or ""))
+
+        print("ANALYSIS FINISH REASON:",
+            response.choices[0].finish_reason)
 
 
         
-        raw_output = (response.text or "").strip()
-        print(f"[TIMER] Analysis (Gemini) took {time.time() - analysis_start:.2f} seconds")
-        save_text(raw_output, audio_path, "_gemini_raw_response.txt")
+
+
+        raw_output = (response.choices[0].message.content or "").strip()
+        print(f"[TIMER] Analysis (DeepSeek) took {time.time() - analysis_start:.2f} seconds")
+        save_text(raw_output, audio_path, "_deepseek_raw_response.txt")
         try:
-            print("\nRAW GEMINI OUTPUT:\n")
+            print("\nRAW DEEPSEEK OUTPUT:\n")
             print(raw_output)
             print("\nEND OUTPUT\n")
         except UnicodeEncodeError:
-            print("\nRAW GEMINI OUTPUT: (contains non-ASCII characters, skipped)\n")
+            print("\nRAW DEEPSEEK OUTPUT: (contains non-ASCII characters, skipped)\n")
 
-        print("HAS SHORT SUMMARY:", '"short_summary"' in raw_output)
-        print("HAS LONG SUMMARY:", '"summary"' in raw_output)
+        print("HAS BUSINESS FACTS:", '"business_facts"' in raw_output)
         data = robust_parse(raw_output)
         print("RAW EXECUTIVE TONE:", repr(data.get("executive_tone")))
         tone = data.get("executive_tone", "").lower()
 
         if "defensive" in tone:
             data["executive_tone"] = "Helpful but Defensive"
-
         elif tone:
             data["executive_tone"] = "Helpful"
-
         else:
             data["executive_tone"] = "Neutral"
-        # Sanity: default to Neutral if no strong signals
-        # Sanity check: only override if mood contradicts transcript evidence
-        
 
-        # TONE-based anger signals ONLY (shouting/loud/abusive) — these are
-        # the ONLY things that should ever produce "Frustrated".
         mood = data.get("customer_mood", "Neutral")
-        transcript_lower = transcript.lower()
         customer_text_lower = extract_speaker_text(transcript, "Customer")
 
-        # TONE-based anger signals ONLY (shouting/abusive) — "[loudly]"
-        # deliberately EXCLUDED: loud/insistent speech (e.g. customer
-        # confirming loudly so they're heard, or repeating a problem
-        # urgently) is NOT the same as anger, and was causing false
-        # "Frustrated" results.
         anger_tone_signals = [
             "[shouting]",
             "चिडलो", "चिडले", "गुस्सा", "गुस्से में",
             "irritated", "angry", "annoyed", "fed up",
-            # Add specific abusive/swear words used in your calls here:
             "bakwas", "बकवास", "नालायक", "नालायक आहेस",
         ]
 
-        # TOPIC signals — customer describing a recurring problem, but in a
-        # normal tone. These should map to "Concerned", never "Frustrated".
         recurring_issue_signals = [
             "again", "every time", "always", "still not", "not working",
             "2 months", "3 months", "again and again", "complaint number",
@@ -1582,35 +3081,9 @@ Output JSON only.
             "feature नाहीये", "option नाहीये", "missing",
         ]
 
-        # Check anger ONLY within the Customer's own dialogue (not the
-        # Executive's, not [Aside] background chatter) — otherwise the
-        # Executive's tone or an unrelated remark could wrongly flag the
-        # customer as angry.
-        # has_anger_tone = any(s in customer_text_lower for s in anger_tone_signals)
-        # has_recurring_issue = any(s in customer_text_lower for s in recurring_issue_signals)
-
-        # if has_anger_tone:
-        #     # Tone evidence present -> Frustrated, no matter what the topic is.
-        #     data["customer_mood"] = "Frustrated"
-        #     data["mood_reason"] = "Customer's tone showed shouting/anger/abusive language during the call."
-        # elif mood == "Frustrated" and not has_anger_tone:
-        #     # Model said Frustrated but no real tone evidence -> downgrade.
-        #     if has_recurring_issue:
-        #         data["customer_mood"] = "Concerned"
-        #         data["mood_reason"] = "Customer calmly reported a recurring issue or missing feature, without anger."
-        #     else:
-        #         data["customer_mood"] = "Neutral"
-        #         data["mood_reason"] = "Customer tone was calm throughout the call."
-        # elif mood == "Concerned" and not has_recurring_issue:
-        #     # Model said Concerned but transcript doesn't support a recurring issue -> Neutral.
-        #     data["customer_mood"] = "Neutral"
-        #     data["mood_reason"] = "No recurring issue or complaint detected in transcript."
-        MIN_CUSTOMER_CHARS = 15  # need this much Customer-labeled text to trust the mood check
+        MIN_CUSTOMER_CHARS = 15
 
         if len(customer_text_lower.strip()) < MIN_CUSTOMER_CHARS:
-            # Speaker separation didn't give us enough Customer-labeled lines,
-            # so we genuinely can't judge mood — say so clearly instead of
-            # quietly defaulting to "Neutral".
             data["customer_mood"] = "Mood Not Determined"
             data["mood_reason"] = (
                 "Customer's speech could not be clearly separated from the "
@@ -1635,6 +3108,7 @@ Output JSON only.
             elif mood == "Concerned" and not has_recurring_issue:
                 data["customer_mood"] = "Neutral"
                 data["mood_reason"] = "No recurring issue or complaint detected in transcript."
+
         # -------- GREETINGS / CLOSINGS SANITY FILTER --------
         VALID_GREETINGS = {
             "hello", "hi", "good morning",
@@ -1645,57 +3119,11 @@ Output JSON only.
             "jai shree krishna", "जय श्री कृष्ण",
             "jai hind",
             "radhe radhe",
-            
             "गुड मॉर्निंग", "गूड मॉर्निंग", "गुड मार्निंग",
             "गुड आफ्टरनून", "गूड आफ्टरनून",
             "गुड इव्हिनिंग", "गूड इव्हिनिंग", "गुड इवनिंग"
         }
 
-    #     VALID_CLOSINGS = {
-    #         "ok", "okay", "ठीक आहे",
-    #         "ओके", "thank you",
-    #         "thanks", "bye"
-    #     }
-
-    #     HONORIFICS = {"sir", "madam", "सर", "मॅडम"}
-
-    #     clean_greetings = []
-    #     for g in data.get("greetings", []):
-    #         g_lower = g.lower().strip()
-    #         words = g_lower.split()
-
-    #         if len(words) > 4:
-    #             continue
-
-    
-    #         core = " ".join(w for w in words if w not in HONORIFICS).strip()
-
-    #         if core in VALID_GREETINGS:
-    #             clean_greetings.append(core)        # "hare krishna" ✅
-    #         elif words[0] in VALID_GREETINGS:
-    #             clean_greetings.append(words[0])    # "hello sir" → "hello" ✅
-
-    #     data["greetings"] = list(dict.fromkeys(clean_greetings))[:3]
-
-    #     clean_closings = []
-
-    #     for c in data.get("closings", []):
-    #         c_lower = c.lower().strip()
-
-    #         words = c_lower.split()
-
-    # # ignore long sentences in closing
-    #         if len(words) > 5:
-    #             continue
-
-    #         if (
-    #             c_lower in VALID_CLOSINGS or
-    #             any(c_lower.startswith(x) for x in VALID_CLOSINGS)
-    #         ):
-    #             clean_closings.append(c.strip())
-
-        
-    #     data["closings"] = list(dict.fromkeys(clean_closings))[:3]
         VALID_CLOSINGS = {
             "ok", "okay", "ठीक आहे",
             "ओके", "thank you",
@@ -1711,26 +3139,20 @@ Output JSON only.
         )
 
         def match_greeting_phrases(words):
-            """Scan the word list and PICK OUT any known greeting phrases
-            wherever they appear (e.g. ['hello','good','morning','mam',
-            'retailware','se','ginna','bolte'] -> ['hello', 'good morning']).
-            Unrecognized words (names, honorifics, sentence continuation)
-            are simply skipped instead of discarding the whole line."""
             matched = []
             i, n = 0, len(words)
             while i < n:
                 matched_here = False
                 for phrase in GREETING_PHRASE_TUPLES:
                     plen = len(phrase)
-                    if plen and tuple(words[i:i+plen]) == phrase:
+                    if plen and tuple(words[i:i + plen]) == phrase:
                         matched.append(" ".join(phrase))
                         i += plen
                         matched_here = True
                         break
                 if not matched_here:
-                    i += 1  # skip this unrecognized word, keep scanning
+                    i += 1
             return matched if matched else None
-        
 
         def _clean_word(w):
             return w.strip(" ।.,!?\"'()")
@@ -1749,28 +3171,21 @@ Output JSON only.
 
             matched = match_greeting_phrases(core_words)
             if matched:
-                clean_greetings.extend(matched)            
+                clean_greetings.extend(matched)
             elif core_words[0] in VALID_GREETINGS:
-                clean_greetings.append(core_words[0])        
+                clean_greetings.append(core_words[0])
 
         if not clean_greetings:
-            # No valid greeting phrase matched — default to "Hello" instead
-            # of falling back to a raw, unfiltered spoken line.
             clean_greetings = ["Hello"]
 
         data["greetings"] = list(dict.fromkeys(clean_greetings))[:5]
 
         clean_closings = []
-
         for c in data.get("closings", []):
             c_lower = _clean_word(c.lower().strip())
-
             words = c_lower.split()
-
-    # ignore long sentences in closing
             if len(words) > 5 or not words:
                 continue
-
             if (
                 c_lower in VALID_CLOSINGS or
                 any(c_lower.startswith(x) for x in VALID_CLOSINGS)
@@ -1779,66 +3194,480 @@ Output JSON only.
 
         data["closings"] = list(dict.fromkeys(clean_closings))[:3]
 
-        import difflib
+        # transcript_lower = transcript.lower()
+        # def keyword_match(kw, transcript_text, fuzzy_threshold=0.82, proximity=30):
+        #     kw_norm = kw.lower().strip()
+        #     text_norm = transcript_text.lower().strip()
 
-        transcript_lower = transcript.lower()
-        transcript_words = set(re.split(r'\W+', transcript_lower))
+        #     if not kw_norm or not text_norm:
+        #         return False
 
-        def keyword_match(kw, max_gap_chars=30):
-            """A multi-word keyword only matches if ALL its words appear close
-            together (within max_gap_chars characters of each other, any order) —
-            not just anywhere, independently, in the whole transcript."""
-            from itertools import permutations
+        #     if kw_norm in text_norm:
+        #         return True
 
-            kw_lower = kw.lower().strip()
-            if kw_lower in transcript_lower:
-                return True
+        #     keyword_words = [w for w in re.split(r'\W+', kw_norm) if w]
+        #     transcript_words = [w for w in re.split(r'\W+', text_norm) if w]
 
-            words = [w for w in re.split(r'\W+', kw_lower) if len(w) > 2]
-            if len(words) < 2:
-                return False
+        #     if not keyword_words:
+        #         return False
 
-            for perm in permutations(words):
-                pattern = (r'\b.{0,' + str(max_gap_chars) + r'}\b').join(
-                    re.escape(w) for w in perm
-                )
-                if re.search(pattern, transcript_lower, re.DOTALL):
-                    return True
+        #     def word_matches(keyword_word, transcript_word):
+        #         if len(keyword_word) <= 3:
+        #             return keyword_word == transcript_word
+        #         ratio = difflib.SequenceMatcher(None, keyword_word, transcript_word).ratio()
+        #         return ratio >= fuzzy_threshold
 
-            return False
+        #     if len(keyword_words) == 1:
+        #         keyword_word = keyword_words[0]
+        #         return keyword_word in transcript_words
 
-        detected_keywords = [kw for kw in keywords_list if keyword_match(kw)]
+        #     positions_per_word = []
+        #     for keyword_word in keyword_words:
+        #         positions = [
+        #             i for i, transcript_word in enumerate(transcript_words)
+        #             if word_matches(keyword_word, transcript_word)
+        #         ]
+        #         if not positions:
+        #             return False
+        #         positions_per_word.append(positions)
+
+        #     for combo in itertools.product(*positions_per_word):
+        #         if max(combo) - min(combo) <= proximity:
+        #             return True
+
+        #     return False
+
+
+        # def keyword_match(kw, transcript_text, fuzzy_threshold=0.82):
+        #     """
+        #         Match a keyword against the Whisper transcript.
+
+        #         Supports:
+        #         - Exact phrase
+        #         - Small spelling mistakes
+        #         - Whisper variations
+
+        #         Example:
+        #         Loss Sale Report
+        #         Lost Sale Report
+        #         Last Sale Report
+
+        #         All can match the canonical keyword:
+        #         Loss Sale Report
+        #     """
+
+        #     kw_norm = kw.lower().strip()
+        #     text_norm = transcript_text.lower().strip()
+
+        #     if not kw_norm or not text_norm:
+        #         return False
+
+
+        #     if kw_norm in text_norm:
+        #         return True
+
+    
+        #     keyword_words = [
+        #         w for w in re.split(r'\W+', kw_norm)
+        #         if w
+        #     ]
+
+        #     transcript_words = [
+        #         w for w in re.split(r'\W+', text_norm)
+        #         if w
+        #     ]
+
+        #     if not keyword_words:
+        #         return False
+
+    
+        #     if len(keyword_words) == 1:
+        #         keyword_word = keyword_words[0]
+
+        #         # Single-word keywords must be explicitly present.
+        #         # Do NOT use fuzzy matching because it creates random keywords.
+        #         return keyword_word in transcript_words
+
+
+        #     window_size = len(keyword_words)
+
+        #     for i in range(
+        #         len(transcript_words) - window_size + 1
+        #     ):
+
+        #         window = transcript_words[
+        #             i:i + window_size
+        #         ]
+
+        #         match_count = 0
+
+        #         for keyword_word, transcript_word in zip(
+        #             keyword_words,
+        #             window
+        #         ):
+
+            
+        #             if len(keyword_word) <= 3:
+
+        #                 if keyword_word == transcript_word:
+        #                     match_count += 1
+
+        #             else:
+
+        #                 ratio = difflib.SequenceMatcher(
+        #                     None,
+        #                     keyword_word,
+        #                     transcript_word
+        #                 ).ratio()
+
+        #                 if ratio >= fuzzy_threshold:
+        #                     match_count += 1
+
+        #         if match_count == len(keyword_words):
+        #             return True
+
+        #     return False
+
+        #detected_keywords = [kw for kw in keywords_list if keyword_match(kw)]
+        # detected_keywords = [
+        #     kw for kw in keywords_list
+        #     if keyword_match(kw, transcript)
+        # ]
+        # print("\n========== KEYWORD DEBUG ==========")
+        # print("TRANSCRIPT:")
+        # print(transcript)
+
+        # print("\nKEYWORDS LIST:")
+        # print(keywords_list)
+
+        # print("\nDETECTED KEYWORDS:")
+        # print(detected_keywords)
+
+        # print("===================================\n")
+
+
+
+        # keywords_list_lower = {
+        #     k.lower().strip(): k
+        #     for k in keywords_list
+        # }
+
+        # model_keywords = []
+
+        # for k in data.get("keywords", []):
+        #     if not isinstance(k, str):
+        #         continue
+
+        #     k_clean = k.strip().lower()
+
+        #     if k_clean in keywords_list_lower:
+        #         model_keywords.append(
+        #             keywords_list_lower[k_clean]
+        #         )
+
+
+
+        # detected_keywords = [
+        #     kw
+        #     for kw in keywords_list
+        #     if keyword_match(kw, transcript)
+        # ]
+
+
+        # print("\n========== KEYWORD DEBUG ==========")
+
+        # print("TRANSCRIPT:")
+        # print(transcript)
+
+        # print("\nKEYWORDS LIST:")
+        # print(keywords_list)
+
+        # print("\nDEEPSEEK KEYWORDS:")
+        # print(data.get("keywords", []))
+
+        # print("\nDIRECT MATCH KEYWORDS:")
+        # print(detected_keywords)
+
+
+
+        # # final_keywords = list(
+        # #     dict.fromkeys(
+        # #         model_keywords + detected_keywords
+        # #     )
+        # # )
+
+        # # if not final_keywords:
+        # #     final_keywords = [
+        # #         "No matching keyword detected"
+        # #     ]
+
+        # # data["keywords"] = final_keywords
+        # final_keywords = list(
+        #     dict.fromkeys(model_keywords + detected_keywords)
+        # )
+
+        # # Fallback 1: list madhe match nahi zala tar LLM ne kadhlele call che topics vapra
+        # if not final_keywords:
+        #     topics = data.get("other_topics", [])
+        #     if isinstance(topics, str):
+        #         topics = [topics]
+        #     topics = [t.strip() for t in topics if isinstance(t, str) and t.strip()]
+        #     final_keywords = topics[:4]
+
+        # # Fallback 2: kahich nahi sapadla (khup chhoti/ajibat call)
+        # if not final_keywords:
+        #     final_keywords = ["General query"]
+
+        # data["keywords"] = final_keywords
+        # print("\nFINAL KEYWORDS:", final_keywords)
+        # print("\nFINAL KEYWORDS:")
+        # print(final_keywords)
+
+        # print("===================================\n")
+
+        # if not final_keywords:
+        #     final_keywords = ["No matching keyword detected"]
+
+        # data["keywords"] = final_keywords
+
+
+                # ---------- KEYWORDS ----------
+        # canon = {k.lower().strip(): k for k in keywords_list}
+
+        # raw_kws = data.get("keywords", [])
+        # if isinstance(raw_kws, str):
+        #     raw_kws = [raw_kws]
+
+        # final_keywords = []
+        # for k in raw_kws:
+        #     if not isinstance(k, str):
+        #         continue
+        #     k = k.strip().strip(".,;:-")
+        #     if not k or len(k) > 60:
+        #         continue
+        #     if k.lower() in ("none", "n/a", "not mentioned", "none detected"):
+        #         continue
+        #     final_keywords.append(canon.get(k.lower(), k))
+
+        # final_keywords = list(dict.fromkeys(final_keywords))[:3]
+
+        # if not final_keywords:
+        #     final_keywords = ["General query"]
+        
+        # ---------- KEYWORDS ----------
+        # canon = {k.lower().strip(): k for k in keywords_list}
+
+        # raw_kws = data.get("keywords", [])
+        # if isinstance(raw_kws, str):
+        #     raw_kws = [raw_kws]
+
+        # excluded_patterns = [
+        #     r"\bultraviewer\b",
+        #     r"\banydesk\b",
+        #     r"\bteamviewer\b",
+        #     r"\bserver\s*id\b",
+        #     r"\bsystem\s*id\b",
+        #     r"\buser\s*id\b",
+        #     r"\bpassword\b",
+        #     r"\bserver\s*connection\b",
+        #     r"\bremote\s*connection\b",
+        #     r"\bremote\s*access\s*id\b",
+        # ]
+        # def is_valid_keyword(keyword):
+        #     if not isinstance(keyword, str):
+        # return False
+
+        # final_keywords = []
+
+        # for k in raw_kws:
+        #     if not isinstance(k, str):
+        #         continue
+
+        #     k = k.strip().strip(".,;:-")
+        #     if not k or len(k) > 60:
+        #         continue
+
+        #     if k.lower() in (
+        #         "none", "n/a", "not mentioned",
+        #         "none detected", "general query"
+        #     ):
+        #         continue
+
+        #     if any(
+        #         re.search(pattern, k, re.IGNORECASE)
+        #         for pattern in excluded_patterns
+        #     ):
+        #         continue
+
+        #     keyword = canon.get(k.lower(), k)
+
+        #     if keyword.lower() not in {
+        #         item.lower() for item in final_keywords
+        #     }:
+        #         final_keywords.append(keyword)
+
+        # final_keywords = final_keywords[:3]
+
+
+        # data["keywords"] = final_keywords
 
         
 
-        # bring in Gemini's own semantic picks too, but only trust ones
-        # that actually exist in the master keyword list (no hallucinated labels)
-        keywords_list_lower = {k.lower(): k for k in keywords_list}
-        model_keywords = [
-            keywords_list_lower[k.lower()]
-            for k in data.get("keywords", [])
-            if k.lower() in keywords_list_lower
-            and keyword_match(keywords_list_lower[k.lower()])   # verify transcript actually supports it
+        # canon = {k.lower().strip(): k for k in keywords_list}
+
+        # transcript_text = transcript if isinstance(transcript, str) else ""
+
+        # matched_keywords = []
+        # for preferred in keywords_list:
+        #     if not isinstance(preferred, str):
+        #         continue
+
+        #     preferred = preferred.strip()
+        #     if not preferred:
+        #         continue
+
+        #     if re.search(re.escape(preferred), transcript_text, re.IGNORECASE):
+        #         matched_keywords.append(preferred)
+
+
+        # raw_kws = data.get("keywords", [])
+        # if isinstance(raw_kws, str):
+        #     raw_kws = [raw_kws]
+        # if not isinstance(raw_kws, list):
+        #     raw_kws = []
+
+        # excluded_patterns = [
+        #     r"\bultraviewer\b",
+        #     r"\banydesk\b",
+        #     r"\bteamviewer\b",
+        #     r"\bserver\s*id\b",
+        #     r"\bsystem\s*id\b",
+        #     r"\buser\s*id\b",
+        #     r"\bpassword\b",
+        #     r"\bserver\s*connection\b",
+        #     r"\bremote\s*connection\b",
+        #     r"\bremote\s*access\s*id\b",
+        # ]
+
+        # source_keywords = matched_keywords if matched_keywords else raw_kws
+
+        # final_keywords = []
+        # for k in source_keywords:
+        #     if not isinstance(k, str):
+        #         continue
+
+        #     k = k.strip().strip(".,;:-")
+
+        #     if not k or len(k) > 60:
+        #         continue
+
+        #     if k.lower() in (
+        #         "none", "n/a", "not mentioned",
+        #         "none detected", "general query"
+        #     ):
+        #         continue
+
+        #     if any(
+        #         re.search(pattern, k, re.IGNORECASE)
+        #         for pattern in excluded_patterns
+        #     ):
+        #         continue
+
+        #     keyword = canon.get(k.lower(), k)
+
+        #     if keyword.lower() not in {
+        #         item.lower() for item in final_keywords
+        #     }:
+        #         final_keywords.append(keyword)
+
+        # final_keywords = final_keywords[:3]
+        # data["keywords"] = final_keywords
+        # =====================================================
+
+        raw_kws = data.get("keywords", [])
+
+        if isinstance(raw_kws, str):
+            raw_kws = [raw_kws]
+
+        if not isinstance(raw_kws, list):
+            raw_kws = []
+
+        excluded_patterns = [
+            r"\bultraviewer\b",
+            r"\banydesk\b",
+            r"\bteamviewer\b",
+            r"\bserver\s*id\b",
+            r"\bsystem\s*id\b",
+            r"\buser\s*id\b",
+            r"\bpassword\b",
+            r"\bserver\s*connection\b",
+            r"\bremote\s*connection\b",
+            r"\bremote\s*access\s*id\b",
         ]
 
-        final_keywords = list(dict.fromkeys(model_keywords + detected_keywords))
+        blocked_keywords = {
+            "none",
+            "n/a",
+            "not mentioned",
+            "none detected",
+            "no keyword detected",
+            "no matching keyword detected",
+            "null",
+            "undefined",
+            "general query",
+            "general support",
+        }
+
+        inal_keywords = []
+
+        for k in raw_kws:
+
+            if not isinstance(k, str):
+                continue
+
+            k = k.strip().strip(".,;:-")
+
+            if not k or len(k) > 60:
+                continue
+
+            if k.lower() in blocked_keywords:
+                continue
+
+            if any(
+                re.search(pattern, k, re.IGNORECASE)
+                for pattern in excluded_patterns
+            ):
+                continue
+
+            if k.lower() not in [
+                item.lower() for item in final_keywords
+            ]:
+                final_keywords.append(k)
+
+        final_keywords = final_keywords[:3]
+
 
         if not final_keywords:
-            final_keywords = ["No matching keyword detected"]
+            final_keywords = ["General Support"]
 
         data["keywords"] = final_keywords
 
-        facts = data.get("business_facts", {})
+        print("DYNAMIC KEYWORDS:", final_keywords, flush=True)
 
+
+        print("FINAL KEYWORDS:", final_keywords, flush=True)
+        facts = data.get("business_facts", {})
+        print("\n========== BUSINESS FACTS DEBUG ==========")
+        print(json.dumps(facts, ensure_ascii=False, indent=2))
+        print("===========================================\n")
         requests = facts.get("requests", [])
         actions = facts.get("actions", [])
 
         fixed_requests = []
-        fixed_actions = []              
+        fixed_actions = []
 
         for item in requests:
             text = item.lower()
-
 
             if any(x in text for x in [
                 "callback after 10",
@@ -1857,12 +3686,9 @@ Output JSON only.
 
             fixed_requests.append(item)
 
-
         for item in actions:
             text = item.lower()
 
-
-    # correct: executive asked for credentials
             if any(x in text for x in [
                 "asked for system id",
                 "requested system id",
@@ -1879,15 +3705,12 @@ Output JSON only.
         facts["actions"] = list(dict.fromkeys(fixed_actions))
 
         data["business_facts"] = facts
-        
-       
+
         # --- Prefer known-name matching (reliable, standardized spelling) ---
         known_name = detect_known_executive(transcript)
         if known_name:
             data["executive_name"] = known_name
         else:
-            # No known name matched — verify Gemini's own extraction actually
-            # appears in the transcript before trusting it (blocks hallucination)
             name = data.get("executive_name", "Not mentioned")
             if name and name.lower() not in ["not mentioned", "not detected", "n/a"]:
                 if name.lower() in transcript.lower():
@@ -1897,26 +3720,21 @@ Output JSON only.
             else:
                 data["executive_name"] = "Not mentioned"
 
-        def to_s(v): return ", ".join(v) if isinstance(v, list) and v else str(v or "None detected")
+        def to_s(v):
+            return ", ".join(v) if isinstance(v, list) and v else str(v or "None detected")
 
         customer_mood = data.get("customer_mood", "Neutral")
         mood_reason = data.get("mood_reason", "N/A")
         executive_tone = data.get("executive_tone", "Normal")
-
-        # analysis_text = f"Customer Mood: {data.get('customer_mood', 'Neutral')} ({data.get('mood_reason', 'N/A')})\n"
-        # analysis_text += f"Executive Name: {data.get('executive_name', 'Not mentioned')}\n"
-        # analysis_text += f"Greetings: {to_s(data.get('greetings'))}\n"
-        # analysis_text += f"Closings: {to_s(data.get('closings'))}\n"
-        # analysis_text += f"Executive Tone: {data.get('executive_tone', 'Normal')}"
 
         analysis_text = f"Customer Mood: {customer_mood} ({mood_reason})\n"
         analysis_text += f"Executive Name: {data.get('executive_name', 'Not mentioned')}\n"
         analysis_text += f"Greetings: {to_s(data.get('greetings'))}\n"
         analysis_text += f"Closings: {to_s(data.get('closings'))}\n"
         analysis_text += f"Executive Tone: {executive_tone}"
-        
-        short_summary, long_summary = generate_detailed_summary(
-            client,
+
+        short_summary, long_summary, summary_usage = generate_detailed_summary(
+            deepseek_client,
             clean_transcript,
             data.get("business_facts", {}),
             data.get("executive_name", "Not mentioned"),
@@ -1924,22 +3742,73 @@ Output JSON only.
             mood_reason
         )
 
+        deepseek_usage_total = add_deepseek_usage(
+            deepseek_usage_total,
+            summary_usage
+        )
         combined_summary = (
             "SHORT SUMMARY\n"
-            + "="*50
+            + "=" * 50
             + "\n"
             + short_summary
             + "\n\nLONG SUMMARY\n"
-            + "="*50
+            + "=" * 50
             + "\n"
             + long_summary
         )
         print(f"[TIMER] TOTAL analyze_audio_with_gemini took {time.time() - total_start:.2f} seconds")
         token_info = {
-            "prompt": prompt_tokens,
-            "response": response_tokens,
-            "thinking": thinking_tokens,
-            "total": total_tokens
+            "prompt": deepseek_usage_total["input_tokens"],
+            "response": deepseek_usage_total["output_tokens"],
+            "thinking": deepseek_usage_total["thinking_tokens"],
+            "total": deepseek_usage_total["total_tokens"],
+
+            "deepseek_input": deepseek_usage_total["input_tokens"],
+            "deepseek_output": deepseek_usage_total["output_tokens"],
+            "deepseek_thinking": deepseek_usage_total["thinking_tokens"],
+            "deepseek_total": deepseek_usage_total["total_tokens"],
+            "deepseek_cost_usd": deepseek_usage_total["cost_usd"],
+            "deepseek_cost_inr": deepseek_usage_total["cost_inr"],
+
+             "bodhan_input": bodhan_usage.get(
+                "input_tokens",
+                0
+            ),
+
+            "bodhan_output": bodhan_usage.get(
+                "output_tokens",
+                0
+            ),
+
+            "bodhan_thinking": bodhan_usage.get(
+                "thinking_tokens",
+                0
+            ),
+
+            "bodhan_total": bodhan_usage.get(
+                "total_tokens",
+                0
+            ),
+
+            "bodhan_audio_seconds": bodhan_usage.get(
+                "audio_seconds",
+                0
+                ),
+
+            "bodhan_audio_minutes": bodhan_usage.get(
+                "audio_minutes",
+                0
+            ),
+
+            "bodhan_cost_inr": bodhan_usage.get(
+                "cost_inr",
+                0.0
+            ),
+
+            "bodhan_provider": bodhan_usage.get(
+                "provider",
+                "Bodhan"
+            )
         }
         return (
             transcript,
@@ -1952,14 +3821,15 @@ Output JSON only.
         )
     finally:
         pass
+
+
 def robust_parse(raw):
     try:
-        return parse_gemini_json(raw)
-    except:
+        return parse_llm_json(raw)
+    except Exception:
         try:
             return json.loads(clean_json_string(raw))
-        except:
-            import re
+        except Exception:
             def get_s(k):
                 return (
                     re.findall(rf'"{k}"\s*:\s*"(.*?)"', raw, re.DOTALL)
@@ -1968,8 +3838,10 @@ def robust_parse(raw):
 
             def get_a(k):
                 m = re.search(rf'"{k}"\s*:\s*\[(.*?)\]', raw, re.DOTALL)
-                if m: return [x.strip().strip('"').strip("'") for x in m.group(1).split(",") if x.strip()]
+                if m:
+                    return [x.strip().strip('"').strip("'") for x in m.group(1).split(",") if x.strip()]
                 return []
+
             return {
                 "executive_name": get_s("executive_name"),
                 "greetings": get_a("greetings"),
@@ -1978,24 +3850,31 @@ def robust_parse(raw):
                 "mood_reason": get_s("mood_reason"),
                 "executive_tone": get_s("executive_tone"),
                 "keywords": get_a("keywords"),
-
                 "business_facts": {
                     "issues": get_a("issues"),
                     "requests": get_a("requests"),
                     "actions": get_a("actions")
                 },
-
                 "short_summary": get_s("short_summary"),
                 "summary": get_s("summary")
             }
 
 
 def save_transcript(transcript, audio_path):
-    with open(os.path.splitext(audio_path)[0] + "_transcript.txt", "w", encoding="utf-8") as f: f.write(transcript)
+    with open(os.path.splitext(audio_path)[0] + "_transcript.txt", "w", encoding="utf-8") as f:
+        f.write(transcript)
+
 
 def save_text(text, audio_path, suffix):
-    with open(os.path.splitext(audio_path)[0] + suffix, "w", encoding="utf-8") as f: f.write(text)
+    with open(os.path.splitext(audio_path)[0] + suffix, "w", encoding="utf-8") as f:
+        f.write(text)
+
 
 def save_summary(summary, analysis, facts, keywords, audio_path):
     with open(os.path.splitext(audio_path)[0] + "_summary.txt", "w", encoding="utf-8") as f:
-        f.write("="*50 + "\nANALYSIS\n" + "="*50 + f"\n\n{analysis}\n\n" + "="*50 + "\nKEYWORDS IDENTIFIED\n" + "="*50 + f"\n\n{keywords}\n\n" + "="*50 + "\nBUSINESS FACTS\n" + "="*50 + f"\n\n{facts}\n\n" + "="*50 + "\nSUMMARY\n" + "="*50 + f"\n\n{summary}")
+        f.write(
+            "=" * 50 + "\nANALYSIS\n" + "=" * 50 + f"\n\n{analysis}\n\n"
+            + "=" * 50 + "\nKEYWORDS IDENTIFIED\n" + "=" * 50 + f"\n\n{keywords}\n\n"
+            + "=" * 50 + "\nBUSINESS FACTS\n" + "=" * 50 + f"\n\n{facts}\n\n"
+            + "=" * 50 + "\nSUMMARY\n" + "=" * 50 + f"\n\n{summary}"
+        )
