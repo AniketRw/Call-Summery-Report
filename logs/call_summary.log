@@ -1,159 +1,346 @@
-2026-11-06 10:54:06 | INFO | === APP STARTED ===
-2026-11-06 10:54:07 | INFO | [DEBUG] TESTNEW FILE LOADED FROM: D:\WorkSpace_Sunilpant\Call Summery\testnew.py
-2026-11-06 10:54:07 | INFO | === TESTNEW IMPORTED ===
-2026-11-06 10:54:07 | INFO | ==================================================
-2026-11-06 10:54:07 | INFO | Call Summary Web App is ACTIVE
-2026-11-06 10:54:07 | INFO | Local access: http://127.0.0.1:8080
-2026-11-06 10:54:07 | INFO | LAN access: http://192.168.200.14:8080
-2026-11-06 10:54:07 | INFO | ==================================================
-2026-11-06 10:54:07 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
-2026-11-06 10:57:39 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792904049.6201-100.wav Content-Type='audio/x-wav'
-2026-11-06 10:57:39 | INFO | [DOWNLOAD] Saved 108204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792904049.6201-100.wav
-2026-11-06 10:57:49 | ERROR | Summary generation failed: local variable 'final_keywords' referenced before assignment
+2026-08-31 12:21:17 | INFO | === APP STARTED ===
+2026-08-31 12:24:47 | INFO | === APP STARTED ===
+2026-08-31 12:25:19 | INFO | === APP STARTED ===
+2026-08-31 12:25:21 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 12:25:21 | INFO | ==================================================
+2026-08-31 12:25:21 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 12:25:21 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 12:25:21 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 12:25:21 | INFO | ==================================================
+2026-08-31 12:25:21 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
+2026-08-31 12:25:40 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788155870.141205-17.wav Content-Type='audio/x-wav'
+2026-08-31 12:25:41 | INFO | [DOWNLOAD] Saved 4570284 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788155870.141205-17.wav
+2026-08-31 12:25:54 | INFO | DEBUG: Received GET request for /
+2026-08-31 12:25:55 | INFO | DEBUG: Received GET request for /logo.png
+2026-08-31 12:25:55 | INFO | DEBUG: Received GET request for /favicon.ico
+2026-08-31 12:25:58 | ERROR | Summary generation failed: Please choose an audio file or paste an audio URL.
 Traceback (most recent call last):
-  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1618, in handle_summarize
-    results = testnew.analyze_audio_with_gemini(converted_file)
-  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 3736, in analyze_audio_with_gemini
-    final_keywords = final_keywords[:3]
-UnboundLocalError: local variable 'final_keywords' referenced before assignment
-2026-11-06 10:57:49 | INFO | [HTTP] "POST /summarize HTTP/1.1" 500 -
-2026-11-06 10:57:51 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792904049.6201-100.wav Content-Type='audio/x-wav'
-2026-11-06 10:57:51 | INFO | [DOWNLOAD] Saved 108204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792904049.6201-100.wav
-2026-11-06 10:57:57 | ERROR | Summary generation failed: local variable 'final_keywords' referenced before assignment
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1303, in handle_summarize
+    raise RuntimeError("Please choose an audio file or paste an audio URL.")
+RuntimeError: Please choose an audio file or paste an audio URL.
+2026-08-31 12:27:06 | INFO | ========================================
+2026-08-31 12:27:06 | INFO | Input Tokens : 1435
+2026-08-31 12:27:06 | INFO | Output Tokens: 219
+2026-08-31 12:27:06 | INFO | Total Tokens : 1654
+2026-08-31 12:27:06 | INFO | ========================================
+2026-08-31 12:27:06 | INFO | [DB] resolve_executive_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Rahul Budhwant'
+2026-08-31 12:27:06 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-08-31 12:27:06 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:27:08 | INFO | [DB] resolve_customer_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Pradeep Sweet Pvt Ltd HO'
+2026-08-31 12:27:08 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryOs7B0Ovm9VSGvHA6' | audio_url=None | filename='05-08-2026-1785930917.72176-15.wav'
+2026-08-31 12:28:13 | INFO | ========================================
+2026-08-31 12:28:13 | INFO | Input Tokens : 1967
+2026-08-31 12:28:13 | INFO | Output Tokens: 374
+2026-08-31 12:28:13 | INFO | Total Tokens : 2341
+2026-08-31 12:28:13 | INFO | ========================================
+2026-08-31 12:28:13 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788155870.141205-17.wav') -> 'Deepak Jalinder'
+2026-08-31 12:28:13 | INFO | [DB] Overriding Executive Name in analysis text -> 'Deepak Jalinder'
+2026-08-31 12:28:13 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:28:13 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788155870.141205-17.wav') -> 'West Zone Casuals LCHO'
+2026-08-31 12:28:13 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788155870.141205-17.wav' | filename='31-08-2026-1788155870.141205-17.wav'
+2026-08-31 12:28:13 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156101.141215-39.wav Content-Type='audio/x-wav'
+2026-08-31 12:28:14 | INFO | [DOWNLOAD] Saved 5355564 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788156101.141215-39.wav
+2026-08-31 12:31:23 | INFO | ========================================
+2026-08-31 12:31:23 | INFO | Input Tokens : 2348
+2026-08-31 12:31:23 | INFO | Output Tokens: 331
+2026-08-31 12:31:23 | INFO | Total Tokens : 2679
+2026-08-31 12:31:23 | INFO | ========================================
+2026-08-31 12:31:23 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788156101.141215-39.wav') -> 'Satish Kharade'
+2026-08-31 12:31:23 | INFO | [DB] Overriding Executive Name in analysis text -> 'Satish Kharade'
+2026-08-31 12:31:23 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:31:24 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788156101.141215-39.wav') -> None
+2026-08-31 12:31:24 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156101.141215-39.wav' | filename='31-08-2026-1788156101.141215-39.wav'
+2026-08-31 12:31:24 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156107.141217-101.wav Content-Type='audio/x-wav'
+2026-08-31 12:31:24 | INFO | [DOWNLOAD] Saved 1058604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788156107.141217-101.wav
+2026-08-31 12:32:57 | INFO | ========================================
+2026-08-31 12:32:57 | INFO | Input Tokens : 1555
+2026-08-31 12:32:57 | INFO | Output Tokens: 222
+2026-08-31 12:32:57 | INFO | Total Tokens : 1777
+2026-08-31 12:32:57 | INFO | ========================================
+2026-08-31 12:32:57 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788156107.141217-101.wav') -> 'Vidya Korade'
+2026-08-31 12:32:57 | INFO | [DB] Overriding Executive Name in analysis text -> 'Vidya Korade'
+2026-08-31 12:32:57 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:32:57 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788156107.141217-101.wav') -> 'Chaitali Collection HO'
+2026-08-31 12:32:57 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156107.141217-101.wav' | filename='31-08-2026-1788156107.141217-101.wav'
+2026-08-31 12:32:57 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156185.141221-15.wav Content-Type='audio/x-wav'
+2026-08-31 12:32:57 | INFO | [DOWNLOAD] Saved 343724 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788156185.141221-15.wav
+2026-08-31 12:33:23 | INFO | ========================================
+2026-08-31 12:33:23 | INFO | Input Tokens : 1395
+2026-08-31 12:33:23 | INFO | Output Tokens: 220
+2026-08-31 12:33:23 | INFO | Total Tokens : 1615
+2026-08-31 12:33:23 | INFO | ========================================
+2026-08-31 12:33:23 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788156185.141221-15.wav') -> 'Rahul Budhwant'
+2026-08-31 12:33:23 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-08-31 12:33:23 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:33:23 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788156185.141221-15.wav') -> 'M/S NANDINI BAKERY RC BRANCH'
+2026-08-31 12:33:23 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156185.141221-15.wav' | filename='31-08-2026-1788156185.141221-15.wav'
+2026-08-31 12:33:24 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156257.141223-+919822256631.wav Content-Type='audio/x-wav'
+2026-08-31 12:33:24 | INFO | [DOWNLOAD] Saved 5403244 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788156257.141223-_919822256631.wav
+2026-08-31 12:38:48 | INFO | ========================================
+2026-08-31 12:38:48 | INFO | Input Tokens : 2869
+2026-08-31 12:38:48 | INFO | Output Tokens: 395
+2026-08-31 12:38:48 | INFO | Total Tokens : 3264
+2026-08-31 12:38:48 | INFO | ========================================
+2026-08-31 12:38:48 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788156257.141223-_919822256631.wav') -> 'Suresh Kolekar'
+2026-08-31 12:38:48 | INFO | [DB] Overriding Executive Name in analysis text -> 'Suresh Kolekar'
+2026-08-31 12:38:48 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:38:48 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788156257.141223-_919822256631.wav') -> 'AUDUMBAR COLLECTION Newasa, Ahmednagar'
+2026-08-31 12:38:48 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156257.141223-+919822256631.wav' | filename='31-08-2026-1788156257.141223-_919822256631.wav'
+2026-08-31 12:38:49 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156268.141227-17.wav Content-Type='audio/x-wav'
+2026-08-31 12:38:50 | INFO | [DOWNLOAD] Saved 746604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788156268.141227-17.wav
+2026-08-31 12:39:49 | INFO | ========================================
+2026-08-31 12:39:49 | INFO | Input Tokens : 1552
+2026-08-31 12:39:49 | INFO | Output Tokens: 276
+2026-08-31 12:39:49 | INFO | Total Tokens : 1828
+2026-08-31 12:39:49 | INFO | ========================================
+2026-08-31 12:39:49 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788156268.141227-17.wav') -> 'Deepak Jalinder'
+2026-08-31 12:39:49 | INFO | [DB] Overriding Executive Name in analysis text -> 'Deepak Jalinder'
+2026-08-31 12:39:49 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:39:49 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788156268.141227-17.wav') -> 'West Zone Casuals LCHO'
+2026-08-31 12:39:49 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156268.141227-17.wav' | filename='31-08-2026-1788156268.141227-17.wav'
+2026-08-31 12:39:49 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156427.141242-103.wav Content-Type='audio/x-wav'
+2026-08-31 12:39:50 | INFO | [DOWNLOAD] Saved 4540524 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788156427.141242-103.wav
+2026-08-31 12:44:58 | INFO | ========================================
+2026-08-31 12:44:58 | INFO | Input Tokens : 1978
+2026-08-31 12:44:58 | INFO | Output Tokens: 373
+2026-08-31 12:44:58 | INFO | Total Tokens : 2351
+2026-08-31 12:44:58 | INFO | ========================================
+2026-08-31 12:44:58 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788156427.141242-103.wav') -> 'Akash Badadhe'
+2026-08-31 12:44:58 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akash Badadhe'
+2026-08-31 12:44:58 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-08-31 12:44:58 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788156427.141242-103.wav') -> 'Shree swami samarth agency wholesale sarees & readymade merchant Ho'
+2026-08-31 12:44:58 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156427.141242-103.wav' | filename='31-08-2026-1788156427.141242-103.wav'
+2026-08-31 12:44:58 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788156474.141247-15.wav Content-Type='audio/x-wav'
+2026-08-31 12:44:59 | INFO | [DOWNLOAD] Saved 9071084 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788156474.141247-15.wav
+2026-08-31 12:46:41 | ERROR | Summary generation failed: [WinError 233] No process is on the other end of the pipe
 Traceback (most recent call last):
-  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1618, in handle_summarize
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 723, in get_audio_transcripts_with_gemini
+    transcript_usage = response.usage_metadata
+OSError: [WinError 233] No process is on the other end of the pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1322, in handle_summarize
     results = testnew.analyze_audio_with_gemini(converted_file)
-  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 3736, in analyze_audio_with_gemini
-    final_keywords = final_keywords[:3]
-UnboundLocalError: local variable 'final_keywords' referenced before assignment
-2026-11-06 10:57:57 | INFO | [HTTP] "POST /summarize HTTP/1.1" 500 -
-2026-11-06 10:57:59 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792904049.6201-100.wav Content-Type='audio/x-wav'
-2026-11-06 10:57:59 | INFO | [DOWNLOAD] Saved 108204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792904049.6201-100.wav
-2026-11-06 11:03:01 | INFO | === APP STARTED ===
-2026-11-06 11:03:02 | INFO | [DEBUG] TESTNEW FILE LOADED FROM: D:\WorkSpace_Sunilpant\Call Summery\testnew.py
-2026-11-06 11:03:02 | INFO | === TESTNEW IMPORTED ===
-2026-11-06 11:03:02 | INFO | ==================================================
-2026-11-06 11:03:02 | INFO | Call Summary Web App is ACTIVE
-2026-11-06 11:03:02 | INFO | Local access: http://127.0.0.1:8080
-2026-11-06 11:03:02 | INFO | LAN access: http://192.168.200.14:8080
-2026-11-06 11:03:02 | INFO | ==================================================
-2026-11-06 11:03:02 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
-2026-11-06 11:06:27 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792904049.6201-100.wav Content-Type='audio/x-wav'
-2026-11-06 11:06:27 | INFO | [DOWNLOAD] Saved 108204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792904049.6201-100.wav
-2026-11-06 11:06:38 | INFO | ========================================
-2026-11-06 11:06:38 | INFO | Input Tokens : 3323
-2026-11-06 11:06:38 | INFO | Output Tokens: 286
-2026-11-06 11:06:38 | INFO | Total Tokens : 3609
-2026-11-06 11:06:38 | INFO | ========================================
-2026-11-06 11:06:38 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792904049.6201-100.wav') -> 'Kishor Avhad'
-2026-11-06 11:06:38 | INFO | [DB] Overriding Executive Name in analysis text -> 'Kishor Avhad'
-2026-11-06 11:06:38 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:06:40 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792904049.6201-100.wav') -> None
-2026-11-06 11:06:40 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792904049.6201-100.wav' | filename='25-10-2026-1792904049.6201-100.wav'
-2026-11-06 11:06:41 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:06:41 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792904131.6206-127.wav Content-Type='audio/x-wav'
-2026-11-06 11:06:41 | INFO | [DOWNLOAD] Saved 1755244 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792904131.6206-127.wav
-2026-11-06 11:07:00 | INFO | ========================================
-2026-11-06 11:07:00 | INFO | Input Tokens : 4026
-2026-11-06 11:07:00 | INFO | Output Tokens: 603
-2026-11-06 11:07:00 | INFO | Total Tokens : 4629
-2026-11-06 11:07:00 | INFO | ========================================
-2026-11-06 11:07:00 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792904131.6206-127.wav') -> 'Ganesh Pise'
-2026-11-06 11:07:00 | INFO | [DB] Overriding Executive Name in analysis text -> 'Ganesh Pise'
-2026-11-06 11:07:00 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:07:00 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792904131.6206-127.wav') -> None
-2026-11-06 11:07:00 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792904131.6206-127.wav' | filename='25-10-2026-1792904131.6206-127.wav'
-2026-11-06 11:07:00 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:07:01 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909403.6458-100.wav Content-Type='audio/x-wav'
-2026-11-06 11:07:01 | INFO | [DOWNLOAD] Saved 1873964 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792909403.6458-100.wav
-2026-11-06 11:07:25 | INFO | ========================================
-2026-11-06 11:07:25 | INFO | Input Tokens : 4724
-2026-11-06 11:07:25 | INFO | Output Tokens: 876
-2026-11-06 11:07:25 | INFO | Total Tokens : 5600
-2026-11-06 11:07:25 | INFO | ========================================
-2026-11-06 11:07:25 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792909403.6458-100.wav') -> 'Kishor Avhad'
-2026-11-06 11:07:25 | INFO | [DB] Overriding Executive Name in analysis text -> 'Kishor Avhad'
-2026-11-06 11:07:25 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:07:25 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792909403.6458-100.wav') -> 'CHANDRAPRABHA WHOLESALE TEXTILE MARKET Sadalga'
-2026-11-06 11:07:25 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909403.6458-100.wav' | filename='25-10-2026-1792909403.6458-100.wav'
-2026-11-06 11:07:26 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:07:26 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909422.6462-55.wav Content-Type='audio/x-wav'
-2026-11-06 11:07:26 | INFO | [DOWNLOAD] Saved 1462124 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792909422.6462-55.wav
-2026-11-06 11:07:51 | INFO | ========================================
-2026-11-06 11:07:51 | INFO | Input Tokens : 5324
-2026-11-06 11:07:51 | INFO | Output Tokens: 1212
-2026-11-06 11:07:51 | INFO | Total Tokens : 6536
-2026-11-06 11:07:51 | INFO | ========================================
-2026-11-06 11:07:51 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792909422.6462-55.wav') -> 'Tejesh Yadav'
-2026-11-06 11:07:51 | INFO | [DB] Overriding Executive Name in analysis text -> 'Tejesh Yadav'
-2026-11-06 11:07:51 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:07:51 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792909422.6462-55.wav') -> 'B A KATDARE Powai naka'
-2026-11-06 11:07:51 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909422.6462-55.wav' | filename='25-10-2026-1792909422.6462-55.wav'
-2026-11-06 11:07:52 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:07:52 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909466.6465-71.wav Content-Type='audio/x-wav'
-2026-11-06 11:07:52 | INFO | [DOWNLOAD] Saved 2189484 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792909466.6465-71.wav
-2026-11-06 11:08:15 | INFO | ========================================
-2026-11-06 11:08:15 | INFO | Input Tokens : 3867
-2026-11-06 11:08:15 | INFO | Output Tokens: 594
-2026-11-06 11:08:15 | INFO | Total Tokens : 4461
-2026-11-06 11:08:15 | INFO | ========================================
-2026-11-06 11:08:15 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792909466.6465-71.wav') -> 'Vijay Chaudhari'
-2026-11-06 11:08:15 | INFO | [DB] Overriding Executive Name in analysis text -> 'Vijay Chaudhari'
-2026-11-06 11:08:15 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:08:15 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792909466.6465-71.wav') -> 'OMKAR JEWELLERS Osmanabad'
-2026-11-06 11:08:15 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909466.6465-71.wav' | filename='25-10-2026-1792909466.6465-71.wav'
-2026-11-06 11:08:15 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:08:15 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909565.6468-55.wav Content-Type='audio/x-wav'
-2026-11-06 11:08:16 | INFO | [DOWNLOAD] Saved 2584364 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792909565.6468-55.wav
-2026-11-06 11:08:45 | INFO | ========================================
-2026-11-06 11:08:45 | INFO | Input Tokens : 5638
-2026-11-06 11:08:45 | INFO | Output Tokens: 1348
-2026-11-06 11:08:45 | INFO | Total Tokens : 6986
-2026-11-06 11:08:45 | INFO | ========================================
-2026-11-06 11:08:45 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792909565.6468-55.wav') -> 'Tejesh Yadav'
-2026-11-06 11:08:45 | INFO | [DB] Overriding Executive Name in analysis text -> 'Tejesh Yadav'
-2026-11-06 11:08:45 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:08:45 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792909565.6468-55.wav') -> None
-2026-11-06 11:08:45 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792909565.6468-55.wav' | filename='25-10-2026-1792909565.6468-55.wav'
-2026-11-06 11:08:45 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:08:45 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792912269.6686-71.wav Content-Type='audio/x-wav'
-2026-11-06 11:08:45 | INFO | [DOWNLOAD] Saved 224044 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792912269.6686-71.wav
-2026-11-06 11:08:54 | INFO | ========================================
-2026-11-06 11:08:54 | INFO | Input Tokens : 3358
-2026-11-06 11:08:54 | INFO | Output Tokens: 284
-2026-11-06 11:08:54 | INFO | Total Tokens : 3642
-2026-11-06 11:08:54 | INFO | ========================================
-2026-11-06 11:08:54 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792912269.6686-71.wav') -> 'Vijay Chaudhari'
-2026-11-06 11:08:54 | INFO | [DB] Overriding Executive Name in analysis text -> 'Vijay Chaudhari'
-2026-11-06 11:08:54 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:08:54 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792912269.6686-71.wav') -> None
-2026-11-06 11:08:54 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792912269.6686-71.wav' | filename='25-10-2026-1792912269.6686-71.wav'
-2026-11-06 11:08:54 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:08:55 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792913545.6796-100.wav Content-Type='audio/x-wav'
-2026-11-06 11:08:55 | INFO | [DOWNLOAD] Saved 212204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792913545.6796-100.wav
-2026-11-06 11:09:03 | INFO | ========================================
-2026-11-06 11:09:03 | INFO | Input Tokens : 3315
-2026-11-06 11:09:03 | INFO | Output Tokens: 236
-2026-11-06 11:09:03 | INFO | Total Tokens : 3551
-2026-11-06 11:09:03 | INFO | ========================================
-2026-11-06 11:09:03 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792913545.6796-100.wav') -> 'Kishor Avhad'
-2026-11-06 11:09:03 | INFO | [DB] Overriding Executive Name in analysis text -> 'Kishor Avhad'
-2026-11-06 11:09:03 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:09:03 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792913545.6796-100.wav') -> None
-2026-11-06 11:09:03 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792913545.6796-100.wav' | filename='25-10-2026-1792913545.6796-100.wav'
-2026-11-06 11:09:04 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:09:04 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792920131.7225-55.wav Content-Type='audio/x-wav'
-2026-11-06 11:09:04 | INFO | [DOWNLOAD] Saved 3237164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792920131.7225-55.wav
-2026-11-06 11:09:41 | INFO | ========================================
-2026-11-06 11:09:41 | INFO | Input Tokens : 7181
-2026-11-06 11:09:41 | INFO | Output Tokens: 1850
-2026-11-06 11:09:41 | INFO | Total Tokens : 9031
-2026-11-06 11:09:41 | INFO | ========================================
-2026-11-06 11:09:41 | INFO | [DB] resolve_executive_name(filename='25-10-2026-1792920131.7225-55.wav') -> 'Tejesh Yadav'
-2026-11-06 11:09:41 | INFO | [DB] Overriding Executive Name in analysis text -> 'Tejesh Yadav'
-2026-11-06 11:09:41 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
-2026-11-06 11:09:41 | INFO | [DB] resolve_customer_name(filename='25-10-2026-1792920131.7225-55.wav') -> 'Sensation Readymade Garments Shopee Laxmi rd Pune'
-2026-11-06 11:09:41 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792920131.7225-55.wav' | filename='25-10-2026-1792920131.7225-55.wav'
-2026-11-06 11:09:42 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
-2026-11-06 11:09:42 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/25-10-2026/25-10-2026-1792920205.7230-100.wav Content-Type='audio/x-wav'
-2026-11-06 11:09:42 | INFO | [DOWNLOAD] Saved 1596524 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\25-10-2026-1792920205.7230-100.wav
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 944, in analyze_audio_with_gemini
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 740, in get_audio_transcripts_with_gemini
+    print("=" * 60)
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-08-31 12:46:41 | ERROR | [AUTO_POLLER] Fatal error: [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Program Files\Python310\lib\http\client.py", line 1374, in getresponse
+    response.begin()
+  File "C:\Program Files\Python310\lib\http\client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "C:\Program Files\Python310\lib\http\client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\adapters.py", line 696, in send
+    resp = conn.urlopen(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\util\retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Program Files\Python310\lib\http\client.py", line 1374, in getresponse
+    response.begin()
+  File "C:\Program Files\Python310\lib\http\client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "C:\Program Files\Python310\lib\http\client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 372, in run_forever
+    ok = submit_to_web_app(call)
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 312, in submit_to_web_app
+    resp = requests.post(WEB_APP_SUMMARIZE_URL, data=data, timeout=600)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\api.py", line 134, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\adapters.py", line 711, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 91, in _runner
+    autoprocesscall.run_forever()
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 381, in run_forever
+    print("[AUTO_POLLER][ERROR] Unexpected error during poll:")
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-08-31 13:05:44 | INFO | === APP STARTED ===
+2026-08-31 13:05:45 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 13:05:45 | INFO | ==================================================
+2026-08-31 13:05:45 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 13:05:45 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 13:05:45 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 13:05:45 | INFO | ==================================================
+2026-08-31 13:05:45 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
+2026-08-31 13:06:04 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788158154.141388-101.wav Content-Type='audio/x-wav'
+2026-08-31 13:06:04 | INFO | [DOWNLOAD] Saved 232044 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788158154.141388-101.wav
+2026-08-31 13:06:24 | INFO | DEBUG: Received GET request for /
+2026-08-31 13:07:32 | INFO | ========================================
+2026-08-31 13:07:32 | INFO | Input Tokens : 0
+2026-08-31 13:07:32 | INFO | Output Tokens: 0
+2026-08-31 13:07:32 | INFO | Total Tokens : 0
+2026-08-31 13:07:32 | INFO | ========================================
+2026-08-31 13:07:32 | INFO | [DB] resolve_executive_name(filename='31-08-2026-1788158154.141388-101.wav') -> 'Vidya Korade'
+2026-08-31 13:07:32 | INFO | [DB] Overriding Executive Name in analysis text -> 'Vidya Korade'
+2026-08-31 13:07:32 | INFO | [DB] Existing 'Executive Name:' line found in analysis? False
+2026-08-31 13:07:33 | INFO | [DB] resolve_customer_name(filename='31-08-2026-1788158154.141388-101.wav') -> 'Nalinee Kaku Masale Ho Alibaug'
+2026-08-31 13:07:33 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788158154.141388-101.wav' | filename='31-08-2026-1788158154.141388-101.wav'
+2026-08-31 13:07:34 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/August/31-08-2026/31-08-2026-1788158199.141390-17.wav Content-Type='audio/x-wav'
+2026-08-31 13:07:34 | INFO | [DOWNLOAD] Saved 530604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\31-08-2026-1788158199.141390-17.wav
+2026-08-31 13:19:04 | INFO | === APP STARTED ===
+2026-08-31 13:19:04 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 13:19:04 | INFO | ==================================================
+2026-08-31 13:19:04 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 13:19:04 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 13:19:04 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 13:19:04 | INFO | ==================================================
+2026-08-31 13:19:12 | INFO | DEBUG: Received GET request for /
+2026-08-31 13:20:28 | INFO | ========================================
+2026-08-31 13:20:28 | INFO | Input Tokens : 0
+2026-08-31 13:20:28 | INFO | Output Tokens: 0
+2026-08-31 13:20:28 | INFO | Total Tokens : 0
+2026-08-31 13:20:28 | INFO | ========================================
+2026-08-31 13:20:28 | INFO | [DB] resolve_executive_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Rahul Budhwant'
+2026-08-31 13:20:28 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-08-31 13:20:28 | INFO | [DB] Existing 'Executive Name:' line found in analysis? False
+2026-08-31 13:20:29 | INFO | [DB] resolve_customer_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Pradeep Sweet Pvt Ltd HO'
+2026-08-31 13:20:29 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryppjmSTXYLBaAhJEc' | audio_url=None | filename='05-08-2026-1785930917.72176-15.wav'
+2026-08-31 13:24:37 | INFO | === APP STARTED ===
+2026-08-31 13:24:37 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 13:24:37 | INFO | ==================================================
+2026-08-31 13:24:37 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 13:24:37 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 13:24:37 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 13:24:37 | INFO | ==================================================
+2026-08-31 13:24:43 | INFO | DEBUG: Received GET request for /
+2026-08-31 13:25:52 | INFO | ========================================
+2026-08-31 13:25:52 | INFO | Input Tokens : 0
+2026-08-31 13:25:52 | INFO | Output Tokens: 0
+2026-08-31 13:25:52 | INFO | Total Tokens : 0
+2026-08-31 13:25:52 | INFO | ========================================
+2026-08-31 13:25:52 | INFO | [DB] resolve_executive_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Rahul Budhwant'
+2026-08-31 13:25:52 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-08-31 13:25:52 | INFO | [DB] Existing 'Executive Name:' line found in analysis? False
+2026-08-31 13:25:53 | INFO | [DB] resolve_customer_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Pradeep Sweet Pvt Ltd HO'
+2026-08-31 13:25:53 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryJUYW84jrvn1e8yMW' | audio_url=None | filename='05-08-2026-1785930917.72176-15.wav'
+2026-08-31 13:30:53 | INFO | === APP STARTED ===
+2026-08-31 13:30:53 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 13:30:53 | INFO | ==================================================
+2026-08-31 13:30:53 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 13:30:53 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 13:30:53 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 13:30:53 | INFO | ==================================================
+2026-08-31 13:32:42 | INFO | === APP STARTED ===
+2026-08-31 13:32:42 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 13:32:42 | INFO | ==================================================
+2026-08-31 13:32:42 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 13:32:42 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 13:32:42 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 13:32:42 | INFO | ==================================================
+2026-08-31 13:32:47 | INFO | DEBUG: Received GET request for /
+2026-08-31 13:32:54 | INFO | DEBUG: Received GET request for /
+2026-08-31 13:34:05 | INFO | ========================================
+2026-08-31 13:34:05 | INFO | Input Tokens : 0
+2026-08-31 13:34:05 | INFO | Output Tokens: 0
+2026-08-31 13:34:05 | INFO | Total Tokens : 0
+2026-08-31 13:34:05 | INFO | ========================================
+2026-08-31 13:34:05 | INFO | [DB] resolve_executive_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Rahul Budhwant'
+2026-08-31 13:34:05 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-08-31 13:34:05 | INFO | [DB] Existing 'Executive Name:' line found in analysis? False
+2026-08-31 13:34:05 | INFO | [DB] resolve_customer_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Pradeep Sweet Pvt Ltd HO'
+2026-08-31 13:34:05 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundarykc4Smo5yBurTW1h9' | audio_url=None | filename='05-08-2026-1785930917.72176-15.wav'
+2026-08-31 13:36:48 | INFO | === APP STARTED ===
+2026-08-31 13:36:48 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 13:36:48 | INFO | ==================================================
+2026-08-31 13:36:48 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 13:36:48 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 13:36:48 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 13:36:48 | INFO | ==================================================
+2026-08-31 13:37:57 | INFO | ========================================
+2026-08-31 13:37:57 | INFO | Input Tokens : 0
+2026-08-31 13:37:57 | INFO | Output Tokens: 0
+2026-08-31 13:37:57 | INFO | Total Tokens : 0
+2026-08-31 13:37:57 | INFO | ========================================
+2026-08-31 13:37:57 | INFO | [DB] resolve_executive_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Rahul Budhwant'
+2026-08-31 13:37:57 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-08-31 13:37:57 | INFO | [DB] Existing 'Executive Name:' line found in analysis? False
+2026-08-31 13:37:57 | INFO | [DB] resolve_customer_name(filename='05-08-2026-1785930917.72176-15.wav') -> 'Pradeep Sweet Pvt Ltd HO'
+2026-08-31 13:37:57 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryAVsOqDQVqspSC7yB' | audio_url=None | filename='05-08-2026-1785930917.72176-15.wav'
+2026-08-31 14:34:50 | INFO | === APP STARTED ===
+2026-08-31 14:34:51 | INFO | === TESTNEW IMPORTED ===
+2026-08-31 14:34:51 | INFO | ==================================================
+2026-08-31 14:34:51 | INFO | Call Summary Web App is ACTIVE
+2026-08-31 14:34:51 | INFO | Local access: http://127.0.0.1:8080
+2026-08-31 14:34:51 | INFO | LAN access: http://192.168.200.14:8080
+2026-08-31 14:34:51 | INFO | ==================================================
+2026-08-31 14:35:03 | INFO | DEBUG: Received GET request for /
+2026-08-31 14:37:58 | ERROR | Summary generation failed: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 1.710506216s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '1s'}]}}
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1322, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1918, in analyze_audio_with_gemini
+    short_summary, long_summary = generate_detailed_summary(
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 900, in generate_detailed_summary
+    response = safe_generate(
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 397, in safe_generate
+    return client.models.generate_content(**kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\google\genai\models.py", line 6270, in generate_content
+    response = self._generate_content(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\google\genai\models.py", line 4707, in _generate_content
+    response = self._api_client.request(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\google\genai\_api_client.py", line 1747, in request
+    response = self._request(http_request, http_options, stream=False)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\google\genai\_api_client.py", line 1534, in _request
+    return self._retry(self._request_once, http_request, stream)  # type: ignore[no-any-return]
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\tenacity\__init__.py", line 470, in __call__
+    do = self.iter(retry_state=retry_state)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\tenacity\__init__.py", line 371, in iter
+    result = action(retry_state)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\tenacity\__init__.py", line 413, in exc_check
+    raise retry_exc.reraise()
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\tenacity\__init__.py", line 184, in reraise
+    raise self.last_attempt.result()
+  File "C:\Program Files\Python310\lib\concurrent\futures\_base.py", line 451, in result
+    return self.__get_result()
+  File "C:\Program Files\Python310\lib\concurrent\futures\_base.py", line 403, in __get_result
+    raise self._exception
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\tenacity\__init__.py", line 473, in __call__
+    result = fn(*args, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\google\genai\_api_client.py", line 1511, in _request_once
+    errors.APIError.raise_for_response(response)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\google\genai\errors.py", line 173, in raise_for_response
+    cls.raise_error(response.status_code, response_json, response)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\google\genai\errors.py", line 202, in raise_error
+    raise ClientError(status_code, response_json, response)
+google.genai.errors.ClientError: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 20, model: gemini-3.5-flash\nPlease retry in 1.710506216s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://ai.google.dev/gemini-api/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerDayPerProjectPerModel-FreeTier', 'quotaDimensions': {'location': 'global', 'model': 'gemini-3.5-flash'}, 'quotaValue': '20'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '1s'}]}}
