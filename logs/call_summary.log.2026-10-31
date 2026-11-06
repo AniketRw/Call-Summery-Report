@@ -1,0 +1,1868 @@
+2026-10-31 00:05:45 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 00:05:47 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649256.27820-15.wav Content-Type='audio/x-wav'
+2026-10-31 00:05:47 | INFO | [DOWNLOAD] Saved 6443564 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649256.27820-15.wav
+2026-10-31 00:14:50 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 00:14:50 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649281.27823-123.wav Content-Type='audio/x-wav'
+2026-10-31 00:14:53 | INFO | [DOWNLOAD] Saved 37129324 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649281.27823-123.wav
+2026-10-31 01:07:19 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 01:07:21 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649281.27823-123.wav Content-Type='audio/x-wav'
+2026-10-31 01:07:24 | INFO | [DOWNLOAD] Saved 37129324 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649281.27823-123.wav
+2026-10-31 01:59:54 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 01:59:56 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649281.27823-123.wav Content-Type='audio/x-wav'
+2026-10-31 01:59:59 | INFO | [DOWNLOAD] Saved 37129324 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649281.27823-123.wav
+2026-10-31 02:52:37 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 02:52:37 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649294.27829-101.wav Content-Type='audio/x-wav'
+2026-10-31 02:52:37 | INFO | [DOWNLOAD] Saved 559404 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649294.27829-101.wav
+2026-10-31 02:53:54 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 02:53:56 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649294.27829-101.wav Content-Type='audio/x-wav'
+2026-10-31 02:53:56 | INFO | [DOWNLOAD] Saved 559404 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649294.27829-101.wav
+2026-10-31 02:55:13 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 02:55:15 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649294.27829-101.wav Content-Type='audio/x-wav'
+2026-10-31 02:55:15 | INFO | [DOWNLOAD] Saved 559404 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649294.27829-101.wav
+2026-10-31 02:56:31 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 02:56:31 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649342.27838-101.wav Content-Type='audio/x-wav'
+2026-10-31 02:56:31 | INFO | [DOWNLOAD] Saved 2054124 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649342.27838-101.wav
+2026-10-31 02:59:47 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 02:59:49 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649342.27838-101.wav Content-Type='audio/x-wav'
+2026-10-31 02:59:49 | INFO | [DOWNLOAD] Saved 2054124 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649342.27838-101.wav
+2026-10-31 03:03:05 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 03:03:07 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649342.27838-101.wav Content-Type='audio/x-wav'
+2026-10-31 03:03:07 | INFO | [DOWNLOAD] Saved 2054124 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649342.27838-101.wav
+2026-10-31 03:06:22 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 03:06:22 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649607.27859-127.wav Content-Type='audio/x-wav'
+2026-10-31 03:06:22 | INFO | [DOWNLOAD] Saved 3836204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649607.27859-127.wav
+2026-10-31 03:12:09 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 03:12:11 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649607.27859-127.wav Content-Type='audio/x-wav'
+2026-10-31 03:12:12 | INFO | [DOWNLOAD] Saved 3836204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649607.27859-127.wav
+2026-10-31 03:18:22 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 03:18:24 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649607.27859-127.wav Content-Type='audio/x-wav'
+2026-10-31 03:18:25 | INFO | [DOWNLOAD] Saved 3836204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649607.27859-127.wav
+2026-10-31 03:24:16 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 03:24:16 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649634.27867-126.wav Content-Type='audio/x-wav'
+2026-10-31 03:24:17 | INFO | [DOWNLOAD] Saved 13472684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649634.27867-126.wav
+2026-10-31 03:43:47 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 03:43:49 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649634.27867-126.wav Content-Type='audio/x-wav'
+2026-10-31 03:43:51 | INFO | [DOWNLOAD] Saved 13472684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649634.27867-126.wav
+2026-10-31 04:03:26 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 04:03:28 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649634.27867-126.wav Content-Type='audio/x-wav'
+2026-10-31 04:03:29 | INFO | [DOWNLOAD] Saved 13472684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649634.27867-126.wav
+2026-10-31 04:23:04 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 04:23:04 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649665.27873-96.wav Content-Type='audio/x-wav'
+2026-10-31 04:23:04 | INFO | [DOWNLOAD] Saved 6200684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649665.27873-96.wav
+2026-10-31 04:32:12 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 04:32:14 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649665.27873-96.wav Content-Type='audio/x-wav'
+2026-10-31 04:32:15 | INFO | [DOWNLOAD] Saved 6200684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649665.27873-96.wav
+2026-10-31 04:41:22 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 04:41:24 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649665.27873-96.wav Content-Type='audio/x-wav'
+2026-10-31 04:41:24 | INFO | [DOWNLOAD] Saved 6200684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649665.27873-96.wav
+2026-10-31 04:50:32 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 04:50:32 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649673.27875-101.wav Content-Type='audio/x-wav'
+2026-10-31 04:50:33 | INFO | [DOWNLOAD] Saved 6480684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649673.27875-101.wav
+2026-10-31 04:59:44 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 04:59:46 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649673.27875-101.wav Content-Type='audio/x-wav'
+2026-10-31 04:59:46 | INFO | [DOWNLOAD] Saved 6480684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649673.27875-101.wav
+2026-10-31 05:08:53 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:08:55 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649673.27875-101.wav Content-Type='audio/x-wav'
+2026-10-31 05:08:56 | INFO | [DOWNLOAD] Saved 6480684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649673.27875-101.wav
+2026-10-31 05:18:05 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:18:05 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649676.27877-15.wav Content-Type='audio/x-wav'
+2026-10-31 05:18:05 | INFO | [DOWNLOAD] Saved 2495404 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649676.27877-15.wav
+2026-10-31 05:22:01 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:22:03 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649676.27877-15.wav Content-Type='audio/x-wav'
+2026-10-31 05:22:03 | INFO | [DOWNLOAD] Saved 2495404 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649676.27877-15.wav
+2026-10-31 05:26:02 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:26:04 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649676.27877-15.wav Content-Type='audio/x-wav'
+2026-10-31 05:26:04 | INFO | [DOWNLOAD] Saved 2495404 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649676.27877-15.wav
+2026-10-31 05:29:58 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:29:58 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649696.27880-63.wav Content-Type='audio/x-wav'
+2026-10-31 05:29:59 | INFO | [DOWNLOAD] Saved 762604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649696.27880-63.wav
+2026-10-31 05:31:15 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:31:17 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649696.27880-63.wav Content-Type='audio/x-wav'
+2026-10-31 05:31:18 | INFO | [DOWNLOAD] Saved 762604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649696.27880-63.wav
+2026-10-31 05:32:35 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:32:37 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649696.27880-63.wav Content-Type='audio/x-wav'
+2026-10-31 05:32:37 | INFO | [DOWNLOAD] Saved 762604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649696.27880-63.wav
+2026-10-31 05:33:57 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:33:57 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649716.27882-12.wav Content-Type='audio/x-wav'
+2026-10-31 05:33:57 | INFO | [DOWNLOAD] Saved 4383724 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649716.27882-12.wav
+2026-10-31 05:40:26 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:40:28 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649716.27882-12.wav Content-Type='audio/x-wav'
+2026-10-31 05:40:29 | INFO | [DOWNLOAD] Saved 4383724 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649716.27882-12.wav
+2026-10-31 05:47:02 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:47:04 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649716.27882-12.wav Content-Type='audio/x-wav'
+2026-10-31 05:47:04 | INFO | [DOWNLOAD] Saved 4383724 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649716.27882-12.wav
+2026-10-31 05:53:36 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:53:36 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649799.27894-63.wav Content-Type='audio/x-wav'
+2026-10-31 05:53:36 | INFO | [DOWNLOAD] Saved 2859564 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649799.27894-63.wav
+2026-10-31 05:58:09 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 05:58:11 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649799.27894-63.wav Content-Type='audio/x-wav'
+2026-10-31 05:58:11 | INFO | [DOWNLOAD] Saved 2859564 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649799.27894-63.wav
+2026-10-31 06:02:44 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:02:46 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649799.27894-63.wav Content-Type='audio/x-wav'
+2026-10-31 06:02:47 | INFO | [DOWNLOAD] Saved 2859564 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649799.27894-63.wav
+2026-10-31 06:07:18 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:07:18 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649892.27912-109.wav Content-Type='audio/x-wav'
+2026-10-31 06:07:18 | INFO | [DOWNLOAD] Saved 1150444 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649892.27912-109.wav
+2026-10-31 06:09:15 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:09:17 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649892.27912-109.wav Content-Type='audio/x-wav'
+2026-10-31 06:09:17 | INFO | [DOWNLOAD] Saved 1150444 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649892.27912-109.wav
+2026-10-31 06:11:14 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:11:16 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649892.27912-109.wav Content-Type='audio/x-wav'
+2026-10-31 06:11:16 | INFO | [DOWNLOAD] Saved 1150444 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649892.27912-109.wav
+2026-10-31 06:13:13 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:13:13 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649951.27917-13.wav Content-Type='audio/x-wav'
+2026-10-31 06:13:13 | INFO | [DOWNLOAD] Saved 6640044 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649951.27917-13.wav
+2026-10-31 06:22:54 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:22:56 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649951.27917-13.wav Content-Type='audio/x-wav'
+2026-10-31 06:22:57 | INFO | [DOWNLOAD] Saved 6640044 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649951.27917-13.wav
+2026-10-31 06:32:41 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:32:43 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792649951.27917-13.wav Content-Type='audio/x-wav'
+2026-10-31 06:32:44 | INFO | [DOWNLOAD] Saved 6640044 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792649951.27917-13.wav
+2026-10-31 06:42:21 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:42:21 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650001.27920-63.wav Content-Type='audio/x-wav'
+2026-10-31 06:42:21 | INFO | [DOWNLOAD] Saved 493164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650001.27920-63.wav
+2026-10-31 06:43:36 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:43:38 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650001.27920-63.wav Content-Type='audio/x-wav'
+2026-10-31 06:43:38 | INFO | [DOWNLOAD] Saved 493164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650001.27920-63.wav
+2026-10-31 06:44:55 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:44:57 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650001.27920-63.wav Content-Type='audio/x-wav'
+2026-10-31 06:44:58 | INFO | [DOWNLOAD] Saved 493164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650001.27920-63.wav
+2026-10-31 06:46:14 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:46:14 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650069.27937-15.wav Content-Type='audio/x-wav'
+2026-10-31 06:46:15 | INFO | [DOWNLOAD] Saved 5223084 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650069.27937-15.wav
+2026-10-31 06:54:04 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 06:54:06 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650069.27937-15.wav Content-Type='audio/x-wav'
+2026-10-31 06:54:07 | INFO | [DOWNLOAD] Saved 5223084 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650069.27937-15.wav
+2026-10-31 07:01:58 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:02:00 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650069.27937-15.wav Content-Type='audio/x-wav'
+2026-10-31 07:02:00 | INFO | [DOWNLOAD] Saved 5223084 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650069.27937-15.wav
+2026-10-31 07:09:50 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:09:51 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650095.27944-96.wav Content-Type='audio/x-wav'
+2026-10-31 07:09:51 | INFO | [DOWNLOAD] Saved 672684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650095.27944-96.wav
+2026-10-31 07:11:09 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:11:12 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650095.27944-96.wav Content-Type='audio/x-wav'
+2026-10-31 07:11:12 | INFO | [DOWNLOAD] Saved 672684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650095.27944-96.wav
+2026-10-31 07:12:29 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:12:32 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650095.27944-96.wav Content-Type='audio/x-wav'
+2026-10-31 07:12:32 | INFO | [DOWNLOAD] Saved 672684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650095.27944-96.wav
+2026-10-31 07:13:50 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:13:50 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650104.27946-100.wav Content-Type='audio/x-wav'
+2026-10-31 07:13:50 | INFO | [DOWNLOAD] Saved 2065324 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650104.27946-100.wav
+2026-10-31 07:17:03 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:17:05 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650104.27946-100.wav Content-Type='audio/x-wav'
+2026-10-31 07:17:05 | INFO | [DOWNLOAD] Saved 2065324 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650104.27946-100.wav
+2026-10-31 07:20:20 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:20:22 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650104.27946-100.wav Content-Type='audio/x-wav'
+2026-10-31 07:20:22 | INFO | [DOWNLOAD] Saved 2065324 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650104.27946-100.wav
+2026-10-31 07:23:37 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:23:37 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650223.27956-100.wav Content-Type='audio/x-wav'
+2026-10-31 07:23:38 | INFO | [DOWNLOAD] Saved 8433004 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650223.27956-100.wav
+2026-10-31 07:35:56 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:35:58 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650223.27956-100.wav Content-Type='audio/x-wav'
+2026-10-31 07:35:59 | INFO | [DOWNLOAD] Saved 8433004 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650223.27956-100.wav
+2026-10-31 07:48:09 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 07:48:11 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650223.27956-100.wav Content-Type='audio/x-wav'
+2026-10-31 07:48:12 | INFO | [DOWNLOAD] Saved 8433004 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650223.27956-100.wav
+2026-10-31 08:00:38 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:00:38 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650346.27965-17.wav Content-Type='audio/x-wav'
+2026-10-31 08:00:38 | INFO | [DOWNLOAD] Saved 774124 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650346.27965-17.wav
+2026-10-31 08:01:57 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:01:59 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650346.27965-17.wav Content-Type='audio/x-wav'
+2026-10-31 08:01:59 | INFO | [DOWNLOAD] Saved 774124 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650346.27965-17.wav
+2026-10-31 08:03:20 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:03:22 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650346.27965-17.wav Content-Type='audio/x-wav'
+2026-10-31 08:03:22 | INFO | [DOWNLOAD] Saved 774124 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650346.27965-17.wav
+2026-10-31 08:04:42 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:04:42 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650414.27986-63.wav Content-Type='audio/x-wav'
+2026-10-31 08:04:42 | INFO | [DOWNLOAD] Saved 2967084 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650414.27986-63.wav
+2026-10-31 08:09:17 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:09:19 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650414.27986-63.wav Content-Type='audio/x-wav'
+2026-10-31 08:09:19 | INFO | [DOWNLOAD] Saved 2967084 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650414.27986-63.wav
+2026-10-31 08:13:52 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:13:54 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650414.27986-63.wav Content-Type='audio/x-wav'
+2026-10-31 08:13:54 | INFO | [DOWNLOAD] Saved 2967084 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650414.27986-63.wav
+2026-10-31 08:18:25 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:18:25 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650421.27990-17.wav Content-Type='audio/x-wav'
+2026-10-31 08:18:25 | INFO | [DOWNLOAD] Saved 6922924 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650421.27990-17.wav
+2026-10-31 08:28:13 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:28:15 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650421.27990-17.wav Content-Type='audio/x-wav'
+2026-10-31 08:28:15 | INFO | [DOWNLOAD] Saved 6922924 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650421.27990-17.wav
+2026-10-31 08:37:57 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:37:59 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650421.27990-17.wav Content-Type='audio/x-wav'
+2026-10-31 08:37:59 | INFO | [DOWNLOAD] Saved 6922924 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650421.27990-17.wav
+2026-10-31 08:47:43 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:47:43 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650441.27992-13.wav Content-Type='audio/x-wav'
+2026-10-31 08:47:43 | INFO | [DOWNLOAD] Saved 1268844 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650441.27992-13.wav
+2026-10-31 08:49:39 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:49:41 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650441.27992-13.wav Content-Type='audio/x-wav'
+2026-10-31 08:49:41 | INFO | [DOWNLOAD] Saved 1268844 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650441.27992-13.wav
+2026-10-31 08:51:40 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:51:42 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650441.27992-13.wav Content-Type='audio/x-wav'
+2026-10-31 08:51:42 | INFO | [DOWNLOAD] Saved 1268844 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650441.27992-13.wav
+2026-10-31 08:53:39 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:53:39 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650456.27995-127.wav Content-Type='audio/x-wav'
+2026-10-31 08:53:40 | INFO | [DOWNLOAD] Saved 2185644 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650456.27995-127.wav
+2026-10-31 08:56:56 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 08:56:58 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650456.27995-127.wav Content-Type='audio/x-wav'
+2026-10-31 08:56:59 | INFO | [DOWNLOAD] Saved 2185644 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650456.27995-127.wav
+2026-10-31 09:00:14 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:00:16 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650456.27995-127.wav Content-Type='audio/x-wav'
+2026-10-31 09:00:16 | INFO | [DOWNLOAD] Saved 2185644 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650456.27995-127.wav
+2026-10-31 09:03:34 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:03:34 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650473.28003-12.wav Content-Type='audio/x-wav'
+2026-10-31 09:03:34 | INFO | [DOWNLOAD] Saved 98604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650473.28003-12.wav
+2026-10-31 09:04:12 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:04:14 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650473.28003-12.wav Content-Type='audio/x-wav'
+2026-10-31 09:04:14 | INFO | [DOWNLOAD] Saved 98604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650473.28003-12.wav
+2026-10-31 09:04:53 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:04:55 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650473.28003-12.wav Content-Type='audio/x-wav'
+2026-10-31 09:04:55 | INFO | [DOWNLOAD] Saved 98604 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650473.28003-12.wav
+2026-10-31 09:05:33 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:05:34 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650484.28007-12.wav Content-Type='audio/x-wav'
+2026-10-31 09:05:34 | INFO | [DOWNLOAD] Saved 4657004 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650484.28007-12.wav
+2026-10-31 09:12:33 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:12:35 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650484.28007-12.wav Content-Type='audio/x-wav'
+2026-10-31 09:12:35 | INFO | [DOWNLOAD] Saved 4657004 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650484.28007-12.wav
+2026-10-31 09:19:40 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:19:42 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650484.28007-12.wav Content-Type='audio/x-wav'
+2026-10-31 09:19:42 | INFO | [DOWNLOAD] Saved 4657004 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650484.28007-12.wav
+2026-10-31 09:26:50 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:26:50 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650549.28016-126.wav Content-Type='audio/x-wav'
+2026-10-31 09:26:50 | INFO | [DOWNLOAD] Saved 1472364 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650549.28016-126.wav
+2026-10-31 09:29:24 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:29:26 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650549.28016-126.wav Content-Type='audio/x-wav'
+2026-10-31 09:29:26 | INFO | [DOWNLOAD] Saved 1472364 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650549.28016-126.wav
+2026-10-31 09:31:57 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:31:59 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650549.28016-126.wav Content-Type='audio/x-wav'
+2026-10-31 09:31:59 | INFO | [DOWNLOAD] Saved 1472364 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650549.28016-126.wav
+2026-10-31 09:34:30 | ERROR | Summary generation failed: Bodhan transcription failed: No chunks produced a transcript.
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1343, in whisper_transcribe
+    raise RuntimeError(
+RuntimeError: Bodhan transcription failed: No chunks produced a transcript.
+2026-10-31 09:34:30 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/22-10-2026/22-10-2026-1792650554.28019-109.wav Content-Type='audio/x-wav'
+2026-10-31 09:34:32 | INFO | [DOWNLOAD] Saved 20564204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\22-10-2026-1792650554.28019-109.wav
+2026-10-31 09:44:57 | ERROR | Summary generation failed: [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1233, in whisper_transcribe
+    response = client.audio.transcriptions.create(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_utils\_utils.py", line 298, in wrapper
+    return func(*args, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\resources\audio\transcriptions.py", line 524, in create
+    return self._post(  # type: ignore[return-value]
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.RateLimitError: Error code: 429 - {'error': {'message': 'ExceededBudget: User=97b09513-8c95-47b3-9bbf-d9f0b18bbe30 over budget. Spend=₹6570.018556668122, Budget=₹6570.0', 'type': 'budget_exceeded', 'param': None, 'code': '429'}}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1249, in whisper_transcribe
+    print(
+OSError: [WinError 233] No process is on the other end of the pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2360, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1424, in whisper_transcribe
+    print(
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 09:44:57 | ERROR | [AUTO_POLLER] Fatal error: [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Program Files\Python310\lib\http\client.py", line 1374, in getresponse
+    response.begin()
+  File "C:\Program Files\Python310\lib\http\client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "C:\Program Files\Python310\lib\http\client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\adapters.py", line 696, in send
+    resp = conn.urlopen(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\util\retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Program Files\Python310\lib\http\client.py", line 1374, in getresponse
+    response.begin()
+  File "C:\Program Files\Python310\lib\http\client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "C:\Program Files\Python310\lib\http\client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 1017, in run_cycle
+    ok = submit_to_web_app(call)
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 784, in submit_to_web_app
+    response = requests.post(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\api.py", line 134, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\adapters.py", line 711, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 1019, in run_cycle
+    print(f"[AUTO_POLLER][ERROR] Error processing {url}:", flush=True)
+OSError: [WinError 233] No process is on the other end of the pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 92, in _runner
+    autoprocesscall.run_forever()
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 1067, in run_forever
+    if run_cycle(processed, last_processed_time):
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 1049, in run_cycle
+    print("[AUTO_POLLER][ERROR] Unexpected worker error:", flush=True)
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:12:52 | INFO | === APP STARTED ===
+2026-10-31 11:12:53 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:12:54 | INFO | ==================================================
+2026-10-31 11:12:54 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:12:54 | INFO | Local access: http://127.0.0.1:8080
+2026-10-31 11:12:54 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-31 11:12:54 | INFO | ==================================================
+2026-10-31 11:13:01 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:01 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:03 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:03 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:04 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:04 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:04 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:09 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:09 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:15 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:16 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:17 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:17 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:17 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:23 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:23 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:26 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:26 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:27 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:27 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:27 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:32 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:32 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:32 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:45 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:45 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:46 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:46 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:46 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:51 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:51 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:13:51 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:14:59 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:14:59 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:15:05 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:15:05 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:16 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:53 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:53 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:54 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:54 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:55 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:55 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:17:55 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:18:55 | INFO | === APP STARTED ===
+2026-10-31 11:18:56 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:20:50 | INFO | === APP STARTED ===
+2026-10-31 11:20:50 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:20:50 | INFO | ==================================================
+2026-10-31 11:20:50 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:20:50 | INFO | Local access: http://127.0.0.1:8080
+2026-10-31 11:20:50 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-31 11:20:50 | INFO | ==================================================
+2026-10-31 11:21:05 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:23:13 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:25:23 | INFO | === APP STARTED ===
+2026-10-31 11:25:23 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:25:24 | INFO | ==================================================
+2026-10-31 11:25:24 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:25:24 | INFO | Local access: http://127.0.0.1:8080
+2026-10-31 11:25:24 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-31 11:25:24 | INFO | ==================================================
+2026-10-31 11:26:36 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:36 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:37 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:37 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:43 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:43 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:44 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:44 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:45 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:45 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:45 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:50 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:50 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:26:50 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:27:20 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:27:20 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:27:20 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:28:20 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:28:20 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:28:20 | INFO | DEBUG: Received GET request for /
+2026-10-31 11:34:21 | INFO | === APP STARTED ===
+2026-10-31 11:34:22 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:34:22 | INFO | ==================================================
+2026-10-31 11:34:22 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:34:22 | INFO | Local access: http://127.0.0.1:8080
+2026-10-31 11:34:22 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-31 11:34:22 | INFO | ==================================================
+2026-10-31 11:34:26 | INFO | [GET] START path=/
+2026-10-31 11:34:26 | INFO | [GET] Before render_page
+2026-10-31 11:34:26 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:26 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:26 | INFO | [GET] respond_html completed
+2026-10-31 11:34:26 | INFO | [GET] START path=/
+2026-10-31 11:34:26 | INFO | [GET] Before render_page
+2026-10-31 11:34:26 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:26 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:26 | INFO | [GET] respond_html completed
+2026-10-31 11:34:26 | INFO | [GET] START path=/
+2026-10-31 11:34:26 | INFO | [GET] Before render_page
+2026-10-31 11:34:26 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:26 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:26 | INFO | [GET] respond_html completed
+2026-10-31 11:34:41 | INFO | [GET] START path=/
+2026-10-31 11:34:41 | INFO | [GET] Before render_page
+2026-10-31 11:34:41 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:41 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:41 | INFO | [GET] respond_html completed
+2026-10-31 11:34:41 | INFO | [GET] START path=/
+2026-10-31 11:34:41 | INFO | [GET] Before render_page
+2026-10-31 11:34:41 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:41 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:41 | INFO | [GET] respond_html completed
+2026-10-31 11:34:42 | INFO | [GET] START path=/
+2026-10-31 11:34:42 | INFO | [GET] Before render_page
+2026-10-31 11:34:42 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:42 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:42 | INFO | [GET] respond_html completed
+2026-10-31 11:34:42 | INFO | [GET] START path=/
+2026-10-31 11:34:42 | INFO | [GET] Before render_page
+2026-10-31 11:34:42 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:42 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:42 | INFO | [GET] respond_html completed
+2026-10-31 11:34:42 | INFO | [GET] START path=/
+2026-10-31 11:34:42 | INFO | [GET] Before render_page
+2026-10-31 11:34:42 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:42 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:42 | INFO | [GET] respond_html completed
+2026-10-31 11:34:47 | INFO | [GET] START path=/
+2026-10-31 11:34:47 | INFO | [GET] Before render_page
+2026-10-31 11:34:47 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:47 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:47 | INFO | [GET] respond_html completed
+2026-10-31 11:34:47 | INFO | [GET] START path=/
+2026-10-31 11:34:47 | INFO | [GET] Before render_page
+2026-10-31 11:34:47 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:47 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:47 | INFO | [GET] respond_html completed
+2026-10-31 11:34:47 | INFO | [GET] START path=/
+2026-10-31 11:34:47 | INFO | [GET] Before render_page
+2026-10-31 11:34:47 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:34:47 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:34:47 | INFO | [GET] respond_html completed
+2026-10-31 11:35:17 | INFO | [GET] START path=/
+2026-10-31 11:35:17 | INFO | [GET] Before render_page
+2026-10-31 11:35:17 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:35:17 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:35:17 | INFO | [GET] respond_html completed
+2026-10-31 11:35:17 | INFO | [GET] START path=/
+2026-10-31 11:35:17 | INFO | [GET] Before render_page
+2026-10-31 11:35:17 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:35:17 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:35:17 | INFO | [GET] respond_html completed
+2026-10-31 11:35:17 | INFO | [GET] START path=/
+2026-10-31 11:35:17 | INFO | [GET] Before render_page
+2026-10-31 11:35:17 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:35:17 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:35:17 | INFO | [GET] respond_html completed
+2026-10-31 11:36:00 | INFO | [GET] START path=/
+2026-10-31 11:36:00 | INFO | [GET] Before render_page
+2026-10-31 11:36:00 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:36:00 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    self.send_response(status)
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:36:00 | INFO | [GET] respond_html completed
+2026-10-31 11:41:07 | INFO | [GET] START path=/
+2026-10-31 11:41:07 | INFO | [GET] Before render_page
+2026-10-31 11:41:07 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:07 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:07 | INFO | [GET] respond_html completed
+2026-10-31 11:41:15 | INFO | === APP STARTED ===
+2026-10-31 11:41:15 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:41:15 | INFO | ==================================================
+2026-10-31 11:41:15 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:41:15 | INFO | Local access: http://127.0.0.1:8080
+2026-10-31 11:41:15 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-31 11:41:16 | INFO | ==================================================
+2026-10-31 11:41:42 | INFO | [GET] START path=/
+2026-10-31 11:41:42 | INFO | [GET] Before render_page
+2026-10-31 11:41:42 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:42 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:42 | INFO | [GET] respond_html completed
+2026-10-31 11:41:49 | INFO | [GET] START path=/
+2026-10-31 11:41:49 | INFO | [GET] Before render_page
+2026-10-31 11:41:49 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:49 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:49 | INFO | [GET] respond_html completed
+2026-10-31 11:41:49 | INFO | [GET] START path=/
+2026-10-31 11:41:49 | INFO | [GET] Before render_page
+2026-10-31 11:41:49 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:49 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:49 | INFO | [GET] respond_html completed
+2026-10-31 11:41:50 | INFO | [GET] START path=/
+2026-10-31 11:41:50 | INFO | [GET] Before render_page
+2026-10-31 11:41:50 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:50 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:50 | INFO | [GET] respond_html completed
+2026-10-31 11:41:50 | INFO | [GET] START path=/
+2026-10-31 11:41:50 | INFO | [GET] Before render_page
+2026-10-31 11:41:50 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:50 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:50 | INFO | [GET] respond_html completed
+2026-10-31 11:41:51 | INFO | [GET] START path=/
+2026-10-31 11:41:51 | INFO | [GET] Before render_page
+2026-10-31 11:41:51 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:51 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:51 | INFO | [GET] respond_html completed
+2026-10-31 11:41:51 | INFO | [GET] START path=/
+2026-10-31 11:41:51 | INFO | [GET] Before render_page
+2026-10-31 11:41:51 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:51 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:51 | INFO | [GET] respond_html completed
+2026-10-31 11:41:51 | INFO | [GET] START path=/
+2026-10-31 11:41:51 | INFO | [GET] Before render_page
+2026-10-31 11:41:51 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:51 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:51 | INFO | [GET] respond_html completed
+2026-10-31 11:41:56 | INFO | [GET] START path=/
+2026-10-31 11:41:56 | INFO | [GET] Before render_page
+2026-10-31 11:41:56 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:56 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:56 | INFO | [GET] respond_html completed
+2026-10-31 11:41:56 | INFO | [GET] START path=/
+2026-10-31 11:41:56 | INFO | [GET] Before render_page
+2026-10-31 11:41:56 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:56 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:56 | INFO | [GET] respond_html completed
+2026-10-31 11:41:56 | INFO | [GET] START path=/
+2026-10-31 11:41:56 | INFO | [GET] Before render_page
+2026-10-31 11:41:56 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:41:56 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:41:56 | INFO | [GET] respond_html completed
+2026-10-31 11:43:43 | INFO | [GET] START path=/
+2026-10-31 11:43:43 | INFO | [GET] Before render_page
+2026-10-31 11:43:43 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:43:43 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:43:43 | INFO | [GET] respond_html completed
+2026-10-31 11:43:47 | INFO | [GET] START path=/
+2026-10-31 11:43:47 | INFO | [GET] Before render_page
+2026-10-31 11:43:47 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:43:47 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:43:47 | INFO | [GET] respond_html completed
+2026-10-31 11:43:57 | INFO | === APP STARTED ===
+2026-10-31 11:43:58 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:43:58 | INFO | ==================================================
+2026-10-31 11:43:58 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:43:58 | INFO | Local access: http://127.0.0.1:8080
+2026-10-31 11:43:58 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-31 11:43:58 | INFO | ==================================================
+2026-10-31 11:44:05 | INFO | [GET] START path=/
+2026-10-31 11:44:05 | INFO | [GET] Before render_page
+2026-10-31 11:44:05 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:44:05 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+    try:
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:44:05 | INFO | [GET] respond_html completed
+2026-10-31 11:45:10 | INFO | === APP STARTED ===
+2026-10-31 11:45:11 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:45:11 | INFO | ==================================================
+2026-10-31 11:45:11 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:45:11 | INFO | Local access: http://127.0.0.1:8080
+2026-10-31 11:45:11 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-31 11:45:11 | INFO | ==================================================
+2026-10-31 11:45:21 | INFO | [GET] START path=/
+2026-10-31 11:45:21 | INFO | [GET] Before render_page
+2026-10-31 11:45:21 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:45:21 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 11:45:21 | INFO | [GET] respond_html completed
+2026-10-31 11:46:02 | INFO | === APP STARTED ===
+2026-10-31 11:46:03 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:47:43 | INFO | === APP STARTED ===
+2026-10-31 11:47:44 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 11:47:44 | INFO | ==================================================
+2026-10-31 11:47:44 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 11:47:44 | INFO | Local access: http://127.0.0.1:8765
+2026-10-31 11:47:44 | INFO | LAN access: http://192.168.200.14:8765
+2026-10-31 11:47:44 | INFO | ==================================================
+2026-10-31 11:47:55 | INFO | [GET] START path=/
+2026-10-31 11:47:55 | INFO | [GET] Before render_page
+2026-10-31 11:47:55 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:47:55 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 11:47:55 | INFO | [GET] respond_html completed
+2026-10-31 11:49:25 | INFO | [GET] START path=/
+2026-10-31 11:49:25 | INFO | [GET] Before render_page
+2026-10-31 11:49:25 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 11:49:25 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 11:49:25 | INFO | [GET] respond_html completed
+2026-10-31 11:49:25 | INFO | [GET] START path=/logo.png
+2026-10-31 11:49:25 | INFO | [HTTP] "GET /logo.png HTTP/1.1" 200 -
+2026-10-31 11:49:25 | INFO | [GET] START path=/favicon.ico
+2026-10-31 11:49:25 | INFO | [HTTP] "GET /favicon.ico HTTP/1.1" 200 -
+2026-10-31 11:50:59 | INFO | ========================================
+2026-10-31 11:50:59 | INFO | Input Tokens : 8178
+2026-10-31 11:50:59 | INFO | Output Tokens: 1710
+2026-10-31 11:50:59 | INFO | Total Tokens : 9888
+2026-10-31 11:50:59 | INFO | ========================================
+2026-10-31 11:50:59 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792582533.26105-55.wav') -> 'Tejesh Yadav'
+2026-10-31 11:50:59 | INFO | [DB] Overriding Executive Name in analysis text -> 'Tejesh Yadav'
+2026-10-31 11:50:59 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 11:51:01 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792582533.26105-55.wav') -> 'Mula Madhyavarti Sahakari Grahak Sanstha Maryadit HO Sonai'
+2026-10-31 11:51:01 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryS8mdo5wQVveieuoa' | audio_url=None | filename='21-10-2026-1792582533.26105-55.wav'
+2026-10-31 11:51:02 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 11:52:40 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 12:06:58 | INFO | === APP STARTED ===
+2026-10-31 12:06:59 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 12:06:59 | INFO | ==================================================
+2026-10-31 12:06:59 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 12:06:59 | INFO | Local access: http://127.0.0.1:8765
+2026-10-31 12:06:59 | INFO | LAN access: http://192.168.200.14:8765
+2026-10-31 12:06:59 | INFO | ==================================================
+2026-10-31 12:07:04 | INFO | [GET] START path=/
+2026-10-31 12:07:04 | INFO | [GET] Before render_page
+2026-10-31 12:07:04 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 12:07:04 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 12:07:04 | INFO | [GET] respond_html completed
+2026-10-31 12:08:30 | ERROR | Summary generation failed: local variable 'labeled' referenced before assignment
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1617, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2497, in analyze_audio_with_gemini
+    transcript, labeling_usage = label_speakers_with_deepseek(
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1678, in label_speakers_with_deepseek
+    re.findall(r"\[\d{2}:\d{2}\]", labeled)
+UnboundLocalError: local variable 'labeled' referenced before assignment
+2026-10-31 12:08:30 | INFO | [HTTP] "POST /summarize HTTP/1.1" 500 -
+2026-10-31 12:14:36 | INFO | === APP STARTED ===
+2026-10-31 12:14:37 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 12:14:37 | INFO | ==================================================
+2026-10-31 12:14:37 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 12:14:37 | INFO | Local access: http://127.0.0.1:8765
+2026-10-31 12:14:37 | INFO | LAN access: http://192.168.200.14:8765
+2026-10-31 12:14:37 | INFO | ==================================================
+2026-10-31 12:14:39 | INFO | [GET] START path=/
+2026-10-31 12:14:39 | INFO | [GET] Before render_page
+2026-10-31 12:14:39 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 12:14:39 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 12:14:39 | INFO | [GET] respond_html completed
+2026-10-31 12:16:08 | INFO | ========================================
+2026-10-31 12:16:08 | INFO | Input Tokens : 10590
+2026-10-31 12:16:08 | INFO | Output Tokens: 3019
+2026-10-31 12:16:08 | INFO | Total Tokens : 13609
+2026-10-31 12:16:08 | INFO | ========================================
+2026-10-31 12:16:08 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792582533.26105-55.wav') -> 'Tejesh Yadav'
+2026-10-31 12:16:08 | INFO | [DB] Overriding Executive Name in analysis text -> 'Tejesh Yadav'
+2026-10-31 12:16:08 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 12:16:09 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792582533.26105-55.wav') -> 'Mula Madhyavarti Sahakari Grahak Sanstha Maryadit HO Sonai'
+2026-10-31 12:16:09 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryKSwkfnflRokYOo6e' | audio_url=None | filename='21-10-2026-1792582533.26105-55.wav'
+2026-10-31 12:16:10 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 12:16:25 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 12:17:26 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/20-10-2026/20-10-2026-1792504378.23368-13.wav Content-Type='audio/x-wav'
+2026-10-31 12:17:28 | INFO | [DOWNLOAD] Saved 15100844 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\20-10-2026-1792504378.23368-13.wav
+2026-10-31 12:19:55 | INFO | ========================================
+2026-10-31 12:19:55 | INFO | Input Tokens : 13328
+2026-10-31 12:19:55 | INFO | Output Tokens: 4160
+2026-10-31 12:19:55 | INFO | Total Tokens : 17488
+2026-10-31 12:19:55 | INFO | ========================================
+2026-10-31 12:19:55 | INFO | [DB] resolve_executive_name(filename='20-10-2026-1792504378.23368-13.wav') -> 'Suresh Kolekar'
+2026-10-31 12:19:55 | INFO | [DB] Overriding Executive Name in analysis text -> 'Suresh Kolekar'
+2026-10-31 12:19:55 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 12:19:57 | INFO | [DB] resolve_customer_name(filename='20-10-2026-1792504378.23368-13.wav') -> 'Bhandari Collection Shirur'
+2026-10-31 12:19:57 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundarytu4iHD8kBajrAQOS' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/20-10-2026/20-10-2026-1792504378.23368-13.wav' | filename='20-10-2026-1792504378.23368-13.wav'
+2026-10-31 12:19:58 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 12:20:32 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 12:26:30 | INFO | ========================================
+2026-10-31 12:26:30 | INFO | Input Tokens : 8908
+2026-10-31 12:26:30 | INFO | Output Tokens: 2474
+2026-10-31 12:26:30 | INFO | Total Tokens : 11382
+2026-10-31 12:26:30 | INFO | ========================================
+2026-10-31 12:26:30 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'Akash Badadhe'
+2026-10-31 12:26:30 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akash Badadhe'
+2026-10-31 12:26:30 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 12:26:31 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'ALLMEN BELGAUM'
+2026-10-31 12:26:31 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundary7Oo5weOtj5ltZqR0' | audio_url=None | filename='21-10-2026-1792588644.26778-103.wav'
+2026-10-31 12:26:32 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 12:27:05 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 12:29:33 | INFO | === APP STARTED ===
+2026-10-31 12:29:33 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 12:29:33 | INFO | ==================================================
+2026-10-31 12:29:33 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 12:29:33 | INFO | Local access: http://127.0.0.1:8765
+2026-10-31 12:29:33 | INFO | LAN access: http://192.168.200.14:8765
+2026-10-31 12:29:33 | INFO | ==================================================
+2026-10-31 12:29:38 | INFO | [GET] START path=/
+2026-10-31 12:29:38 | INFO | [GET] Before render_page
+2026-10-31 12:29:38 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 12:29:38 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 12:29:38 | INFO | [GET] respond_html completed
+2026-10-31 12:30:38 | INFO | ========================================
+2026-10-31 12:30:38 | INFO | Input Tokens : 8949
+2026-10-31 12:30:38 | INFO | Output Tokens: 2473
+2026-10-31 12:30:38 | INFO | Total Tokens : 11422
+2026-10-31 12:30:38 | INFO | ========================================
+2026-10-31 12:30:38 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'Akash Badadhe'
+2026-10-31 12:30:38 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akash Badadhe'
+2026-10-31 12:30:38 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 12:30:38 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'ALLMEN BELGAUM'
+2026-10-31 12:30:38 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryUVbEBwBrSF53nT59' | audio_url=None | filename='21-10-2026-1792588644.26778-103.wav'
+2026-10-31 12:30:38 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 12:30:46 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 12:32:32 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/20-10-2026/20-10-2026-1792504378.23368-13.wav Content-Type='audio/x-wav'
+2026-10-31 12:32:34 | INFO | [DOWNLOAD] Saved 15100844 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\20-10-2026-1792504378.23368-13.wav
+2026-10-31 12:35:00 | INFO | ========================================
+2026-10-31 12:35:00 | INFO | Input Tokens : 12860
+2026-10-31 12:35:00 | INFO | Output Tokens: 3857
+2026-10-31 12:35:00 | INFO | Total Tokens : 16717
+2026-10-31 12:35:00 | INFO | ========================================
+2026-10-31 12:35:00 | INFO | [DB] resolve_executive_name(filename='20-10-2026-1792504378.23368-13.wav') -> 'Suresh Kolekar'
+2026-10-31 12:35:00 | INFO | [DB] Overriding Executive Name in analysis text -> 'Suresh Kolekar'
+2026-10-31 12:35:00 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 12:35:00 | INFO | [DB] resolve_customer_name(filename='20-10-2026-1792504378.23368-13.wav') -> 'Bhandari Collection Shirur'
+2026-10-31 12:35:00 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundary5BBw8wPXE0tTYlIB' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/20-10-2026/20-10-2026-1792504378.23368-13.wav' | filename='20-10-2026-1792504378.23368-13.wav'
+2026-10-31 12:35:01 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 12:35:09 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 15:31:00 | INFO | === APP STARTED ===
+2026-10-31 15:31:01 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 15:31:01 | INFO | ==================================================
+2026-10-31 15:31:01 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 15:31:01 | INFO | Local access: http://127.0.0.1:8765
+2026-10-31 15:31:01 | INFO | LAN access: http://192.168.200.14:8765
+2026-10-31 15:31:01 | INFO | ==================================================
+2026-10-31 15:31:11 | INFO | [GET] START path=/
+2026-10-31 15:31:11 | INFO | [GET] Before render_page
+2026-10-31 15:31:11 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 15:31:11 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 15:31:11 | INFO | [GET] respond_html completed
+2026-10-31 15:32:38 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/21-10-2026/21-10-2026-1792588644.26778-103.wav Content-Type='audio/x-wav'
+2026-10-31 15:32:38 | INFO | [DOWNLOAD] Saved 5500204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\21-10-2026-1792588644.26778-103.wav
+2026-10-31 15:33:31 | INFO | ========================================
+2026-10-31 15:33:31 | INFO | Input Tokens : 8932
+2026-10-31 15:33:31 | INFO | Output Tokens: 2454
+2026-10-31 15:33:31 | INFO | Total Tokens : 11386
+2026-10-31 15:33:31 | INFO | ========================================
+2026-10-31 15:33:31 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'Akash Badadhe'
+2026-10-31 15:33:31 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akash Badadhe'
+2026-10-31 15:33:31 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 15:33:33 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'ALLMEN BELGAUM'
+2026-10-31 15:33:33 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundary5OaEdfHn6BZQfASI' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/21-10-2026/21-10-2026-1792588644.26778-103.wav' | filename='21-10-2026-1792588644.26778-103.wav'
+2026-10-31 15:33:33 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 15:34:07 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 15:57:29 | INFO | === APP STARTED ===
+2026-10-31 15:57:30 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 16:08:44 | INFO | === APP STARTED ===
+2026-10-31 16:08:45 | INFO | === TESTNEW IMPORTED ===
+2026-10-31 16:08:45 | INFO | ==================================================
+2026-10-31 16:08:45 | INFO | Call Summary Web App is ACTIVE
+2026-10-31 16:08:45 | INFO | Local access: http://127.0.0.1:8765
+2026-10-31 16:08:45 | INFO | LAN access: http://192.168.200.14:8765
+2026-10-31 16:08:45 | INFO | ==================================================
+2026-10-31 16:08:49 | INFO | [GET] START path=/
+2026-10-31 16:08:49 | INFO | [GET] Before render_page
+2026-10-31 16:08:49 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 16:08:49 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 16:08:49 | INFO | [GET] respond_html completed
+2026-10-31 16:09:49 | INFO | ========================================
+2026-10-31 16:09:49 | INFO | Input Tokens : 9004
+2026-10-31 16:09:49 | INFO | Output Tokens: 2503
+2026-10-31 16:09:49 | INFO | Total Tokens : 11507
+2026-10-31 16:09:49 | INFO | ========================================
+2026-10-31 16:09:49 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'Akash Badadhe'
+2026-10-31 16:09:49 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akash Badadhe'
+2026-10-31 16:09:49 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 16:09:52 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'ALLMEN BELGAUM'
+2026-10-31 16:09:52 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryZL83rgj4xOfSICQu' | audio_url=None | filename='21-10-2026-1792588644.26778-103.wav'
+2026-10-31 16:09:52 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 16:11:05 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 16:13:08 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/20-10-2026/20-10-2026-1792504378.23368-13.wav Content-Type='audio/x-wav'
+2026-10-31 16:13:09 | INFO | [DOWNLOAD] Saved 15100844 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\20-10-2026-1792504378.23368-13.wav
+2026-10-31 16:15:58 | INFO | ========================================
+2026-10-31 16:15:58 | INFO | Input Tokens : 13481
+2026-10-31 16:15:58 | INFO | Output Tokens: 4197
+2026-10-31 16:15:58 | INFO | Total Tokens : 17678
+2026-10-31 16:15:58 | INFO | ========================================
+2026-10-31 16:15:58 | INFO | [DB] resolve_executive_name(filename='20-10-2026-1792504378.23368-13.wav') -> 'Suresh Kolekar'
+2026-10-31 16:15:58 | INFO | [DB] Overriding Executive Name in analysis text -> 'Suresh Kolekar'
+2026-10-31 16:15:58 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 16:15:59 | INFO | [DB] resolve_customer_name(filename='20-10-2026-1792504378.23368-13.wav') -> 'Bhandari Collection Shirur'
+2026-10-31 16:15:59 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryB15g4RWFdpISjYGW' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/20-10-2026/20-10-2026-1792504378.23368-13.wav' | filename='20-10-2026-1792504378.23368-13.wav'
+2026-10-31 16:16:00 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 16:16:12 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 16:57:50 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/01-10-2026/01-10-2026-1790831789.42871-13.wav Content-Type='audio/x-wav'
+2026-10-31 16:57:50 | INFO | [DOWNLOAD] Saved 4853164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\01-10-2026-1790831789.42871-13.wav
+2026-10-31 16:57:50 | ERROR | Summary generation failed: [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1608, in handle_summarize
+    filename, input_path = self.download_audio_from_url(audio_url)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1965, in convert_audio
+    len(plain_transcript.splitlines()),
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 16:57:50 | ERROR | [RESPOND_HTML SOCKET ERROR] [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1608, in handle_summarize
+    filename, input_path = self.download_audio_from_url(audio_url)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1965, in convert_audio
+    len(plain_transcript.splitlines()),
+OSError: [WinError 233] No process is on the other end of the pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1709, in respond_html
+  File "C:\Program Files\Python310\lib\http\server.py", line 498, in send_response
+    self.log_request(code)
+  File "C:\Program Files\Python310\lib\http\server.py", line 550, in log_request
+    self.log_message('"%s" %s %s',
+  File "C:\Program Files\Python310\lib\http\server.py", line 593, in log_message
+    sys.stderr.write("%s - - [%s] %s\n" %
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-31 16:58:18 | INFO | [GET] START path=/
+2026-10-31 16:58:18 | INFO | [GET] Before render_page
+2026-10-31 16:58:18 | INFO | [GET] render_page SUCCESS. Length=19487
+2026-10-31 16:58:18 | INFO | [HTTP] "GET / HTTP/1.1" 200 -
+2026-10-31 16:58:18 | INFO | [GET] respond_html completed
+2026-10-31 16:58:22 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/01-10-2026/01-10-2026-1790831789.42871-13.wav Content-Type='audio/x-wav'
+2026-10-31 16:58:22 | INFO | [DOWNLOAD] Saved 4853164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\01-10-2026-1790831789.42871-13.wav
+2026-10-31 16:59:09 | INFO | ========================================
+2026-10-31 16:59:09 | INFO | Input Tokens : 8077
+2026-10-31 16:59:09 | INFO | Output Tokens: 2056
+2026-10-31 16:59:09 | INFO | Total Tokens : 10133
+2026-10-31 16:59:09 | INFO | ========================================
+2026-10-31 16:59:09 | INFO | [DB] resolve_executive_name(filename='01-10-2026-1790831789.42871-13.wav') -> 'Suresh Kolekar'
+2026-10-31 16:59:09 | INFO | [DB] Overriding Executive Name in analysis text -> 'Suresh Kolekar'
+2026-10-31 16:59:09 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 16:59:11 | INFO | [DB] resolve_customer_name(filename='01-10-2026-1790831789.42871-13.wav') -> 'Chaitanya Dresses Vita'
+2026-10-31 16:59:11 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundary2rPfjprtgBCYwsYx' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/01-10-2026/01-10-2026-1790831789.42871-13.wav' | filename='01-10-2026-1790831789.42871-13.wav'
+2026-10-31 16:59:12 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 17:03:35 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/01-10-2026/01-10-2026-1790834014.43038-101.wav Content-Type='audio/x-wav'
+2026-10-31 17:03:36 | INFO | [DOWNLOAD] Saved 13947564 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\01-10-2026-1790834014.43038-101.wav
+2026-10-31 17:06:01 | INFO | ========================================
+2026-10-31 17:06:01 | INFO | Input Tokens : 21156
+2026-10-31 17:06:01 | INFO | Output Tokens: 6706
+2026-10-31 17:06:01 | INFO | Total Tokens : 27862
+2026-10-31 17:06:01 | INFO | ========================================
+2026-10-31 17:06:01 | INFO | [DB] resolve_executive_name(filename='01-10-2026-1790834014.43038-101.wav') -> 'Vidya Korade'
+2026-10-31 17:06:01 | INFO | [DB] Overriding Executive Name in analysis text -> 'Vidya Korade'
+2026-10-31 17:06:01 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 17:06:01 | INFO | [DB] resolve_customer_name(filename='01-10-2026-1790834014.43038-101.wav') -> 'Rangoli Branch Moshi'
+2026-10-31 17:06:01 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryZ5TG4s97Si2gaVr4' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/01-10-2026/01-10-2026-1790834014.43038-101.wav' | filename='01-10-2026-1790834014.43038-101.wav'
+2026-10-31 17:06:01 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 17:06:14 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 17:16:44 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/21-10-2026/21-10-2026-1792588644.26778-103.wav Content-Type='audio/x-wav'
+2026-10-31 17:16:45 | INFO | [DOWNLOAD] Saved 5500204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\21-10-2026-1792588644.26778-103.wav
+2026-10-31 17:17:36 | INFO | ========================================
+2026-10-31 17:17:36 | INFO | Input Tokens : 8973
+2026-10-31 17:17:36 | INFO | Output Tokens: 2469
+2026-10-31 17:17:36 | INFO | Total Tokens : 11442
+2026-10-31 17:17:36 | INFO | ========================================
+2026-10-31 17:17:36 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'Akash Badadhe'
+2026-10-31 17:17:36 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akash Badadhe'
+2026-10-31 17:17:36 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 17:17:36 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792588644.26778-103.wav') -> 'ALLMEN BELGAUM'
+2026-10-31 17:17:36 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryCdEMkBHPYByAsLHW' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/21-10-2026/21-10-2026-1792588644.26778-103.wav' | filename='21-10-2026-1792588644.26778-103.wav'
+2026-10-31 17:17:37 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 17:17:55 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -
+2026-10-31 17:19:15 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/21-10-2026/21-10-2026-1792582533.26105-55.wav Content-Type='audio/x-wav'
+2026-10-31 17:19:16 | INFO | [DOWNLOAD] Saved 7985644 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\21-10-2026-1792582533.26105-55.wav
+2026-10-31 17:20:44 | INFO | ========================================
+2026-10-31 17:20:44 | INFO | Input Tokens : 10651
+2026-10-31 17:20:44 | INFO | Output Tokens: 2965
+2026-10-31 17:20:44 | INFO | Total Tokens : 13616
+2026-10-31 17:20:44 | INFO | ========================================
+2026-10-31 17:20:44 | INFO | [DB] resolve_executive_name(filename='21-10-2026-1792582533.26105-55.wav') -> 'Tejesh Yadav'
+2026-10-31 17:20:44 | INFO | [DB] Overriding Executive Name in analysis text -> 'Tejesh Yadav'
+2026-10-31 17:20:44 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-31 17:20:44 | INFO | [DB] resolve_customer_name(filename='21-10-2026-1792582533.26105-55.wav') -> 'Mula Madhyavarti Sahakari Grahak Sanstha Maryadit HO Sonai'
+2026-10-31 17:20:44 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryQi91JQfqE5flvCZV' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/21-10-2026/21-10-2026-1792582533.26105-55.wav' | filename='21-10-2026-1792582533.26105-55.wav'
+2026-10-31 17:20:44 | INFO | [HTTP] "POST /summarize HTTP/1.1" 200 -
+2026-10-31 17:21:01 | INFO | [HTTP] "POST /export_pdf HTTP/1.1" 200 -

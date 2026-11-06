@@ -1,0 +1,15 @@
+{
+  "executive_name": "Not mentioned",
+  "greetings": ["No.3"],
+  "closings": ["Okay."],
+  "customer_mood": "Neutral",
+  "mood_reason": "The customer's tone is neutral; they respond with 'Okay' and do not express frustration or concern.",
+  "executive_tone": "Helpful",
+  "keywords": [],
+  "business_facts": {
+    "issues": [],
+    "requests": [],
+    "actions": ["Executive instructed customer to go to the app or number search."]
+  },
+  "other_topics": []
+}

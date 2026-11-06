@@ -1,0 +1,247 @@
+2026-10-16 16:51:23 | INFO | === APP STARTED ===
+2026-10-16 16:51:24 | INFO | === TESTNEW IMPORTED ===
+2026-10-16 16:51:24 | INFO | ==================================================
+2026-10-16 16:51:24 | INFO | Call Summary Web App is ACTIVE
+2026-10-16 16:51:24 | INFO | Local access: http://127.0.0.1:8080
+2026-10-16 16:51:24 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-16 16:51:24 | INFO | ==================================================
+2026-10-16 16:51:24 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
+2026-10-16 16:54:56 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124227.7371-15.wav Content-Type='audio/x-wav'
+2026-10-16 16:54:58 | INFO | [DOWNLOAD] Saved 6397164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124227.7371-15.wav
+2026-10-16 16:57:00 | ERROR | Summary generation failed: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1951, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 800, in whisper_transcribe
+    response = client.audio.transcriptions.create(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_utils\_utils.py", line 298, in wrapper
+    return func(*args, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\resources\audio\transcriptions.py", line 524, in create
+    return self._post(  # type: ignore[return-value]
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.InternalServerError: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+2026-10-16 16:57:02 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124227.7371-15.wav Content-Type='audio/x-wav'
+2026-10-16 16:57:03 | INFO | [DOWNLOAD] Saved 6397164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124227.7371-15.wav
+2026-10-16 17:01:52 | INFO | === APP STARTED ===
+2026-10-16 17:01:52 | INFO | === TESTNEW IMPORTED ===
+2026-10-16 17:01:52 | INFO | ==================================================
+2026-10-16 17:01:52 | INFO | Call Summary Web App is ACTIVE
+2026-10-16 17:01:52 | INFO | Local access: http://127.0.0.1:8080
+2026-10-16 17:01:52 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-16 17:01:52 | INFO | ==================================================
+2026-10-16 17:01:52 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
+2026-10-16 17:05:30 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124227.7371-15.wav Content-Type='audio/x-wav'
+2026-10-16 17:05:31 | INFO | [DOWNLOAD] Saved 6397164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124227.7371-15.wav
+2026-10-16 17:07:36 | ERROR | Summary generation failed: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1951, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 800, in whisper_transcribe
+    response = client.audio.transcriptions.create(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_utils\_utils.py", line 298, in wrapper
+    return func(*args, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\resources\audio\transcriptions.py", line 524, in create
+    return self._post(  # type: ignore[return-value]
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.InternalServerError: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+2026-10-16 17:07:38 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124227.7371-15.wav Content-Type='audio/x-wav'
+2026-10-16 17:07:38 | INFO | [DOWNLOAD] Saved 6397164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124227.7371-15.wav
+2026-10-16 17:09:39 | ERROR | Summary generation failed: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1951, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 800, in whisper_transcribe
+    response = client.audio.transcriptions.create(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_utils\_utils.py", line 298, in wrapper
+    return func(*args, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\resources\audio\transcriptions.py", line 524, in create
+    return self._post(  # type: ignore[return-value]
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.InternalServerError: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+2026-10-16 17:09:41 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124227.7371-15.wav Content-Type='audio/x-wav'
+2026-10-16 17:09:41 | INFO | [DOWNLOAD] Saved 6397164 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124227.7371-15.wav
+2026-10-16 17:11:43 | ERROR | Summary generation failed: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1951, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 800, in whisper_transcribe
+    response = client.audio.transcriptions.create(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_utils\_utils.py", line 298, in wrapper
+    return func(*args, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\resources\audio\transcriptions.py", line 524, in create
+    return self._post(  # type: ignore[return-value]
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1368, in post
+    return cast(ResponseT, self.request(cast_to, opts, stream=stream, stream_cls=stream_cls))
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\openai\_base_client.py", line 1141, in request
+    raise self._make_status_error_from_response(err.response) from None
+openai.InternalServerError: Error code: 502 - {'error': {'message': "litellm.BadGatewayError: BadGatewayError: OpenAIException - Error code: 502 - {'detail': 'the ASR vendor rejected the request'}. Received Model Group=indic-transcribe\nAvailable Model Group Fallbacks=None", 'type': None, 'param': None, 'code': '502'}}
+2026-10-16 17:11:43 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124412.7376-52.wav Content-Type='audio/x-wav'
+2026-10-16 17:11:44 | INFO | [DOWNLOAD] Saved 2116204 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124412.7376-52.wav
+2026-10-16 17:12:13 | INFO | ========================================
+2026-10-16 17:12:13 | INFO | Input Tokens : 6346
+2026-10-16 17:12:13 | INFO | Output Tokens: 1596
+2026-10-16 17:12:13 | INFO | Total Tokens : 7942
+2026-10-16 17:12:13 | INFO | ========================================
+2026-10-16 17:12:13 | INFO | [DB] resolve_executive_name(filename='16-10-2026-1792124412.7376-52.wav') -> 'Amol Jadhav'
+2026-10-16 17:12:13 | INFO | [DB] Overriding Executive Name in analysis text -> 'Amol Jadhav'
+2026-10-16 17:12:13 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-16 17:12:14 | INFO | [DB] resolve_customer_name(filename='16-10-2026-1792124412.7376-52.wav') -> 'M/S NANDINI BAKERY RC BRANCH'
+2026-10-16 17:12:14 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124412.7376-52.wav' | filename='16-10-2026-1792124412.7376-52.wav'
+2026-10-16 17:12:15 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124496.7378-101.wav Content-Type='audio/x-wav'
+2026-10-16 17:12:15 | INFO | [DOWNLOAD] Saved 3675564 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124496.7378-101.wav
+2026-10-16 17:12:58 | INFO | ========================================
+2026-10-16 17:12:58 | INFO | Input Tokens : 7559
+2026-10-16 17:12:58 | INFO | Output Tokens: 1887
+2026-10-16 17:12:58 | INFO | Total Tokens : 9446
+2026-10-16 17:12:58 | INFO | ========================================
+2026-10-16 17:12:58 | INFO | [DB] resolve_executive_name(filename='16-10-2026-1792124496.7378-101.wav') -> 'Vidya Korade'
+2026-10-16 17:12:58 | INFO | [DB] Overriding Executive Name in analysis text -> 'Vidya Korade'
+2026-10-16 17:12:58 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-16 17:12:58 | INFO | [DB] resolve_customer_name(filename='16-10-2026-1792124496.7378-101.wav') -> 'AKASH MALL Bhandgaon, Parola, Jalgaon'
+2026-10-16 17:12:58 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124496.7378-101.wav' | filename='16-10-2026-1792124496.7378-101.wav'
+2026-10-16 17:12:59 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124506.7380-13.wav Content-Type='audio/x-wav'
+2026-10-16 17:12:59 | INFO | [DOWNLOAD] Saved 5901484 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124506.7380-13.wav
+2026-10-16 17:14:00 | INFO | ========================================
+2026-10-16 17:14:00 | INFO | Input Tokens : 8046
+2026-10-16 17:14:00 | INFO | Output Tokens: 1849
+2026-10-16 17:14:00 | INFO | Total Tokens : 9895
+2026-10-16 17:14:00 | INFO | ========================================
+2026-10-16 17:14:00 | INFO | [DB] resolve_executive_name(filename='16-10-2026-1792124506.7380-13.wav') -> 'Suresh Kolekar'
+2026-10-16 17:14:00 | INFO | [DB] Overriding Executive Name in analysis text -> 'Suresh Kolekar'
+2026-10-16 17:14:00 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-16 17:14:00 | INFO | [DB] resolve_customer_name(filename='16-10-2026-1792124506.7380-13.wav') -> 'Sejal Selection Chandwad'
+2026-10-16 17:14:00 | INFO | [DEBUG-FILENAME] content_type='application/x-www-form-urlencoded' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124506.7380-13.wav' | filename='16-10-2026-1792124506.7380-13.wav'
+2026-10-16 17:14:00 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/16-10-2026/16-10-2026-1792124917.7385-52.wav Content-Type='audio/x-wav'
+2026-10-16 17:14:00 | INFO | [DOWNLOAD] Saved 1496684 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\16-10-2026-1792124917.7385-52.wav
+2026-10-16 17:14:07 | ERROR | Summary generation failed: [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 888, in whisper_transcribe
+    print(
+OSError: [WinError 233] No process is on the other end of the pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1588, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1951, in analyze_audio_with_gemini
+    transcript, bodhan_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1005, in whisper_transcribe
+    print(
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-16 17:14:07 | ERROR | [AUTO_POLLER] Fatal error: [WinError 233] No process is on the other end of the pipe
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Program Files\Python310\lib\http\client.py", line 1374, in getresponse
+    response.begin()
+  File "C:\Program Files\Python310\lib\http\client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "C:\Program Files\Python310\lib\http\client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\adapters.py", line 696, in send
+    resp = conn.urlopen(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 842, in urlopen
+    retries = retries.increment(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\util\retry.py", line 498, in increment
+    raise reraise(type(error), error, _stacktrace)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 788, in urlopen
+    response = self._make_request(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+  File "C:\Program Files\Python310\lib\http\client.py", line 1374, in getresponse
+    response.begin()
+  File "C:\Program Files\Python310\lib\http\client.py", line 318, in begin
+    version, status, reason = self._read_status()
+  File "C:\Program Files\Python310\lib\http\client.py", line 287, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+urllib3.exceptions.ProtocolError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 406, in run_forever
+    ok = submit_to_web_app(call)
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 275, in submit_to_web_app
+    response = requests.post(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\api.py", line 134, in post
+    return request("post", url, data=data, json=json, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\api.py", line 71, in request
+    return session.request(method=method, url=url, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\sessions.py", line 651, in request
+    resp = self.send(prep, **send_kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\sessions.py", line 784, in send
+    r = adapter.send(request, **kwargs)
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\requests\adapters.py", line 711, in send
+    raise ConnectionError(err, request=request)
+requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 408, in run_forever
+    print(f"[AUTO_POLLER][ERROR] Error processing {url}:", flush=True)
+OSError: [WinError 233] No process is on the other end of the pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 92, in _runner
+    autoprocesscall.run_forever()
+  File "D:\WorkSpace_Sunilpant\Call Summery\autoprocesscall.py", line 435, in run_forever
+    print("[AUTO_POLLER][ERROR] Unexpected worker error:", flush=True)
+OSError: [WinError 233] No process is on the other end of the pipe
+2026-10-16 17:28:47 | INFO | === APP STARTED ===
+2026-10-16 17:28:47 | INFO | === TESTNEW IMPORTED ===
+2026-10-16 17:28:47 | INFO | ==================================================
+2026-10-16 17:28:47 | INFO | Call Summary Web App is ACTIVE
+2026-10-16 17:28:47 | INFO | Local access: http://127.0.0.1:8080
+2026-10-16 17:28:47 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-16 17:28:47 | INFO | ==================================================
+2026-10-16 17:28:47 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
+2026-10-16 17:37:07 | INFO | === APP STARTED ===
+2026-10-16 17:37:07 | INFO | === TESTNEW IMPORTED ===
+2026-10-16 17:37:08 | INFO | ==================================================
+2026-10-16 17:37:08 | INFO | Call Summary Web App is ACTIVE
+2026-10-16 17:37:08 | INFO | Local access: http://127.0.0.1:8080
+2026-10-16 17:37:08 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-16 17:37:08 | INFO | ==================================================
+2026-10-16 17:37:08 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.
+2026-10-16 17:40:22 | INFO | === APP STARTED ===
+2026-10-16 17:40:23 | INFO | === TESTNEW IMPORTED ===
+2026-10-16 17:40:23 | INFO | ==================================================
+2026-10-16 17:40:23 | INFO | Call Summary Web App is ACTIVE
+2026-10-16 17:40:23 | INFO | Local access: http://127.0.0.1:8080
+2026-10-16 17:40:23 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-16 17:40:23 | INFO | ==================================================
+2026-10-16 17:40:23 | INFO | [AUTO_POLLER] Background auto-call-poller thread started.

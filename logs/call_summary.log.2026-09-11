@@ -1,0 +1,273 @@
+2026-09-11 10:03:13 | INFO | === APP STARTED ===
+2026-09-11 10:03:14 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 10:03:14 | INFO | ==================================================
+2026-09-11 10:03:14 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 10:03:14 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 10:03:14 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 10:03:14 | INFO | ==================================================
+2026-09-11 10:03:42 | INFO | DEBUG: Received GET request for /
+2026-09-11 10:03:42 | INFO | DEBUG: Received GET request for /logo.png
+2026-09-11 10:04:19 | INFO | ========================================
+2026-09-11 10:04:19 | INFO | Input Tokens : 7278
+2026-09-11 10:04:19 | INFO | Output Tokens: 1636
+2026-09-11 10:04:19 | INFO | Total Tokens : 8914
+2026-09-11 10:04:19 | INFO | ========================================
+2026-09-11 10:04:19 | INFO | [DB] resolve_executive_name(filename='23-05-2026-1779518677.8380-15.wav') -> 'Rahul Budhwant'
+2026-09-11 10:04:19 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-09-11 10:04:19 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 10:04:20 | INFO | [DB] resolve_customer_name(filename='23-05-2026-1779518677.8380-15.wav') -> 'Mobile Expertise Branch One'
+2026-09-11 10:04:20 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------46456937511281490893646706753' | audio_url=None | filename='23-05-2026-1779518677.8380-15.wav'
+2026-09-11 10:04:22 | ERROR | Summary generation failed: name 'Deepgram_input' is not defined
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1541, in handle_summarize
+    self.respond_html(render_page(
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 330, in render_page
+    <span class="metric-number">{Deepgram_input:,}</span>
+NameError: name 'Deepgram_input' is not defined. Did you mean: 'deepseek_input'?
+2026-09-11 10:06:24 | INFO | === APP STARTED ===
+2026-09-11 10:06:24 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 10:06:24 | INFO | ==================================================
+2026-09-11 10:06:24 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 10:06:24 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 10:06:24 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 10:06:24 | INFO | ==================================================
+2026-09-11 10:06:28 | INFO | DEBUG: Received GET request for /
+2026-09-11 10:06:28 | INFO | DEBUG: Received GET request for /favicon.ico
+2026-09-11 10:07:19 | INFO | ========================================
+2026-09-11 10:07:19 | INFO | Input Tokens : 8689
+2026-09-11 10:07:19 | INFO | Output Tokens: 1870
+2026-09-11 10:07:19 | INFO | Total Tokens : 10559
+2026-09-11 10:07:19 | INFO | ========================================
+2026-09-11 10:07:19 | INFO | [DB] resolve_executive_name(filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a') -> None
+2026-09-11 10:07:19 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-09-11 10:07:19 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 10:07:19 | INFO | [DB] resolve_customer_name(filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a') -> None
+2026-09-11 10:07:19 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------16832533663701488269817905918' | audio_url=None | filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a'
+2026-09-11 10:09:25 | INFO | ========================================
+2026-09-11 10:09:25 | INFO | Input Tokens : 3646
+2026-09-11 10:09:25 | INFO | Output Tokens: 543
+2026-09-11 10:09:25 | INFO | Total Tokens : 4189
+2026-09-11 10:09:25 | INFO | ========================================
+2026-09-11 10:09:25 | INFO | [DB] resolve_executive_name(filename='losssale.wav') -> None
+2026-09-11 10:09:25 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-09-11 10:09:25 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 10:09:25 | INFO | [DB] resolve_customer_name(filename='losssale.wav') -> None
+2026-09-11 10:09:25 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------182828792121578958242392810351' | audio_url=None | filename='losssale.wav'
+2026-09-11 10:12:32 | INFO | ========================================
+2026-09-11 10:12:32 | INFO | Input Tokens : 8346
+2026-09-11 10:12:32 | INFO | Output Tokens: 1842
+2026-09-11 10:12:32 | INFO | Total Tokens : 10188
+2026-09-11 10:12:32 | INFO | ========================================
+2026-09-11 10:12:32 | INFO | [DB] resolve_executive_name(filename='02-09-2026-1788327532.147472-63.wav') -> 'Akshay Deshmukh'
+2026-09-11 10:12:32 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akshay Deshmukh'
+2026-09-11 10:12:32 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 10:12:33 | INFO | [DB] resolve_customer_name(filename='02-09-2026-1788327532.147472-63.wav') -> 'Society Stores Lokhandwala, Mumbai'
+2026-09-11 10:12:33 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------108163146336978868222289688311' | audio_url=None | filename='02-09-2026-1788327532.147472-63.wav'
+2026-09-11 10:26:22 | INFO | ========================================
+2026-09-11 10:26:22 | INFO | Input Tokens : 7800
+2026-09-11 10:26:22 | INFO | Output Tokens: 1606
+2026-09-11 10:26:22 | INFO | Total Tokens : 9406
+2026-09-11 10:26:22 | INFO | ========================================
+2026-09-11 10:26:22 | INFO | [DB] resolve_executive_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'Sandeep Patil'
+2026-09-11 10:26:22 | INFO | [DB] Overriding Executive Name in analysis text -> 'Sandeep Patil'
+2026-09-11 10:26:22 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 10:26:22 | INFO | [DB] resolve_customer_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'MAMTA SUPER BAZAR Yavatmal'
+2026-09-11 10:26:22 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------422623135030581011222606559644' | audio_url=None | filename='22-05-2026-1779461013.7636-12.wav'
+2026-09-11 10:27:11 | INFO | ========================================
+2026-09-11 10:27:11 | INFO | Input Tokens : 8482
+2026-09-11 10:27:11 | INFO | Output Tokens: 1548
+2026-09-11 10:27:11 | INFO | Total Tokens : 10030
+2026-09-11 10:27:11 | INFO | ========================================
+2026-09-11 10:27:11 | INFO | [DB] resolve_executive_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'Sandeep Patil'
+2026-09-11 10:27:11 | INFO | [DB] Overriding Executive Name in analysis text -> 'Sandeep Patil'
+2026-09-11 10:27:11 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 10:27:11 | INFO | [DB] resolve_customer_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'MAMTA SUPER BAZAR Yavatmal'
+2026-09-11 10:27:11 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------9721494357463490553275901205' | audio_url=None | filename='22-05-2026-1779461013.7636-12.wav'
+2026-09-11 10:27:33 | INFO | DEBUG: Received GET request for /favicon.ico
+2026-09-11 10:28:42 | INFO | ========================================
+2026-09-11 10:28:42 | INFO | Input Tokens : 7292
+2026-09-11 10:28:42 | INFO | Output Tokens: 1631
+2026-09-11 10:28:42 | INFO | Total Tokens : 8923
+2026-09-11 10:28:42 | INFO | ========================================
+2026-09-11 10:28:42 | INFO | [DB] resolve_executive_name(filename='23-05-2026-1779518677.8380-15.wav') -> 'Rahul Budhwant'
+2026-09-11 10:28:42 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-09-11 10:28:42 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 10:28:42 | INFO | [DB] resolve_customer_name(filename='23-05-2026-1779518677.8380-15.wav') -> 'Mobile Expertise Branch One'
+2026-09-11 10:28:42 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------42168191212618503712581872231' | audio_url=None | filename='23-05-2026-1779518677.8380-15.wav'
+2026-09-11 10:28:43 | INFO | DEBUG: Received GET request for /logo.png
+2026-09-11 11:53:15 | INFO | DEBUG: Received GET request for /
+2026-09-11 11:54:53 | INFO | === APP STARTED ===
+2026-09-11 11:54:54 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 11:54:54 | INFO | ==================================================
+2026-09-11 11:54:54 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 11:54:54 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 11:54:54 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 11:54:54 | INFO | ==================================================
+2026-09-11 11:54:58 | INFO | DEBUG: Received GET request for /
+2026-09-11 11:55:48 | INFO | ========================================
+2026-09-11 11:55:48 | INFO | Input Tokens : 10040
+2026-09-11 11:55:48 | INFO | Output Tokens: 1823
+2026-09-11 11:55:48 | INFO | Total Tokens : 11863
+2026-09-11 11:55:48 | INFO | ========================================
+2026-09-11 11:55:48 | INFO | [DB] resolve_executive_name(filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a') -> None
+2026-09-11 11:55:48 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-09-11 11:55:48 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 11:55:48 | INFO | [DB] resolve_customer_name(filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a') -> None
+2026-09-11 11:55:48 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------238431260428955653163859465167' | audio_url=None | filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a'
+2026-09-11 17:25:44 | INFO | === APP STARTED ===
+2026-09-11 17:25:45 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 17:25:45 | INFO | ==================================================
+2026-09-11 17:25:45 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 17:25:45 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 17:25:45 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 17:25:45 | INFO | ==================================================
+2026-09-11 17:26:00 | INFO | DEBUG: Received GET request for /
+2026-09-11 17:26:10 | ERROR | Summary generation failed: Job 7izpf11hda was rejected
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1496, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1374, in analyze_audio_with_gemini
+    transcript, speechmatics_usage = whisper_transcribe(audio_path)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 520, in whisper_transcribe
+    transcript = asyncio.run(
+  File "C:\Program Files\Python310\lib\asyncio\runners.py", line 44, in run
+    return loop.run_until_complete(main)
+  File "C:\Program Files\Python310\lib\asyncio\base_events.py", line 649, in run_until_complete
+    return future.result()
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 452, in _speechmatics_transcribe
+    result = await client.wait_for_completion(
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\speechmatics\batch\_async_client.py", line 440, in wait_for_completion
+    await asyncio.wait_for(self._poll_job_status(job_id, polling_interval), timeout=timeout)
+  File "C:\Program Files\Python310\lib\asyncio\tasks.py", line 408, in wait_for
+    return await fut
+  File "D:\WorkSpace_Sunilpant\Call Summery\.venv\lib\site-packages\speechmatics\batch\_async_client.py", line 386, in _poll_job_status
+    raise JobError(f"Job {job_id} was rejected")
+speechmatics.batch._exceptions.JobError: Job 7izpf11hda was rejected
+2026-09-11 17:28:36 | INFO | === APP STARTED ===
+2026-09-11 17:28:37 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 17:28:37 | INFO | ==================================================
+2026-09-11 17:28:37 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 17:28:37 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 17:28:37 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 17:28:37 | INFO | ==================================================
+2026-09-11 17:28:45 | INFO | DEBUG: Received GET request for /
+2026-09-11 17:28:56 | ERROR | Summary generation failed: 'Transcript' object has no attribute 'split'
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1496, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1382, in analyze_audio_with_gemini
+    transcript = merge_orphan_lines(transcript)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 1092, in merge_orphan_lines
+    lines = transcript.split("\n")
+AttributeError: 'Transcript' object has no attribute 'split'
+2026-09-11 17:34:53 | INFO | === APP STARTED ===
+2026-09-11 17:34:54 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 17:34:55 | INFO | ==================================================
+2026-09-11 17:34:55 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 17:34:55 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 17:34:55 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 17:34:55 | INFO | ==================================================
+2026-09-11 17:35:00 | INFO | DEBUG: Received GET request for /
+2026-09-11 17:35:12 | ERROR | Summary generation failed: name 'gemini_usage' is not defined
+Traceback (most recent call last):
+  File "D:\WorkSpace_Sunilpant\Call Summery\web_app.py", line 1496, in handle_summarize
+    results = testnew.analyze_audio_with_gemini(converted_file)
+  File "D:\WorkSpace_Sunilpant\Call Summery\testnew.py", line 2171, in analyze_audio_with_gemini
+    "gemini_input": gemini_usage.get("input_tokens", 0),
+NameError: name 'gemini_usage' is not defined
+2026-09-11 17:36:42 | INFO | === APP STARTED ===
+2026-09-11 17:36:42 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 17:36:43 | INFO | ==================================================
+2026-09-11 17:36:43 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 17:36:43 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 17:36:43 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 17:36:43 | INFO | ==================================================
+2026-09-11 17:36:46 | INFO | DEBUG: Received GET request for /
+2026-09-11 17:36:59 | INFO | ========================================
+2026-09-11 17:36:59 | INFO | Input Tokens : 3081
+2026-09-11 17:36:59 | INFO | Output Tokens: 261
+2026-09-11 17:36:59 | INFO | Total Tokens : 3342
+2026-09-11 17:36:59 | INFO | ========================================
+2026-09-11 17:36:59 | INFO | [DB] resolve_executive_name(filename='losssale.wav') -> None
+2026-09-11 17:36:59 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-09-11 17:36:59 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:36:59 | INFO | [DB] resolve_customer_name(filename='losssale.wav') -> None
+2026-09-11 17:36:59 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------122496041424083997433916329907' | audio_url=None | filename='losssale.wav'
+2026-09-11 17:37:59 | INFO | ========================================
+2026-09-11 17:37:59 | INFO | Input Tokens : 8143
+2026-09-11 17:37:59 | INFO | Output Tokens: 1898
+2026-09-11 17:37:59 | INFO | Total Tokens : 10041
+2026-09-11 17:37:59 | INFO | ========================================
+2026-09-11 17:37:59 | INFO | [DB] resolve_executive_name(filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a') -> None
+2026-09-11 17:37:59 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-09-11 17:37:59 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:37:59 | INFO | [DB] resolve_customer_name(filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a') -> None
+2026-09-11 17:37:59 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------31697153661535214976119200635' | audio_url=None | filename='Call recording _Saket_ Ghodke Sweets_260611_105242.m4a'
+2026-09-11 17:38:59 | INFO | ========================================
+2026-09-11 17:38:59 | INFO | Input Tokens : 6532
+2026-09-11 17:38:59 | INFO | Output Tokens: 1622
+2026-09-11 17:38:59 | INFO | Total Tokens : 8154
+2026-09-11 17:38:59 | INFO | ========================================
+2026-09-11 17:38:59 | INFO | [DB] resolve_executive_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'Sandeep Patil'
+2026-09-11 17:38:59 | INFO | [DB] Overriding Executive Name in analysis text -> 'Sandeep Patil'
+2026-09-11 17:38:59 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:39:00 | INFO | [DB] resolve_customer_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'MAMTA SUPER BAZAR Yavatmal'
+2026-09-11 17:39:00 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------3377009193390877991191359560' | audio_url=None | filename='22-05-2026-1779461013.7636-12.wav'
+2026-09-11 17:39:35 | INFO | ========================================
+2026-09-11 17:39:35 | INFO | Input Tokens : 3964
+2026-09-11 17:39:35 | INFO | Output Tokens: 722
+2026-09-11 17:39:35 | INFO | Total Tokens : 4686
+2026-09-11 17:39:35 | INFO | ========================================
+2026-09-11 17:39:35 | INFO | [DB] resolve_executive_name(filename='02-09-2026-1788327987.147608-109.wav') -> 'Pratik Sathe'
+2026-09-11 17:39:35 | INFO | [DB] Overriding Executive Name in analysis text -> 'Pratik Sathe'
+2026-09-11 17:39:35 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:39:36 | INFO | [DB] resolve_customer_name(filename='02-09-2026-1788327987.147608-109.wav') -> 'GOURISHANKAR JEWELERS Bagalkot'
+2026-09-11 17:39:36 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------124931393503383685586713009' | audio_url=None | filename='02-09-2026-1788327987.147608-109.wav'
+2026-09-11 17:40:28 | INFO | ========================================
+2026-09-11 17:40:28 | INFO | Input Tokens : 7044
+2026-09-11 17:40:28 | INFO | Output Tokens: 1824
+2026-09-11 17:40:28 | INFO | Total Tokens : 8868
+2026-09-11 17:40:28 | INFO | ========================================
+2026-09-11 17:40:28 | INFO | [DB] resolve_executive_name(filename='02-09-2026-1788327532.147472-63.wav') -> 'Akshay Deshmukh'
+2026-09-11 17:40:28 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akshay Deshmukh'
+2026-09-11 17:40:28 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:40:28 | INFO | [DB] resolve_customer_name(filename='02-09-2026-1788327532.147472-63.wav') -> 'Society Stores Lokhandwala, Mumbai'
+2026-09-11 17:40:28 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------139541597133385517532540041857' | audio_url=None | filename='02-09-2026-1788327532.147472-63.wav'
+2026-09-11 17:41:21 | INFO | ========================================
+2026-09-11 17:41:21 | INFO | Input Tokens : 4445
+2026-09-11 17:41:21 | INFO | Output Tokens: 773
+2026-09-11 17:41:21 | INFO | Total Tokens : 5218
+2026-09-11 17:41:21 | INFO | ========================================
+2026-09-11 17:41:21 | INFO | [DB] resolve_executive_name(filename='23-05-2026-1779518677.8380-15.wav') -> 'Rahul Budhwant'
+2026-09-11 17:41:21 | INFO | [DB] Overriding Executive Name in analysis text -> 'Rahul Budhwant'
+2026-09-11 17:41:21 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:41:21 | INFO | [DB] resolve_customer_name(filename='23-05-2026-1779518677.8380-15.wav') -> 'Mobile Expertise Branch One'
+2026-09-11 17:41:21 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------372431407015965943063279819969' | audio_url=None | filename='23-05-2026-1779518677.8380-15.wav'
+2026-09-11 17:42:26 | INFO | === APP STARTED ===
+2026-09-11 17:42:26 | INFO | === TESTNEW IMPORTED ===
+2026-09-11 17:42:26 | INFO | ==================================================
+2026-09-11 17:42:26 | INFO | Call Summary Web App is ACTIVE
+2026-09-11 17:42:26 | INFO | Local access: http://127.0.0.1:8080
+2026-09-11 17:42:26 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-11 17:42:26 | INFO | ==================================================
+2026-09-11 17:42:30 | INFO | DEBUG: Received GET request for /
+2026-09-11 17:42:49 | INFO | ========================================
+2026-09-11 17:42:49 | INFO | Input Tokens : 3441
+2026-09-11 17:42:49 | INFO | Output Tokens: 440
+2026-09-11 17:42:49 | INFO | Total Tokens : 3881
+2026-09-11 17:42:49 | INFO | ========================================
+2026-09-11 17:42:49 | INFO | [DB] resolve_executive_name(filename='losssale.wav') -> None
+2026-09-11 17:42:49 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-09-11 17:42:49 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:42:49 | INFO | [DB] resolve_customer_name(filename='losssale.wav') -> None
+2026-09-11 17:42:49 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------5041966857887148581248853343' | audio_url=None | filename='losssale.wav'
+2026-09-11 17:43:38 | INFO | ========================================
+2026-09-11 17:43:38 | INFO | Input Tokens : 4744
+2026-09-11 17:43:38 | INFO | Output Tokens: 957
+2026-09-11 17:43:38 | INFO | Total Tokens : 5701
+2026-09-11 17:43:38 | INFO | ========================================
+2026-09-11 17:43:38 | INFO | [DB] resolve_executive_name(filename='02-09-2026-1788327987.147608-109.wav') -> 'Pratik Sathe'
+2026-09-11 17:43:38 | INFO | [DB] Overriding Executive Name in analysis text -> 'Pratik Sathe'
+2026-09-11 17:43:38 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-11 17:43:38 | INFO | [DB] resolve_customer_name(filename='02-09-2026-1788327987.147608-109.wav') -> 'GOURISHANKAR JEWELERS Bagalkot'
+2026-09-11 17:43:38 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=---------------------------4093041481154006989048740557' | audio_url=None | filename='02-09-2026-1788327987.147608-109.wav'

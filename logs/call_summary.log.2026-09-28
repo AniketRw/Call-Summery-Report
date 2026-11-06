@@ -1,0 +1,53 @@
+2026-09-28 16:06:59 | INFO | === APP STARTED ===
+2026-09-28 16:07:00 | INFO | === TESTNEW IMPORTED ===
+2026-09-28 16:07:00 | INFO | ==================================================
+2026-09-28 16:07:00 | INFO | Call Summary Web App is ACTIVE
+2026-09-28 16:07:00 | INFO | Local access: http://127.0.0.1:8080
+2026-09-28 16:07:00 | INFO | LAN access: http://192.168.200.14:8080
+2026-09-28 16:07:00 | INFO | ==================================================
+2026-09-28 16:09:24 | INFO | DEBUG: Received GET request for /
+2026-09-28 16:09:24 | INFO | DEBUG: Received GET request for /logo.png
+2026-09-28 16:09:25 | INFO | DEBUG: Received GET request for /favicon.ico
+2026-09-28 16:09:59 | INFO | ========================================
+2026-09-28 16:09:59 | INFO | Input Tokens : 7781
+2026-09-28 16:09:59 | INFO | Output Tokens: 1844
+2026-09-28 16:09:59 | INFO | Total Tokens : 9625
+2026-09-28 16:09:59 | INFO | ========================================
+2026-09-28 16:09:59 | INFO | [DB] resolve_executive_name(filename='02-09-2026-1788327532.147472-63.wav') -> 'Akshay Deshmukh'
+2026-09-28 16:09:59 | INFO | [DB] Overriding Executive Name in analysis text -> 'Akshay Deshmukh'
+2026-09-28 16:09:59 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-28 16:10:01 | INFO | [DB] resolve_customer_name(filename='02-09-2026-1788327532.147472-63.wav') -> 'Society Stores Lokhandwala, Mumbai'
+2026-09-28 16:10:01 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryqbvlQ3ofAeKIBLpQ' | audio_url=None | filename='02-09-2026-1788327532.147472-63.wav'
+2026-09-28 16:10:57 | INFO | ========================================
+2026-09-28 16:10:57 | INFO | Input Tokens : 7954
+2026-09-28 16:10:57 | INFO | Output Tokens: 1846
+2026-09-28 16:10:57 | INFO | Total Tokens : 9800
+2026-09-28 16:10:57 | INFO | ========================================
+2026-09-28 16:10:57 | INFO | [DB] resolve_executive_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'Sandeep Patil'
+2026-09-28 16:10:57 | INFO | [DB] Overriding Executive Name in analysis text -> 'Sandeep Patil'
+2026-09-28 16:10:57 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-28 16:10:57 | INFO | [DB] resolve_customer_name(filename='22-05-2026-1779461013.7636-12.wav') -> 'MAMTA SUPER BAZAR Yavatmal'
+2026-09-28 16:10:57 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryCQS4LrWVATqTrJ8K' | audio_url=None | filename='22-05-2026-1779461013.7636-12.wav'
+2026-09-28 16:16:47 | INFO | DEBUG: Received GET request for /
+2026-09-28 16:16:47 | INFO | DEBUG: Received GET request for /logo.png
+2026-09-28 16:16:47 | INFO | DEBUG: Received GET request for /favicon.ico
+2026-09-28 16:17:42 | INFO | ========================================
+2026-09-28 16:17:42 | INFO | Input Tokens : 3900
+2026-09-28 16:17:42 | INFO | Output Tokens: 865
+2026-09-28 16:17:42 | INFO | Total Tokens : 4765
+2026-09-28 16:17:42 | INFO | ========================================
+2026-09-28 16:17:42 | INFO | [DB] resolve_executive_name(filename='05-09-2026-1788583305.157977-55.wav') -> 'Tejesh Yadav'
+2026-09-28 16:17:42 | INFO | [DB] Overriding Executive Name in analysis text -> 'Tejesh Yadav'
+2026-09-28 16:17:42 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-28 16:17:42 | INFO | [DB] resolve_customer_name(filename='05-09-2026-1788583305.157977-55.wav') -> 'SATYANARAYAN CLOTH STORES NEW'
+2026-09-28 16:17:42 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryPTqjYXsLqAuTa4BX' | audio_url=None | filename='05-09-2026-1788583305.157977-55.wav'
+2026-09-28 18:01:34 | INFO | ========================================
+2026-09-28 18:01:34 | INFO | Input Tokens : 3537
+2026-09-28 18:01:34 | INFO | Output Tokens: 496
+2026-09-28 18:01:34 | INFO | Total Tokens : 4033
+2026-09-28 18:01:34 | INFO | ========================================
+2026-09-28 18:01:35 | INFO | [DB] resolve_executive_name(filename='losssale.wav') -> None
+2026-09-28 18:01:35 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-09-28 18:01:35 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-09-28 18:01:35 | INFO | [DB] resolve_customer_name(filename='losssale.wav') -> None
+2026-09-28 18:01:35 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryALS9ABGxXbnoYBzc' | audio_url=None | filename='losssale.wav'

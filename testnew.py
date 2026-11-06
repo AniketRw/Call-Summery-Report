@@ -1062,6 +1062,24 @@ def debug_transcript(stage, transcript):
     print("LAST 1000 CHARACTERS:", repr(transcript[-1000:]), flush=True)
     print("=" * 70, flush=True)
 
+def safe_detect_language(client, text):
+    """Returns 'hi', 'mr', 'en', or 'auto'. Never raises."""
+    try:
+        lang = detect_call_language(client, text)
+    except Exception as e:
+        print(f"[LANGUAGE] Detection failed: {e}", flush=True)
+        return "auto"
+    return lang if lang in ("hi", "mr", "en") else "auto"
+
+
+def bodhan_transcribe_chunk(client, audio_file, lang):
+    kwargs = dict(model=BODHAN_MODEL, file=audio_file)
+    if lang in ("hi", "mr", "en"):
+        kwargs["language"] = lang
+    return client.audio.transcriptions.create(**kwargs)
+
+
+
 def whisper_transcribe(audio_path, deepseek_client):
     """
     Bodhan Indic-Transcribe speech-to-text.
@@ -1245,23 +1263,29 @@ def whisper_transcribe(audio_path, deepseek_client):
                         flush=True
                     )
 
+                    # with open(chunk_path, "rb") as audio_file:
+                    #     wait_for_offpeak(
+                    #         lambda msg: print(msg, flush=True)
+                    #     )
+
+                    #     if detected_language is None:
+                    #         response = client.audio.transcriptions.create(
+                    #             model=BODHAN_MODEL,
+                    #             file=audio_file
+                    #         )
+                    #     else:
+                    #         response = client.audio.transcriptions.create(
+                    #             model=BODHAN_MODEL,
+                    #             file=audio_file,
+                    #             language=detected_language
+                    #         )
                     with open(chunk_path, "rb") as audio_file:
                         wait_for_offpeak(
                             lambda msg: print(msg, flush=True)
                         )
-
-                        if detected_language is None:
-                            response = client.audio.transcriptions.create(
-                                model=BODHAN_MODEL,
-                                file=audio_file
-                            )
-                        else:
-                            response = client.audio.transcriptions.create(
-                                model=BODHAN_MODEL,
-                                file=audio_file,
-                                language=detected_language
-                            )
-
+                        response = bodhan_transcribe_chunk(
+                            client, audio_file, detected_language
+                        )
                     if response is None:
                         raise RuntimeError(
                             "Bodhan returned an empty response object."
@@ -1328,36 +1352,114 @@ def whisper_transcribe(audio_path, deepseek_client):
                 getattr(response, "text", "") or ""
             ).strip()
           
+            # # Collect first 2 SUCCESSFUL chunk transcripts
+            # if chunk_text and len(first_minute_transcript) < 2:
+            #     first_minute_transcript.append(chunk_text)
+
+
+            # if detected_language is None and len(first_minute_transcript) >= 2:
+
+            #     first_minute_text = "\n".join(first_minute_transcript)
+
+            #     detected_language = detect_call_language(
+            #         deepseek_client,
+            #         first_minute_text
+            #     )
+
+            #     if detected_language == "unsupported":
+            #         print(
+            #             "[LANGUAGE BLOCKED] Unsupported or uncertain language.",
+            #             flush=True
+            #         )
+            #         raise RuntimeError(
+            #             "Unsupported or uncertain call language."
+            #         )
+
+
+            #     if (
+            #          detected_language in ("hi", "mr", "en")
+            #         and not first_chunk_retranscribed
+            #     ):
+            #         try:
+            #             first_chunk_number, first_chunk_path, first_chunk_duration = chunks[0]
+
+            #             print(
+            #                 f"[RETRANSCRIBE] First chunk using language={detected_language}",
+            #                 flush=True
+            #             )
+
+            #             with open(first_chunk_path, "rb") as audio_file:
+
+            #                 wait_for_offpeak(
+            #                     lambda msg: print(msg, flush=True)
+            #                 )
+
+            #                 retry_response = client.audio.transcriptions.create(
+            #                     model=BODHAN_MODEL,
+            #                     file=audio_file,
+            #                     language=detected_language
+            #                 )
+            #                 extra_retranscribed_seconds = first_chunk_duration
+
+            #             retry_text = (
+            #                 getattr(retry_response, "text", "") or ""
+            #             ).strip()
+
+            #             if retry_text:
+            #                 for i, line in enumerate(transcript_lines):
+
+            #                     if line.startswith("[00:00] "):
+
+            #                         transcript_lines[i] = (
+            #                             f"[00:00] {retry_text}"
+            #                         )
+
+            #                         first_chunk_retranscribed = True
+                                    
+
+            #                         print(
+            #                             "[RETRANSCRIBE] First chunk replaced successfully.",
+            #                             flush=True
+            #                         )
+
+            #                         print(
+            #                             "[UPDATED FIRST CHUNK]:",
+            #                             retry_text,
+            #                             flush=True
+            #                         )
+
+            #                         break
+
+            #         except Exception as e:
+            #             print(
+            #                 f"[RETRANSCRIBE] First chunk retry failed: {e}",
+            #                 flush=True
+            #             )
+
+            #         print(
+            #             f"[LANGUAGE] Applying {detected_language} to remaining chunks.",
+            #             flush=True
+            #         )
             # Collect first 2 SUCCESSFUL chunk transcripts
             if chunk_text and len(first_minute_transcript) < 2:
                 first_minute_transcript.append(chunk_text)
 
-
             if detected_language is None and len(first_minute_transcript) >= 2:
-
                 first_minute_text = "\n".join(first_minute_transcript)
 
-                detected_language = detect_call_language(
+                detected_language = safe_detect_language(
                     deepseek_client,
                     first_minute_text
                 )
+                print(f"[LANGUAGE] Using: {detected_language}", flush=True)
 
-                if detected_language == "unsupported":
-                    print(
-                        "[LANGUAGE BLOCKED] Unsupported or uncertain language.",
-                        flush=True
-                    )
-                    raise RuntimeError(
-                        "Unsupported or uncertain call language."
-                    )
-
-
+                # Re-transcribe first chunk only when a language was identified
                 if (
-                     detected_language in ("hi", "mr", "en")
+                    detected_language in ("hi", "mr", "en")
                     and not first_chunk_retranscribed
                 ):
                     try:
-                        first_chunk_number, first_chunk_path, first_chunk_duration = chunks[0]
+                        _, first_chunk_path, first_chunk_duration = chunks[0]
 
                         print(
                             f"[RETRANSCRIBE] First chunk using language={detected_language}",
@@ -1365,17 +1467,12 @@ def whisper_transcribe(audio_path, deepseek_client):
                         )
 
                         with open(first_chunk_path, "rb") as audio_file:
-
                             wait_for_offpeak(
                                 lambda msg: print(msg, flush=True)
                             )
-
-                            retry_response = client.audio.transcriptions.create(
-                                model=BODHAN_MODEL,
-                                file=audio_file,
-                                language=detected_language
+                            retry_response = bodhan_transcribe_chunk(
+                                client, audio_file, detected_language
                             )
-                            extra_retranscribed_seconds = first_chunk_duration
 
                         retry_text = (
                             getattr(retry_response, "text", "") or ""
@@ -1383,27 +1480,15 @@ def whisper_transcribe(audio_path, deepseek_client):
 
                         if retry_text:
                             for i, line in enumerate(transcript_lines):
-
                                 if line.startswith("[00:00] "):
-
-                                    transcript_lines[i] = (
-                                        f"[00:00] {retry_text}"
-                                    )
-
+                                    transcript_lines[i] = f"[00:00] {retry_text}"
                                     first_chunk_retranscribed = True
-                                    
-
+                                    # Bill the extra seconds ONLY if replaced
+                                    extra_retranscribed_seconds = first_chunk_duration
                                     print(
                                         "[RETRANSCRIBE] First chunk replaced successfully.",
                                         flush=True
                                     )
-
-                                    print(
-                                        "[UPDATED FIRST CHUNK]:",
-                                        retry_text,
-                                        flush=True
-                                    )
-
                                     break
 
                     except Exception as e:
@@ -1411,12 +1496,6 @@ def whisper_transcribe(audio_path, deepseek_client):
                             f"[RETRANSCRIBE] First chunk retry failed: {e}",
                             flush=True
                         )
-
-                    print(
-                        f"[LANGUAGE] Applying {detected_language} to remaining chunks.",
-                        flush=True
-                    )
-
 
 
 
@@ -1452,24 +1531,34 @@ def whisper_transcribe(audio_path, deepseek_client):
 
             current_offset += chunk_duration
        
-        if detected_language is None and first_minute_transcript:
+        # if detected_language is None and first_minute_transcript:
 
-            first_minute_text = "\n".join(first_minute_transcript)
+        #     first_minute_text = "\n".join(first_minute_transcript)
 
-            detected_language = detect_call_language(
-                deepseek_client,
-                first_minute_text
-            )
+        #     detected_language = detect_call_language(
+        #         deepseek_client,
+        #         first_minute_text
+        #     )
 
-            if detected_language == "unsupported":
-                raise RuntimeError(
-                    "Unsupported or uncertain call language."
-                )
+        #     if detected_language == "unsupported":
+        #         raise RuntimeError(
+        #             "Unsupported or uncertain call language."
+        #         )
 
+        # if detected_language is None:
+        #     raise RuntimeError(
+        #         "Language detection could not be completed."
+        # )
         if detected_language is None:
-            raise RuntimeError(
-                "Language detection could not be completed."
-        )
+            detected_language = (
+                safe_detect_language(
+                    deepseek_client,
+                    "\n".join(first_minute_transcript)
+                )
+                if first_minute_transcript else "auto"
+            )
+            print(f"[LANGUAGE] Final: {detected_language}", flush=True)
+
 
         transcript = "\n".join(transcript_lines).strip()
 
@@ -3618,10 +3707,42 @@ Output JSON only.
             "general support",
         }
 
-        inal_keywords = []
+        # Final_keywords = []
+
+        # for k in raw_kws:
+
+        #     if not isinstance(k, str):
+        #         continue
+
+        #     k = k.strip().strip(".,;:-")
+
+        #     if not k or len(k) > 60:
+        #         continue
+
+        #     if k.lower() in blocked_keywords:
+        #         continue
+
+        #     if any(
+        #         re.search(pattern, k, re.IGNORECASE)
+        #         for pattern in excluded_patterns
+        #     ):
+        #         continue
+
+        #     if k.lower() not in [
+        #         item.lower() for item in final_keywords
+        #     ]:
+        #         final_keywords.append(k)
+
+        # final_keywords = final_keywords[:3]
+
+
+        # if not final_keywords:
+        #     final_keywords = ["General Support"]
+
+        #data["keywords"] = final_keywords
+        final_keywords = []
 
         for k in raw_kws:
-
             if not isinstance(k, str):
                 continue
 
@@ -3639,13 +3760,10 @@ Output JSON only.
             ):
                 continue
 
-            if k.lower() not in [
-                item.lower() for item in final_keywords
-            ]:
+            if k.lower() not in [item.lower() for item in final_keywords]:
                 final_keywords.append(k)
 
         final_keywords = final_keywords[:3]
-
 
         if not final_keywords:
             final_keywords = ["General Support"]

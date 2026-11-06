@@ -1,0 +1,58 @@
+2026-10-12 12:02:28 | INFO | === APP STARTED ===
+2026-10-12 12:02:29 | INFO | === TESTNEW IMPORTED ===
+2026-10-12 12:02:30 | INFO | ==================================================
+2026-10-12 12:02:30 | INFO | Call Summary Web App is ACTIVE
+2026-10-12 12:02:30 | INFO | Local access: http://127.0.0.1:8080
+2026-10-12 12:02:30 | INFO | LAN access: http://192.168.200.14:8080
+2026-10-12 12:02:30 | INFO | ==================================================
+2026-10-12 12:02:46 | INFO | DEBUG: Received GET request for /
+2026-10-12 12:02:46 | INFO | DEBUG: Received GET request for /logo.png
+2026-10-12 12:02:46 | INFO | DEBUG: Received GET request for /favicon.ico
+2026-10-12 12:07:57 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791785999.74919-12.wav Content-Type='audio/x-wav'
+2026-10-12 12:07:57 | INFO | [DOWNLOAD] Saved 4655724 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\12-10-2026-1791785999.74919-12.wav
+2026-10-12 12:08:45 | INFO | ========================================
+2026-10-12 12:08:45 | INFO | Input Tokens : 6731
+2026-10-12 12:08:45 | INFO | Output Tokens: 1680
+2026-10-12 12:08:45 | INFO | Total Tokens : 8411
+2026-10-12 12:08:45 | INFO | ========================================
+2026-10-12 12:08:45 | INFO | [DB] resolve_executive_name(filename='12-10-2026-1791785999.74919-12.wav') -> 'Sandeep Patil'
+2026-10-12 12:08:45 | INFO | [DB] Overriding Executive Name in analysis text -> 'Sandeep Patil'
+2026-10-12 12:08:45 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-12 12:08:47 | INFO | [DB] resolve_customer_name(filename='12-10-2026-1791785999.74919-12.wav') -> 'M/S NANDINI BAKERY RC BRANCH'
+2026-10-12 12:08:47 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundarygB6CjAw8uzhpJWBq' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791785999.74919-12.wav' | filename='12-10-2026-1791785999.74919-12.wav'
+2026-10-12 12:10:28 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791785565.74855-126.wav Content-Type='audio/x-wav'
+2026-10-12 12:10:28 | INFO | [DOWNLOAD] Saved 1160044 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\12-10-2026-1791785565.74855-126.wav
+2026-10-12 12:10:44 | INFO | ========================================
+2026-10-12 12:10:44 | INFO | Input Tokens : 4159
+2026-10-12 12:10:44 | INFO | Output Tokens: 808
+2026-10-12 12:10:44 | INFO | Total Tokens : 4967
+2026-10-12 12:10:44 | INFO | ========================================
+2026-10-12 12:10:45 | INFO | [DB] resolve_executive_name(filename='12-10-2026-1791785565.74855-126.wav') -> None
+2026-10-12 12:10:45 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-10-12 12:10:45 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-12 12:10:45 | INFO | [DB] resolve_customer_name(filename='12-10-2026-1791785565.74855-126.wav') -> 'Mauli Creation'
+2026-10-12 12:10:45 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryu0oW10ePrk56Wt4O' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791785565.74855-126.wav' | filename='12-10-2026-1791785565.74855-126.wav'
+2026-10-12 12:13:31 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791785048.74797-126.wav Content-Type='audio/x-wav'
+2026-10-12 12:13:31 | INFO | [DOWNLOAD] Saved 6079724 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\12-10-2026-1791785048.74797-126.wav
+2026-10-12 12:14:26 | INFO | ========================================
+2026-10-12 12:14:26 | INFO | Input Tokens : 6698
+2026-10-12 12:14:26 | INFO | Output Tokens: 1972
+2026-10-12 12:14:26 | INFO | Total Tokens : 8670
+2026-10-12 12:14:26 | INFO | ========================================
+2026-10-12 12:14:26 | INFO | [DB] resolve_executive_name(filename='12-10-2026-1791785048.74797-126.wav') -> None
+2026-10-12 12:14:26 | INFO | [DB] Overriding Executive Name in analysis text -> 'Not mentioned'
+2026-10-12 12:14:26 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-12 12:14:26 | INFO | [DB] resolve_customer_name(filename='12-10-2026-1791785048.74797-126.wav') -> 'MORPANKH SAREES PUNE'
+2026-10-12 12:14:26 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundarySXarDx0RJOUo2OiB' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791785048.74797-126.wav' | filename='12-10-2026-1791785048.74797-126.wav'
+2026-10-12 12:21:44 | INFO | [DOWNLOAD] URL=http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791787463.75075-101.wav Content-Type='audio/x-wav'
+2026-10-12 12:21:45 | INFO | [DOWNLOAD] Saved 2467244 bytes to D:\WorkSpace_Sunilpant\Call Summery\web_uploads\12-10-2026-1791787463.75075-101.wav
+2026-10-12 12:22:09 | INFO | ========================================
+2026-10-12 12:22:09 | INFO | Input Tokens : 4128
+2026-10-12 12:22:09 | INFO | Output Tokens: 893
+2026-10-12 12:22:09 | INFO | Total Tokens : 5021
+2026-10-12 12:22:09 | INFO | ========================================
+2026-10-12 12:22:09 | INFO | [DB] resolve_executive_name(filename='12-10-2026-1791787463.75075-101.wav') -> 'Vidya Korade'
+2026-10-12 12:22:09 | INFO | [DB] Overriding Executive Name in analysis text -> 'Vidya Korade'
+2026-10-12 12:22:09 | INFO | [DB] Existing 'Executive Name:' line found in analysis? True
+2026-10-12 12:22:09 | INFO | [DB] resolve_customer_name(filename='12-10-2026-1791787463.75075-101.wav') -> 'SAVLA CREATIONS PRIVATE LIMITED JUST BAGS'
+2026-10-12 12:22:09 | INFO | [DEBUG-FILENAME] content_type='multipart/form-data; boundary=----WebKitFormBoundaryjxxVxjiKzmaB7GXQ' | audio_url='http://192.168.200.188:6751/callrecord/2026/October/12-10-2026/12-10-2026-1791787463.75075-101.wav' | filename='12-10-2026-1791787463.75075-101.wav'
