@@ -58,9 +58,7 @@ import shutil
 
 # Import the backend logic from testnew
 import testnew
-logger.info(f"[DEBUG] TESTNEW FILE LOADED FROM: {testnew.__file__}")
-import autoprocesscall
-from Schedule import wait_for_offpeak
+#import autoprocesscall
 logger.info("=== TESTNEW IMPORTED ===")
 HOST = ""
 PORT = int(os.getenv("PORT", "8080"))
@@ -296,209 +294,17 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
     results_html = ""
     token_html = ""
     timing_html = ""
-        # ---------------------------------------------------------
-    # TOKEN + COST DISPLAY
-    # ---------------------------------------------------------
-
-    token_html = ""
-
     if token_info:
-
-        # -----------------------------
-        # DEEPSEEK
-        # -----------------------------
-        deepseek_input = token_info.get("deepseek_input", 0)
-        deepseek_output = token_info.get("deepseek_output", 0)
-        deepseek_thinking = token_info.get("deepseek_thinking", 0)
-        deepseek_total = token_info.get("deepseek_total", 0)
-
-        deepseek_cost_usd = token_info.get(
-            "deepseek_cost_usd",
-            0.0
-        )
-
-        deepseek_cost_inr = token_info.get(
-            "deepseek_cost_inr",
-            0.0
-        )
-
-        # -----------------------------
-        # BODHAN
-        # -----------------------------
-        bodhan_audio_seconds = token_info.get(
-            "bodhan_audio_seconds",
-            0
-        )
-
-        bodhan_audio_minutes = token_info.get(
-            "bodhan_audio_minutes",
-            0.0
-        )
-
-        bodhan_cost_inr = token_info.get(
-            "bodhan_cost_inr",
-            0.0
-        )
-
-        bodhan_rate = 0.10
-
-        # -----------------------------
-        # HTML
-        # -----------------------------
-        token_html = f"""
-        <div style="
-            display:grid;
-            grid-template-columns:repeat(4, minmax(0, 1fr));
-            gap:16px;
-            margin-bottom:20px;
-        ">
-
-            <!-- BODHAN AI -->
-            <div class="token-badge">
-
-                <div class="badge-title">
-                    🎙️ Bodhan AI
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Audio</span>
-                    <span class="metric-number">
-                        {bodhan_audio_minutes:.2f} min
-                    </span>
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Rate</span>
-                    <span class="metric-number">
-                        ₹{bodhan_rate:.2f}/min
-                    </span>
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Seconds</span>
-                    <span class="metric-number">
-                        {bodhan_audio_seconds:.1f}
-                    </span>
-                </div>
-
-                <div class="metric-row total-row">
-                    <span class="metric-name">STT Cost</span>
-                    <span class="metric-number">
-                        ₹{bodhan_cost_inr:.4f}
-                    </span>
-                </div>
-
-            </div>
-
-
-            <!-- DEEPSEEK TOKENS -->
-            <div class="token-badge">
-
-                <div class="badge-title">
-                    🧠 DeepSeek
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Input</span>
-                    <span class="metric-number">
-                        {deepseek_input:,}
-                    </span>
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Output</span>
-                    <span class="metric-number">
-                        {deepseek_output:,}
-                    </span>
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Thinking</span>
-                    <span class="metric-number">
-                        {deepseek_thinking:,}
-                    </span>
-                </div>
-
-                <div class="metric-row total-row">
-                    <span class="metric-name">Total Tokens</span>
-                    <span class="metric-number">
-                        {deepseek_total:,}
-                    </span>
-                </div>
-
-            </div>
-
-
-            <!-- DEEPSEEK COST -->
-            <div class="token-badge">
-
-                <div class="badge-title">
-                    💰 DeepSeek Cost
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">USD</span>
-                    <span class="metric-number">
-                        ${deepseek_cost_usd:.6f}
-                    </span>
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">INR</span>
-                    <span class="metric-number">
-                        ₹{deepseek_cost_inr:.4f}
-                    </span>
-                </div>
-
-                <div class="metric-row total-row">
-                    <span class="metric-name">Tokens</span>
-                    <span class="metric-number">
-                        {deepseek_total:,}
-                    </span>
-                </div>
-
-            </div>
-
-
-            <!-- BODHAN COST -->
-            <div class="token-badge">
-
-                <div class="badge-title">
-                    💰 Bodhan Cost
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Minutes</span>
-                    <span class="metric-number">
-                        {bodhan_audio_minutes:.2f}
-                    </span>
-                </div>
-
-                <div class="metric-row">
-                    <span class="metric-name">Rate</span>
-                    <span class="metric-number">
-                        ₹{bodhan_rate:.2f}/min
-                    </span>
-                </div>
-
-                <div class="metric-row total-row">
-                    <span class="metric-name">INR</span>
-                    <span class="metric-number">
-                        ₹{bodhan_cost_inr:.4f}
-                    </span>
-                </div>
-
-            </div>
-
-        </div>
-        """
-
-    timing_html = ""
-    if elapsed_time is not None:
+      token_html = f"""
+      <div class="token-badge" id="tokenBadge">
+          🪙 Gemini Tokens Used : <b>{token_info['total']}</b>
+      </div>
+      """
+      timing_html = ""
+      if elapsed_time is not None:
         timing_html = f"""
         <div class="token-badge timing-badge" id="timingBadge">
-            ⏱ Processing Time :
-            <b>{html.escape(format_duration(elapsed_time))}</b>
+            ⏱ Processing Time : <b>{html.escape(format_duration(elapsed_time))}</b>
         </div>
         """
       
@@ -544,10 +350,6 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
         error_html = f'<section class="panel"><h2>Error</h2><div class="error">{html.escape(error)}</div></section>'
 
     return f"""<!doctype html>
-
-
-
-
 <html lang="en">
 <head>
   <meta charset="utf-8">
@@ -558,84 +360,19 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
-   .token-badge{{
-  width:100%;
-  min-width:0;
-  padding:18px 20px;
-  border:1px solid #e2e8f0;
-  border-radius:12px;
-  background:#ffffff;
-  color:#1e293b;
-  box-shadow:0 3px 10px rgba(15,23,42,0.07);
-}}
-
-.token-badge .badge-title{{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:14px;
-  font-weight:700;
-  color:#475569;
-  margin-bottom:12px;
-}}
-
-.token-badge .badge-value{{
-  font-size:24px;
-  font-weight:800;
-  color:#1c3f94;
-  line-height:1.2;
-}}
-
-.token-badge .badge-label{{
-  font-size:12px;
-  font-weight:600;
-  color:#64748b;
-}}
-
-.token-badge .metric-row{{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:6px 0;
-  border-bottom:1px solid #f1f5f9;
-}}
-
-.token-badge .metric-row:last-child{{
-  border-bottom:none;
-}}
-
-.token-badge .metric-name{{
-  font-size:13px;
-  color:#64748b;
-  font-weight:500;
-}}
-
-.token-badge .metric-number{{
-  font-size:14px;
-  color:#1e293b;
-  font-weight:700;
-}}
-
-.token-badge .total-row{{
-  margin-top:8px;
-  padding-top:10px;
-  border-top:2px solid #e2e8f0;
-}}
-
-.token-badge .total-row .metric-name{{
-  color:#1c3f94;
-  font-weight:700;
-}}
-
-.token-badge .total-row .metric-number{{
-  font-size:18px;
-  color:#1c3f94;
-  font-weight:800;
-}}
-
-.timing-badge{{
-  color:#b8790a;
-}}
+    .token-badge{{
+      display:inline-block;
+      margin-bottom:18px;
+      padding:8px 14px;
+      border:1px solid var(--border);
+      border-radius:6px;
+      background:#ffffff;
+      color:var(--accent);
+      font-weight:bold;
+      font-size:15px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      .timing-badge{{color:#b8790a; }}
+    }}
     :root {{
       color-scheme: light;
       --bg: #eef2f7;
@@ -1124,10 +861,10 @@ def render_page(analysis="", keywords="", facts="", summary="", transcript="", e
 
     const steps = [
       "🎙 Uploading audio...",
-      "📝 Transcribing with Bodhan AI...",
-      "🔍 Analyzing transcript With Deepseek...",
+      "📝 Transcribing with Gemini...",
+      "🔍 Analyzing transcript...",
       "✨ Generating insights...",
-      "📄 Finalizing summary With Deepseek..."
+      "📄 Finalizing summary..."
     ];
 
     form.addEventListener("submit", (e) => {{
@@ -1445,51 +1182,22 @@ def render_keywords_page(error=""):
 
 
 class CallSummaryHandler(BaseHTTPRequestHandler):
-    def log_message(self, format, *args):
-        try:
-            logger.info("[HTTP] " + (format % args))
-        except Exception:
-            pass
     def do_GET(self):
-      logger.info(f"[GET] START path={self.path}")
-
-      try:
-        if self.path in ("/", "/index.html"):
-            logger.info("[GET] Before render_page")
-
-            page = render_page()
-
-            logger.info(f"[GET] render_page SUCCESS. Length={len(page)}")
-
-            self.respond_html(page)
-
-            logger.info("[GET] respond_html completed")
-
-        elif self.path == "/keywords":
-            self.respond_html(render_keywords_page())
-
-        elif self.path == "/logo.png":
-            self.respond_file(
-                BASE_DIR / "assets" / "logo_transparent.png",
-                "image/png"
-            )
-
-        elif self.path == "/favicon.ico":
-            self.respond_file(
-                BASE_DIR / "assets" / "retailware.ico",
-                "image/x-icon"
-            )
-
-        else:
-            self.send_error(HTTPStatus.NOT_FOUND)
-
-      except Exception as e:
-        logger.exception(f"[GET ERROR] {self.path}: {e}")
-
+        logger.info(f"DEBUG: Received GET request for {self.path}")
         try:
+            if self.path in ("/", "/index.html"):
+                self.respond_html(render_page())
+            elif self.path == "/keywords":
+                self.respond_html(render_keywords_page())
+            elif self.path == "/logo.png":
+                self.respond_file(BASE_DIR / "assets" / "logo_transparent.png", "image/png")
+            elif self.path == "/favicon.ico":
+              self.respond_file(BASE_DIR / "assets" / "retailware.ico", "image/x-icon")    
+            else:
+                self.send_error(HTTPStatus.NOT_FOUND)
+        except Exception as e:
+            logger.exception(f"Error while handling GET request '{self.path}': {e}")
             self.send_error(HTTPStatus.INTERNAL_SERVER_ERROR)
-        except Exception:
-            logger.exception("[GET] Failed to send error response")
 
     def do_POST(self):
       if self.path == "/summarize":
@@ -1558,10 +1266,6 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
 
     def handle_summarize(self):
         request_start = time.time()
-        wait_for_offpeak(
-          lambda msg: logger.info(msg)
-        )
-
         try:
             content_type = self.headers.get("Content-Type", "")
             filename = None
@@ -1612,7 +1316,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
             try:
                 # Use logic from testnew
                 converted_file = testnew.convert_audio(str(input_path))
-                #converted_file = str(input_path)
+
                 # analyze_audio_with_gemini returns:
                 # (transcript, raw_output, facts, analysis, combined_summary, keywords)
                 results = testnew.analyze_audio_with_gemini(converted_file)
@@ -1656,8 +1360,7 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
                         elapsed_time=time.time() - request_start
                     )
                 except Exception as db_err:
-                  logger.exception(f"[DB] Failed to save call summary: {db_err}")
-                  raise RuntimeError(f"DB save failed: {db_err}")
+                    logger.exception(f"[DB] Failed to save call summary: {db_err}")
 
                 elapsed_time = time.time() - request_start
                 display_transcript = strip_speaker_labels(transcript)
@@ -1719,10 +1422,8 @@ class CallSummaryHandler(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(encoded)
         self.wfile.flush()
-      # except (ConnectionAbortedError, BrokenPipeError, OSError):
-      #   pass
-      except (ConnectionAbortedError, BrokenPipeError, OSError) as e:
-        logger.exception(f"[RESPOND_HTML SOCKET ERROR] {e}")   
+      except (ConnectionAbortedError, BrokenPipeError, OSError):
+        pass   # Client disconnected — safe to ignore
     
     def respond_file(self, path, content_type):
         try:
@@ -1763,8 +1464,6 @@ def main():
     # automatically whenever the "Call Summery Tool" Windows service
     # starts - no separate service/process needed.
     #start_auto_poller_thread()
-
-    start_auto_poller_thread()
 
     server.serve_forever()
 
